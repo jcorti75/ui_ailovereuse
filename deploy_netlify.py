@@ -21,11 +21,11 @@ load_dotenv(find_dotenv(), override=True)
 
 # ======= CONFIG =======
 NETLIFY_TOKEN = os.getenv("NETLIFY_TOKEN")
-SITE_NAME = os.getenv("NETLIFY_SITE_NAME", "aitrustyou")
+SITE_NAME = os.getenv("NETLIFY_SITE_NAME", "ailovereuse")
 FRONTEND_DIR = os.getenv("FRONTEND_DIR", str(Path(__file__).parent.resolve()))
 
-APEX_DOMAIN = os.getenv("APEX_DOMAIN", "aitrustyou.com")
-WWW_DOMAIN = os.getenv("WWW_DOMAIN", "www.aitrustyou.com")
+APEX_DOMAIN = os.getenv("APEX_DOMAIN", "ailovereuse.com")
+WWW_DOMAIN = os.getenv("WWW_DOMAIN", "www.ailovereuse.com")
 
 API_HEADERS = {"Authorization": f"Bearer {NETLIFY_TOKEN}"}
 
@@ -165,15 +165,15 @@ def show_dns_instructions():
     print("="*50)
     print("En tu proveedor de dominio, configura:")
     print()
-    print("Para aitrustyou.com:")
+    print("Para ailovereuse.com:")
     print("  Tipo: A")
     print("  Nombre: @")
     print("  Valor: 75.2.60.5")
     print()
-    print("Para www.aitrustyou.com:")
+    print("Para www.ailovereuse.com:")
     print("  Tipo: CNAME") 
     print("  Nombre: www")
-    print("  Valor: aitrustyou.netlify.app")
+    print("  Valor: ailovereuse.netlify.app")
     print()
     print("⏰ La propagación puede tardar hasta 24 horas.")
     print("="*50)
@@ -201,9 +201,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
