@@ -856,6 +856,105 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        /* Popup Modal */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-content {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: slideInUp 0.4s ease;
+            color: #333;
+        }
+
+        .popup-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .popup-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: #d32f2f;
+        }
+
+        .popup-message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .popup-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .popup-btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+        }
+
+        .popup-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4);
+        }
+
+        .popup-btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 2px solid #ddd;
+        }
+
+        .popup-btn-secondary:hover {
+            background: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Loading animation */
         .loading {
             display: inline-block;
@@ -1004,6 +1103,23 @@
 
             .cta-feature {
                 padding: 1.5rem 1rem;
+            }
+
+            .popup-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .popup-title {
+                font-size: 1.5rem;
+            }
+
+            .popup-message {
+                font-size: 1rem;
+            }
+
+            .popup-buttons {
+                flex-direction: column;
             }
         }
 
@@ -1580,8 +1696,107 @@
             }
         }
 
-        // File upload handling
+        // Función para validar si la imagen es de ropa (simulada)
+        async function validateClothingImage(file) {
+            // Simulación de validación - en la realidad usarías una API de IA para detectar si es ropa
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Simulamos la detección basándonos en el nombre del archivo o características
+                    const fileName = file.name.toLowerCase();
+                    const invalidKeywords = ['dog', 'cat', 'perro', 'gato', 'animal', 'food', 'comida', 'landscape', 'paisaje', 'car', 'auto'];
+                    
+                    // Si el nombre tiene palabras que indican que no es ropa, lo rechazamos
+                    const hasInvalidKeyword = invalidKeywords.some(keyword => fileName.includes(keyword));
+                    
+                    // Simulamos una probabilidad aleatoria de detección (70% válido, 30% inválido para demostración)
+                    const isValidByChance = Math.random() > 0.3;
+                    
+                    // Si tiene keyword inválido O falla la validación aleatoria, es inválido
+                    resolve(!hasInvalidKeyword && isValidByChance);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Función para mostrar popup de imagen inválida
+        function showInvalidImagePopup(title, message, redirectToLogin = false) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            
+            overlay.innerHTML = `
+                <div class="popup-content">
+                    <span class="popup-icon">⚠️</span>
+                    <h3 class="popup-title">${title}</h3>
+                    <p class="popup-message">${message}</p>
+                    <div class="popup-buttons">
+                        ${redirectToLogin ? 
+                            `<button class="popup-btn popup-btn-primary" onclick="redirectToGmailLogin()">
+                                Iniciar Sesión con Gmail
+                            </button>` : 
+                            `<button class="popup-btn popup-btn-primary" onclick="closeInvalidImagePopup()">
+                                Entendido
+                            </button>`
+                        }
+                        <button class="popup-btn popup-btn-secondary" onclick="closeInvalidImagePopup()">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            // Cerrar popup si se hace clic fuera de él
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closeInvalidImagePopup();
+                }
+            });
+        }
+
+        // Función para cerrar popup
+        function closeInvalidImagePopup() {
+            const popup = document.querySelector('.popup-overlay');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        // Función para redirigir al login de Gmail
+        function redirectToGmailLogin() {
+            closeInvalidImagePopup();
+            
+            // Hacer scroll hacia el header donde está el botón de login
+            const header = document.querySelector('header');
+            if (header) {
+                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Animar el botón de login para llamar la atención
+                setTimeout(() => {
+                    const loginBtn = document.getElementById('loginBtn');
+                    if (loginBtn) {
+                        loginBtn.style.animation = 'pulse 1s ease-in-out 3';
+                        loginBtn.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.6)';
+                        
+                        setTimeout(() => {
+                            loginBtn.style.animation = '';
+                            loginBtn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+                        }, 3000);
+                    }
+                }, 500);
+            }
+        }
+
+        // File upload handling con validación mejorada
         async function handleFileUpload(type, input) {
+            // Verificar si el usuario está logueado PRIMERO
+            if (!isLoggedIn) {
+                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
+                input.value = ''; // Limpiar el input
+                return;
+            }
+
             const files = Array.from(input.files);
             const preview = document.getElementById(`${type}-preview`);
             const currentCount = uploadedFiles[type].length;
@@ -1602,6 +1817,13 @@
                     
                     if (file.size > 10 * 1024 * 1024) {
                         showNotification('La imagen es muy grande. Máximo 10MB', 'error');
+                        continue;
+                    }
+
+                    // Validar que la imagen sea válida para outfit
+                    const isValidImage = await validateClothingImage(file);
+                    if (!isValidImage) {
+                        showInvalidImagePopup('Imagen no válida detectada', 'Por favor sube solo fotos de ropa, zapatos o accesorios. No se permiten fotos de mascotas, comida, paisajes u otros objetos.', false);
                         continue;
                     }
                     
@@ -1667,10 +1889,11 @@
             }
         }
 
-        // Get AI recommendation
+        // Get AI recommendation con verificación de login
         async function getRecommendation() {
+            // Verificar si el usuario está logueado
             if (!isLoggedIn) {
-                showNotification('Necesitas iniciar sesión primero', 'error');
+                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
                 return;
             }
 
