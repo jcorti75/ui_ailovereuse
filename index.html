@@ -1074,7 +1074,7 @@
     <section id="inicio" class="hero">
         <div class="hero-content">
             <span class="hero-emoji">♻️👕</span>
-            <h1>Maximiza tu ropa, minimiza tu impacto ambiental</h1>
+            <h1>Reutiliza tu ropa con IA y minimiza tu impacto ambiental</h1>
             <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
             <p class="hero-description">Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.</p>
             
@@ -1203,7 +1203,7 @@
                     <svg width="18" height="18" viewBox="0 0 18 18">
                         <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
                         <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                        <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
+                        <path fill="#FBBC4" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
                         <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
                     </svg>
                     Acceder con Google
@@ -1429,7 +1429,6 @@
 
         // Initialize Google OAuth mejorado
         function initializeGoogleAuth() {
-            // Verificar si el script de Google está cargado
             if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
                 console.error('Google Identity Services no está disponible');
                 showNotification('Error: Servicios de Google no disponibles', 'error');
@@ -1479,7 +1478,7 @@
                 updateAuthUI();
                 showUploadSection();
                 
-                showNotification(`¡Bienvenido ${currentUser.given_name || currentUser.name}!`, 'success');
+                showNotification(`Bienvenido ${currentUser.given_name || currentUser.name}`, 'success');
                 
             } catch (error) {
                 console.error('Error procesando login de Google:', error);
@@ -1497,12 +1496,10 @@
             button.disabled = true;
             
             try {
-                // Verificar que Google esté disponible
                 if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
                     throw new Error('Servicios de Google no disponibles. Verifica la configuración.');
                 }
 
-                // Intentar mostrar el prompt de Google
                 google.accounts.id.prompt((notification) => {
                     console.log('Notificación de prompt:', notification);
                     
@@ -1516,7 +1513,6 @@
                 console.error('Error en loginWithGoogle:', error);
                 showNotification('Error: ' + error.message, 'error');
             } finally {
-                // Restaurar botón después de un tiempo
                 setTimeout(() => {
                     if (!isLoggedIn) {
                         button.innerHTML = originalText;
@@ -1529,7 +1525,6 @@
         // Logout mejorado
         function logout() {
             try {
-                // Desconectar de Google si está disponible
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.disableAutoSelect();
                 }
@@ -1541,7 +1536,6 @@
             currentUser = null;
             uploadedFiles = { top: [], bottom: [], shoes: [] };
             
-            // Limpiar previews
             ['top', 'bottom', 'shoes'].forEach(type => {
                 const preview = document.getElementById(`${type}-preview`);
                 if (preview) preview.innerHTML = '';
@@ -1579,7 +1573,6 @@
             document.getElementById('uploadArea').style.display = 'none';
             document.querySelector('.upload-section').classList.remove('active');
             
-            // Limpiar resultados
             const resultDiv = document.getElementById('result');
             if (resultDiv) {
                 resultDiv.innerHTML = '';
@@ -1693,36 +1686,43 @@
             button.disabled = true;
 
             try {
-                // Simular procesamiento de IA
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 
-                // Simular respuesta exitosa
+                const generateCombination = () => ({
+                    topIndex: Math.floor(Math.random() * uploadedFiles.top.length),
+                    bottomIndex: Math.floor(Math.random() * uploadedFiles.bottom.length),
+                    shoesIndex: Math.floor(Math.random() * uploadedFiles.shoes.length)
+                });
+                
                 const mockResponse = {
                     results: [
                         { 
                             index: 1, 
                             combination: "A1", 
                             score: 0.92, 
-                            formality: "casual" 
+                            formality: "casual",
+                            selection: generateCombination()
                         },
                         { 
                             index: 2, 
                             combination: "B1", 
                             score: 0.87, 
-                            formality: "formal" 
+                            formality: "formal",
+                            selection: generateCombination()
                         },
                         { 
                             index: 3, 
                             combination: "C1", 
                             score: 0.84, 
-                            formality: "casual" 
+                            formality: "casual",
+                            selection: generateCombination()
                         }
                     ],
                     best_index: 1
                 };
                 
                 displayRecommendations(mockResponse);
-                showNotification('¡Recomendaciones generadas exitosamente!', 'success');
+                showNotification('Recomendaciones generadas exitosamente', 'success');
                 
             } catch (error) {
                 console.error('Error:', error);
@@ -1745,20 +1745,60 @@
                 const isBest = result.index === bestIndex;
                 const percentage = (result.score * 100).toFixed(1);
                 
+                const topFile = uploadedFiles.top[result.selection.topIndex];
+                const bottomFile = uploadedFiles.bottom[result.selection.bottomIndex];
+                const shoesFile = uploadedFiles.shoes[result.selection.shoesIndex];
+                
+                const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
+                const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
+                const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
+                
                 html += `
                     <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;">
                         ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: bold;">⭐ Mejor opción</div>' : ''}
+                        
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                             <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
                                 ${isBest ? '⭐ ' : ''}Combinación ${result.combination}
                             </h3>
                             <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 1.1rem;">${percentage}%</div>
                         </div>
+
+                        <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
+                            <div style="text-align: center;">
+                                <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Superior">
+                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Superior</p>
+                            </div>
+                            
+                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
+                            
+                            <div style="text-align: center;">
+                                <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Inferior">
+                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Inferior</p>
+                            </div>
+                            
+                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
+                            
+                            <div style="text-align: center;">
+                                <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Calzado">
+                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Calzado</p>
+                            </div>
+                        </div>
+
                         <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
                             <p><strong>🎯 Puntuación:</strong> ${percentage}% de compatibilidad</p>
                             <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
                             <p><strong>💬 Recomendación:</strong> ${isBest ? 'Esta es tu mejor combinación. Perfecta para destacar con estilo.' : 'Una excelente opción alternativa para diferentes ocasiones.'}</p>
                             ${isBest ? '<p><strong>✨ Tip especial:</strong> Esta combinación ha sido seleccionada como la óptima por nuestra IA.</p>' : ''}
+                        </div>
+                        
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                            <button onclick="acceptCombination('${result.combination}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                ❤️ Me gusta
+                            </button>
+                            <button onclick="rejectCombination('${result.combination}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                👎 No me convence
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1772,6 +1812,125 @@
             }, 100);
         }
 
+        // Funciones para manejar feedback de combinaciones
+        function acceptCombination(combinationId) {
+            sendFeedbackToBackend(combinationId, 'si', null);
+            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
+        }
+
+        function rejectCombination(combinationId) {
+            const reasons = [
+                "Los colores no combinan bien",
+                "El estilo es muy formal para mi gusto",
+                "El estilo es muy casual para mi gusto", 
+                "Esta combinación no refleja mi personalidad",
+                "No me siento cómodo/a con este outfit"
+            ];
+
+            let optionsHtml = reasons.map((reason, index) => 
+                `<option value="${index}">${reason}</option>`
+            ).join('');
+
+            const rejectHtml = `
+                <div style="background: rgba(255, 193, 7, 0.15); border: 2px solid #ffc107; border-radius: 15px; padding: 2rem; margin-top: 1rem;">
+                    <h4 style="color: #ffc107; margin-bottom: 1rem;">¿Por qué no te gusta esta combinación?</h4>
+                    <select id="reject-reason-${combinationId}" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #ffc107; background: white; color: #333; font-size: 1rem;">
+                        <option value="">Selecciona una razón...</option>
+                        ${optionsHtml}
+                    </select>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center;">
+                        <button onclick="submitRejection('${combinationId}')" style="background: #ffc107; color: #333; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                            Enviar feedback
+                        </button>
+                        <button onclick="cancelRejection('${combinationId}')" style="background: transparent; color: #ffc107; border: 2px solid #ffc107; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const buttons = document.querySelectorAll(`button[onclick="rejectCombination('${combinationId}')"]`);
+            if (buttons.length > 0) {
+                const button = buttons[0];
+                const parentDiv = button.closest('div[style*="background: rgba(255, 255, 255, 0.1)"]');
+                if (parentDiv && !parentDiv.querySelector('.rejection-form')) {
+                    const rejectDiv = document.createElement('div');
+                    rejectDiv.className = 'rejection-form';
+                    rejectDiv.innerHTML = rejectHtml;
+                    parentDiv.appendChild(rejectDiv);
+                    
+                    setTimeout(() => {
+                        rejectDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            }
+        }
+
+        function submitRejection(combinationId) {
+            const selectElement = document.getElementById(`reject-reason-${combinationId}`);
+            if (!selectElement || selectElement.value === '') {
+                showNotification('Por favor selecciona una razón', 'error');
+                return;
+            }
+
+            const reasons = [
+                "Los colores no combinan bien",
+                "El estilo es muy formal para mi gusto",
+                "El estilo es muy casual para mi gusto", 
+                "Esta combinación no refleja mi personalidad",
+                "No me siento cómodo/a con este outfit"
+            ];
+
+            const selectedReason = reasons[selectElement.value];
+            
+            sendFeedbackToBackend(combinationId, 'no', selectedReason);
+            
+            showNotification('Gracias por tu feedback. La IA aprenderá de tus preferencias', 'success');
+            
+            const rejectForm = document.querySelector('.rejection-form');
+            if (rejectForm) {
+                rejectForm.remove();
+            }
+        }
+
+        function cancelRejection(combinationId) {
+            const rejectForm = document.querySelector('.rejection-form');
+            if (rejectForm) {
+                rejectForm.remove();
+            }
+        }
+
+        // Función para enviar feedback al backend
+        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
+            if (!currentUser || !currentUser.email) {
+                console.error('Usuario no loggeado');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('user_email', currentUser.email);
+                formData.append('combination_id', combinationId);
+                formData.append('accepted', accepted);
+                if (rejectionReason) {
+                    formData.append('rejection_reason', rejectionReason);
+                }
+
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                console.log('Feedback enviado exitosamente');
+            } catch (error) {
+                console.error('Error enviando feedback:', error);
+            }
+        }
+
         // Show notification mejorado
         function showNotification(message, type = 'info') {
             console.log(`[${type.toUpperCase()}] ${message}`);
@@ -1779,17 +1938,14 @@
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
-
+            
             document.body.appendChild(notification);
-
+            
             setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.3s ease forwards';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 5000);
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 4000);
         }
 
         // Initialize mejorado
@@ -1798,12 +1954,10 @@
             
             updateAuthUI();
             
-            // Inicializar labels de upload
             Object.keys(FILE_LIMITS).forEach(type => {
                 updateUploadLabel(type);
             });
             
-            // Esperar a que Google se cargue antes de inicializar
             const checkGoogleLoaded = () => {
                 if (typeof google !== 'undefined' && google.accounts) {
                     initializeGoogleAuth();
@@ -1813,10 +1967,8 @@
                 }
             };
             
-            // Empezar a verificar después de 1 segundo
             setTimeout(checkGoogleLoaded, 1000);
             
-            // Animar barras de impacto
             setTimeout(() => {
                 const impactBars = document.querySelectorAll('.impact-fill');
                 impactBars.forEach(bar => {
@@ -1825,7 +1977,6 @@
                 });
             }, 2000);
             
-            // Mostrar notificación de bienvenida
             setTimeout(() => {
                 showNotification('Bienvenido a I Love Reuse AI', 'success');
             }, 2000);
