@@ -871,6 +871,268 @@
             to { transform: rotate(360deg); }
         }
 
+        /* NUEVOS ESTILOS PARA POP-UPS */
+        /* Pop-up de Login */
+        .login-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #1b5e20 100%);
+            border-radius: 25px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideInUp 0.4s ease;
+            color: white;
+        }
+
+        .login-popup h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ffc107;
+        }
+
+        .login-popup p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .login-popup ul {
+            text-align: left;
+            margin: 1rem 0;
+            opacity: 0.9;
+        }
+
+        .login-popup-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .popup-google-btn {
+            background: white;
+            color: #333;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+        }
+
+        .popup-google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup-cancel-btn {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid white;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .popup-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Pop-up de Validación de Ropa */
+        .validation-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10002;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .validation-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #d32f2f 0%, #f44336 50%, #d32f2f 100%);
+            border-radius: 25px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideInUp 0.4s ease;
+            color: white;
+        }
+
+        .validation-popup h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ffeb3b;
+        }
+
+        .validation-popup p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .validation-popup ul {
+            text-align: left;
+            margin: 1rem 0;
+        }
+
+        .validation-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffeb3b;
+        }
+
+        .validation-details strong {
+            color: #ffeb3b;
+        }
+
+        .popup-ok-btn {
+            background: white;
+            color: #d32f2f;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-ok-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #ffeb3b;
+        }
+
+        /* Loading overlay para validación */
+        .validation-loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10003;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #00bcd4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        .loading-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Indicadores de estado para uploads */
+        .status-indicator {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .status-validating {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { 
+                opacity: 0;
+                transform: translate(-50%, -30%) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
         /* Responsive Design */
         @media (max-width: 992px) {
             .nav-center {
@@ -957,6 +1219,12 @@
             .footer-content {
                 grid-template-columns: 1fr;
                 text-align: center;
+            }
+
+            .login-popup, .validation-popup {
+                margin: 1rem;
+                max-width: none;
+                width: calc(100% - 2rem);
             }
         }
 
@@ -1203,7 +1471,7 @@
                     <svg width="18" height="18" viewBox="0 0 18 18">
                         <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
                         <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                        <path fill="#FBBC4" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
+                        <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
                         <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
                     </svg>
                     Acceder con Google
@@ -1221,6 +1489,7 @@
                         </label>
                         <input type="file" id="top-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('top', this)">
                         <div id="top-preview" class="preview-area"></div>
+                        <div id="top-status" class="status-indicator"></div>
                     </div>
                     
                     <div class="upload-item">
@@ -1232,6 +1501,7 @@
                         </label>
                         <input type="file" id="bottom-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottom', this)">
                         <div id="bottom-preview" class="preview-area"></div>
+                        <div id="bottom-status" class="status-indicator"></div>
                     </div>
                     
                     <div class="upload-item">
@@ -1243,6 +1513,7 @@
                         </label>
                         <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('shoes', this)">
                         <div id="shoes-preview" class="preview-area"></div>
+                        <div id="shoes-status" class="status-indicator"></div>
                     </div>
                 </div>
                 
@@ -1346,6 +1617,63 @@
             <p>&copy; 2023 AI love reuse. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <!-- Pop-up de Login -->
+    <div id="loginPopup" class="login-popup-overlay">
+        <div class="login-popup">
+            <h3>🔐 Acceso Requerido</h3>
+            <p>Para subir y analizar tus prendas de ropa, necesitas iniciar sesión con tu cuenta de Gmail.</p>
+            <p><strong>¿Por qué necesitas loggearte?</strong></p>
+            <ul style="text-align: left; margin: 1rem 0; opacity: 0.9;">
+                <li>Proteger tu privacidad y tus imágenes</li>
+                <li>Personalizar las recomendaciones de IA</li>
+                <li>Guardar tus preferencias de estilo</li>
+            </ul>
+            <div class="login-popup-buttons">
+                <button class="popup-google-btn" onclick="loginWithGoogle()">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
+                        <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
+                        <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
+                    </svg>
+                    Acceder con Gmail
+                </button>
+                <button class="popup-cancel-btn" onclick="closeLoginPopup()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up de Validación de Ropa -->
+    <div id="validationPopup" class="validation-overlay">
+        <div class="validation-popup">
+            <h3>⚠️ Imagen No Válida</h3>
+            <p id="validationMessage">La imagen no parece ser una prenda de ropa.</p>
+            <div class="validation-details" id="validationDetails">
+                <!-- Los detalles se llenarán dinámicamente -->
+            </div>
+            <p><strong>Por favor, sube una foto clara de:</strong></p>
+            <ul style="text-align: left; margin: 1rem 0;">
+                <li>Parte superior: camisas, blusas, suéteres, chaquetas</li>
+                <li>Parte inferior: pantalones, faldas, shorts</li>
+                <li>Calzado: zapatos, sneakers, botas, sandalias</li>
+            </ul>
+            <button class="popup-ok-btn" onclick="closeValidationPopup()">
+                Entendido, subir otra imagen
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading overlay para validación -->
+    <div id="validationLoading" class="validation-loading">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Analizando imagen con IA...</div>
+            <div class="loading-subtext">Verificando que sea una prenda de ropa</div>
+        </div>
+    </div>
 
     <script>
         // Google OAuth Configuration
@@ -1480,6 +1808,9 @@
                 
                 showNotification(`Bienvenido ${currentUser.given_name || currentUser.name}`, 'success');
                 
+                // Cerrar el pop-up de login si estaba abierto
+                closeLoginPopup();
+                
             } catch (error) {
                 console.error('Error procesando login de Google:', error);
                 showNotification('Error procesando login: ' + error.message, 'error');
@@ -1539,6 +1870,8 @@
             ['top', 'bottom', 'shoes'].forEach(type => {
                 const preview = document.getElementById(`${type}-preview`);
                 if (preview) preview.innerHTML = '';
+                const status = document.getElementById(`${type}-status`);
+                if (status) status.style.display = 'none';
                 updateUploadLabel(type);
             });
             
@@ -1580,9 +1913,17 @@
             }
         }
 
-        // File upload handling
+        // NUEVA FUNCIÓN MEJORADA: File upload handling con pop-ups
         async function handleFileUpload(type, input) {
             const files = Array.from(input.files);
+            
+            // 1. VERIFICAR LOGIN PRIMERO - Mostrar pop-up si no está loggeado
+            if (!isLoggedIn) {
+                showLoginPopup();
+                input.value = ''; // Limpiar el input
+                return;
+            }
+
             const preview = document.getElementById(`${type}-preview`);
             const currentCount = uploadedFiles[type].length;
             const maxFiles = FILE_LIMITS[type];
@@ -1590,11 +1931,13 @@
             const availableSlots = maxFiles - currentCount;
             if (files.length > availableSlots) {
                 showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${type}. Máximo: ${maxFiles}`, 'error');
+                input.value = '';
                 return;
             }
             
             for (let file of files) {
                 try {
+                    // 2. VALIDACIONES BÁSICAS
                     if (!file.type.startsWith('image/')) {
                         showNotification('Solo se permiten archivos de imagen', 'error');
                         continue;
@@ -1604,48 +1947,230 @@
                         showNotification('La imagen es muy grande. Máximo 10MB', 'error');
                         continue;
                     }
+
+                    // 3. VALIDACIÓN CON IA - NUEVA FUNCIONALIDAD
+                    showStatus(type, 'Validando imagen con IA...', 'validating');
+                    showValidationLoading();
+
+                    const validationResult = await validateClothingWithBackend(file);
                     
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imageContainer = document.createElement('div');
-                        imageContainer.style.position = 'relative';
-                        imageContainer.style.display = 'inline-block';
-                        imageContainer.style.margin = '0.25rem';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'preview-image';
-                        img.title = `${type} - ${file.name}`;
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-image';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.title = 'Eliminar imagen';
-                        removeBtn.onclick = () => {
-                            imageContainer.remove();
-                            const fileIndex = uploadedFiles[type].indexOf(file);
-                            if (fileIndex > -1) {
-                                uploadedFiles[type].splice(fileIndex, 1);
-                            }
-                            updateUploadLabel(type);
-                        };
-                        
-                        imageContainer.appendChild(img);
-                        imageContainer.appendChild(removeBtn);
-                        preview.appendChild(imageContainer);
-                    };
-                    reader.readAsDataURL(file);
-                    
-                    uploadedFiles[type].push(file);
+                    hideValidationLoading();
+
+                    if (validationResult.isValid) {
+                        // Imagen válida - procesar y mostrar
+                        await processValidImage(file, type);
+                        showStatus(type, '✅ Imagen válida - Prenda detectada correctamente', 'success');
+                    } else {
+                        // Imagen no válida - mostrar pop-up de error
+                        showValidationPopup(validationResult);
+                        showStatus(type, '❌ Imagen rechazada - No es una prenda válida', 'error');
+                    }
                     
                 } catch (error) {
+                    hideValidationLoading();
                     console.error('Error procesando archivo:', error);
-                    showNotification(`Error procesando ${file.name}`, 'error');
+                    showStatus(type, `Error procesando imagen: ${error.message}`, 'error');
                 }
             }
             
-            updateUploadLabel(type);
             input.value = '';
+        }
+
+        // NUEVA FUNCIÓN: Validación con backend
+        async function validateClothingWithBackend(file) {
+            try {
+                // Simular llamada al backend (aquí pondrías tu endpoint real)
+                
+                // Para desarrollo, simulamos la respuesta
+                const mockValidation = await simulateBackendValidation(file);
+                return mockValidation;
+
+                /* 
+                // Código real para tu backend:
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('user_email', currentUser.email);
+                
+                const response = await fetch('/api/validate-clothing', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${currentUser.token}`
+                    }
+                });
+
+                if (response.status === 422) {
+                    // Error de validación (no es ropa)
+                    const errorData = await response.json();
+                    return {
+                        isValid: false,
+                        message: errorData.detail,
+                        detected: extractDetectedFromMessage(errorData.detail),
+                        confidence: extractConfidenceFromMessage(errorData.detail)
+                    };
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return {
+                    isValid: true,
+                    ...data
+                };
+                */
+
+            } catch (error) {
+                console.error('Error validating clothing:', error);
+                throw error;
+            }
+        }
+
+        // Simulación del backend para desarrollo
+        async function simulateBackendValidation(file) {
+            // Simular delay de la API
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Simulación: algunas imágenes pasan, otras no (60% de probabilidad de ser válida)
+            const isValid = Math.random() > 0.4;
+            
+            if (isValid) {
+                return {
+                    isValid: true,
+                    confidence: 0.85 + Math.random() * 0.15,
+                    category: 'clothing',
+                    subcategory: 'shirt'
+                };
+            } else {
+                // Simular respuesta de error del backend
+                const mockDetections = [
+                    { detected: 'person', score: 0.92 },
+                    { detected: 'furniture', score: 0.78 },
+                    { detected: 'food', score: 0.71 },
+                    { detected: 'landscape', score: 0.65 },
+                    { detected: 'animal', score: 0.58 }
+                ];
+                
+                const randomDetection = mockDetections[Math.floor(Math.random() * mockDetections.length)];
+                
+                return {
+                    isValid: false,
+                    detected: randomDetection.detected,
+                    confidence: randomDetection.score,
+                    message: `La foto no parece ser una prenda ni un outfit (detectado: '${randomDetection.detected}', score ${randomDetection.score.toFixed(2)}). Sube una prenda (parte superior, inferior o calzado).`
+                };
+            }
+        }
+
+        // NUEVA FUNCIÓN: Procesar imagen válida
+        async function processValidImage(file, type) {
+            const reader = new FileReader();
+            return new Promise((resolve) => {
+                reader.onload = function(e) {
+                    const preview = document.getElementById(`${type}-preview`);
+                    
+                    const imageContainer = document.createElement('div');
+                    imageContainer.style.position = 'relative';
+                    imageContainer.style.display = 'inline-block';
+                    imageContainer.style.margin = '0.25rem';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-image';
+                    img.title = `${type} - ${file.name}`;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.title = 'Eliminar imagen';
+                    removeBtn.onclick = () => {
+                        imageContainer.remove();
+                        const fileIndex = uploadedFiles[type].indexOf(file);
+                        if (fileIndex > -1) {
+                            uploadedFiles[type].splice(fileIndex, 1);
+                        }
+                        updateUploadLabel(type);
+                    };
+                    
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(removeBtn);
+                    preview.appendChild(imageContainer);
+                    
+                    uploadedFiles[type].push(file);
+                    updateUploadLabel(type);
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Funciones auxiliares para extraer datos del mensaje de error del backend
+        function extractDetectedFromMessage(message) {
+            const match = message.match(/detectado: '([^']+)'/);
+            return match ? match[1] : 'desconocido';
+        }
+
+        function extractConfidenceFromMessage(message) {
+            const match = message.match(/score ([\d.]+)/);
+            return match ? parseFloat(match[1]) : 0;
+        }
+
+        // NUEVAS FUNCIONES PARA POP-UPS
+        function showLoginPopup() {
+            document.getElementById('loginPopup').style.display = 'block';
+        }
+
+        function closeLoginPopup() {
+            document.getElementById('loginPopup').style.display = 'none';
+        }
+
+        function showValidationPopup(validationResult) {
+            const popup = document.getElementById('validationPopup');
+            const message = document.getElementById('validationMessage');
+            const details = document.getElementById('validationDetails');
+            
+            message.textContent = validationResult.message;
+            
+            if (validationResult.detected && validationResult.confidence) {
+                details.innerHTML = `
+                    <p><strong>Detectado:</strong> ${validationResult.detected}</p>
+                    <p><strong>Confianza:</strong> ${(validationResult.confidence * 100).toFixed(1)}%</p>
+                    <p><strong>Requerido:</strong> Prenda de ropa (superior, inferior o calzado)</p>
+                `;
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+            }
+            
+            popup.style.display = 'block';
+        }
+
+        function closeValidationPopup() {
+            document.getElementById('validationPopup').style.display = 'none';
+        }
+
+        function showValidationLoading() {
+            document.getElementById('validationLoading').style.display = 'block';
+        }
+
+        function hideValidationLoading() {
+            document.getElementById('validationLoading').style.display = 'none';
+        }
+
+        // NUEVA FUNCIÓN: Mostrar estados en las secciones de upload
+        function showStatus(type, message, status) {
+            const statusDiv = document.getElementById(`${type}-status`);
+            statusDiv.textContent = message;
+            statusDiv.className = `status-indicator status-${status}`;
+            statusDiv.style.display = 'block';
+            
+            // Auto-ocultar después de unos segundos si es éxito
+            if (status === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
         }
 
         function updateUploadLabel(type) {
@@ -1667,7 +2192,7 @@
             }
         }
 
-        // Get AI recommendation
+        // Get AI recommendation (función original mantenida)
         async function getRecommendation() {
             if (!isLoggedIn) {
                 showNotification('Necesitas iniciar sesión primero', 'error');
@@ -1785,202 +2310,4 @@
                             </div>
                         </div>
 
-                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
-                            <p><strong>🎯 Puntuación:</strong> ${percentage}% de compatibilidad</p>
-                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
-                            <p><strong>💬 Recomendación:</strong> ${isBest ? 'Esta es tu mejor combinación. Perfecta para destacar con estilo.' : 'Una excelente opción alternativa para diferentes ocasiones.'}</p>
-                            ${isBest ? '<p><strong>✨ Tip especial:</strong> Esta combinación ha sido seleccionada como la óptima por nuestra IA.</p>' : ''}
-                        </div>
-                        
-                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button onclick="acceptCombination('${result.combination}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                ❤️ Me gusta
-                            </button>
-                            <button onclick="rejectCombination('${result.combination}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                👎 No me convence
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            resultDiv.innerHTML = html;
-            resultDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
-        // Funciones para manejar feedback de combinaciones
-        function acceptCombination(combinationId) {
-            sendFeedbackToBackend(combinationId, 'si', null);
-            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
-        }
-
-        function rejectCombination(combinationId) {
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            let optionsHtml = reasons.map((reason, index) => 
-                `<option value="${index}">${reason}</option>`
-            ).join('');
-
-            const rejectHtml = `
-                <div style="background: rgba(255, 193, 7, 0.15); border: 2px solid #ffc107; border-radius: 15px; padding: 2rem; margin-top: 1rem;">
-                    <h4 style="color: #ffc107; margin-bottom: 1rem;">¿Por qué no te gusta esta combinación?</h4>
-                    <select id="reject-reason-${combinationId}" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #ffc107; background: white; color: #333; font-size: 1rem;">
-                        <option value="">Selecciona una razón...</option>
-                        ${optionsHtml}
-                    </select>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center;">
-                        <button onclick="submitRejection('${combinationId}')" style="background: #ffc107; color: #333; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Enviar feedback
-                        </button>
-                        <button onclick="cancelRejection('${combinationId}')" style="background: transparent; color: #ffc107; border: 2px solid #ffc107; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const buttons = document.querySelectorAll(`button[onclick="rejectCombination('${combinationId}')"]`);
-            if (buttons.length > 0) {
-                const button = buttons[0];
-                const parentDiv = button.closest('div[style*="background: rgba(255, 255, 255, 0.1)"]');
-                if (parentDiv && !parentDiv.querySelector('.rejection-form')) {
-                    const rejectDiv = document.createElement('div');
-                    rejectDiv.className = 'rejection-form';
-                    rejectDiv.innerHTML = rejectHtml;
-                    parentDiv.appendChild(rejectDiv);
-                    
-                    setTimeout(() => {
-                        rejectDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
-            }
-        }
-
-        function submitRejection(combinationId) {
-            const selectElement = document.getElementById(`reject-reason-${combinationId}`);
-            if (!selectElement || selectElement.value === '') {
-                showNotification('Por favor selecciona una razón', 'error');
-                return;
-            }
-
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            const selectedReason = reasons[selectElement.value];
-            
-            sendFeedbackToBackend(combinationId, 'no', selectedReason);
-            
-            showNotification('Gracias por tu feedback. La IA aprenderá de tus preferencias', 'success');
-            
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        function cancelRejection(combinationId) {
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        // Función para enviar feedback al backend
-        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
-            if (!currentUser || !currentUser.email) {
-                console.error('Usuario no loggeado');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('user_email', currentUser.email);
-                formData.append('combination_id', combinationId);
-                formData.append('accepted', accepted);
-                if (rejectionReason) {
-                    formData.append('rejection_reason', rejectionReason);
-                }
-
-                const response = await fetch('/api/feedback', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-
-                console.log('Feedback enviado exitosamente');
-            } catch (error) {
-                console.error('Error enviando feedback:', error);
-            }
-        }
-
-        // Show notification mejorado
-        function showNotification(message, type = 'info') {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 4000);
-        }
-
-        // Initialize mejorado
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, inicializando aplicación...');
-            
-            updateAuthUI();
-            
-            Object.keys(FILE_LIMITS).forEach(type => {
-                updateUploadLabel(type);
-            });
-            
-            const checkGoogleLoaded = () => {
-                if (typeof google !== 'undefined' && google.accounts) {
-                    initializeGoogleAuth();
-                } else {
-                    console.log('Esperando que Google se cargue...');
-                    setTimeout(checkGoogleLoaded, 500);
-                }
-            };
-            
-            setTimeout(checkGoogleLoaded, 1000);
-            
-            setTimeout(() => {
-                const impactBars = document.querySelectorAll('.impact-fill');
-                impactBars.forEach(bar => {
-                    const width = bar.getAttribute('data-width');
-                    bar.style.width = width + '%';
-                });
-            }, 2000);
-            
-            setTimeout(() => {
-                showNotification('Bienvenido a AI love reuse', 'success');
-            }, 2000);
-        });
-    </script>
-</body>
-</html>
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem;
