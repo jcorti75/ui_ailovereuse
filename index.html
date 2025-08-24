@@ -1,2209 +1,881 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI love reuse</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Google OAuth -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #00bcd4;
-            --accent-light: #4dd0e1;
-            --green: #27AE60;
-            --green-dark: #229954;
-            --green-light: #58D68D;
-            --white: #ffffff;
-            --dark: #1a1a2e;
-            --light-gray: #f8f9fa;
+# backend/main.py
+import os, hashlib, io, time
+from typing import List
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
+from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+# ⬇️ IMPORTS PARA SISTEMA DE USUARIOS Y FEEDBACK:
+from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import json
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session, relationship
+from fastapi import Depends
+from pydantic import BaseModel
+
+# ⬇️ CARGAR VARIABLES DEL .env:
+load_dotenv()
+
+# ---------- Config ----------
+_model = None
+
+def get_model():
+    """Cargar modelo solo cuando sea necesario"""
+    global _model
+    if _model is None:
+        print("Cargando modelo...")
+        _model = SentenceTransformer("clip-ViT-B-32")  # Modelo más liviano
+        print("Modelo cargado exitosamente")
+    return _model
+
+ALLOWED = {"image/jpeg", "image/png", "image/jpg", "image/webp", "image/gif",
+           "image/svg+xml", "image/tiff", "image/bmp", "image/x-icon", "image/heic", "image/heif"}
+
+# Aumentar límite a 20MB
+MAX_MB = 20
+
+# CORS configurable por ENV (coma-separado) o default a tu dominio
+_env_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://www.ailovereuse.com,https://ailovereuse.com,http://localhost:3000,http://localhost:5173,http://localhost:8080"
+)
+ALLOWED_ORIGINS = [o.strip() for o in _env_origins.split(",") if o.strip()]
+
+# ---------- Database Config ----------
+DATABASE_URL = "sqlite:///./ailovereuse.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# ---------- Database Models ----------
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    name = Column(String, nullable=True)  # Nombre de Google
+    google_id = Column(String, nullable=True)  # ID de Google
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Integer, default=1)
+
+    # Relaciones
+    history = relationship("UserHistory", back_populates="user")
+    feedback = relationship("UserFeedback", back_populates="user")  # Nueva relación
+
+class UserHistory(Base):
+    __tablename__ = "user_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    plan_type = Column(String, default="Básico")
+    start_date = Column(DateTime, default=datetime.utcnow)
+    recommendations_count = Column(Integer, default=0)
+    outfits_created = Column(Text, default="[]")  # JSON string
+
+    # Relación con usuario
+    user = relationship("User", back_populates="history")
+
+class UserFeedback(Base):
+    """Tabla para almacenar feedback de combinaciones"""
+    __tablename__ = "user_feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    combination_id = Column(String, nullable=False)  # A1, B1, C1, etc.
+    accepted = Column(String, nullable=False)  # 'si' o 'no'
+    rejection_reason = Column(String, nullable=True)  # Solo si accepted = 'no'
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relación con usuario
+    user = relationship("User", back_populates="feedback")
+
+# Crear tablas
+Base.metadata.create_all(bind=engine)
+
+# ---------- Database Dependencies ----------
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# ---------- User Helper Functions ----------
+def get_or_create_user_by_email(db: Session, email: str, name: str = None) -> User:
+    """Obtener usuario existente o crear uno nuevo por email"""
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        # Auto-crear usuario nuevo
+        user = User(
+            email=email,
+            name=name,
+            created_at=datetime.utcnow()
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        # Crear historial inicial
+        history = UserHistory(user_id=user.id)
+        db.add(history)
+        db.commit()
+
+        print(f"✅ Usuario auto-creado: {email}")
+
+    return user
+
+def update_user_stats(db: Session, user_id: int, action_type: str):
+    """Actualizar estadísticas del usuario"""
+    history = db.query(UserHistory).filter(UserHistory.user_id == user_id).first()
+    if not history:
+        # Crear historial si no existe
+        history = UserHistory(user_id=user_id)
+        db.add(history)
+
+    if action_type == 'recommendation':
+        history.recommendations_count += 1
+    elif action_type == 'outfit_created':
+        outfits = json.loads(history.outfits_created)
+        outfits.append({
+            'date': datetime.utcnow().isoformat(),
+            'type': 'outfit_generated'
+        })
+        history.outfits_created = json.dumps(outfits)
+
+    db.commit()
+
+# ---------- Cache y Lifespan ----------
+_cache: dict[str, np.ndarray] = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("🚀 Iniciando ailovereuse...")
+    print("🤖 Pre-calentando IA...")
+
+    # Cargar modelo al startup
+    model = get_model()
+
+    # Hacer inferencia dummy para cargar todo en memoria
+    model.encode("warmup text")
+
+    print("✅ IA lista - ailovereuse preparado para usuarios!")
+    print("🔐 Autenticación: Google Login integrado")
+    print("📊 Base de datos: ailovereuse.db")
+    print("💬 Sistema de feedback: Activado")
+    print("API iniciada")
+
+    yield
+
+    print("API cerrada")
+
+# ---------- App ----------
+if os.getenv("ENVIRONMENT") == "development":
+    ALLOWED_ORIGINS = ["*"]
+
+print("🌐 CORS Origins permitidos:", ALLOWED_ORIGINS)
+
+app = FastAPI(title="I Love Reuse AI - Outfit Recommender", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# ---------- Utilidades ----------
+def _hash(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+def _load_img(b: bytes) -> Image.Image:
+    img = Image.open(io.BytesIO(b)).convert("RGB")
+    try:
+        # Aplicar orientación EXIF si la tiene
+        from PIL import ImageOps
+        img = ImageOps.exif_transpose(img)
+    except Exception:
+        pass
+    return img
+
+def _embed(img: Image.Image) -> np.ndarray:
+    model = get_model()  # ← Cargar solo cuando se necesite
+    e = model.encode([img], convert_to_numpy=True, normalize_embeddings=True)[0]
+    return e
+
+def classify_formality(img: Image.Image) -> str:
+    labels = ["formal outfit", "informal outfit", "dress shoe", "sneaker"]
+    model = get_model()  # ← Cargar solo cuando se necesite
+    txt = model.encode(labels, convert_to_numpy=True, normalize_embeddings=True)
+    v = _embed(img).reshape(1, -1)
+    s = cosine_similarity(v, txt)[0]
+    return "formal" if (s[0] + s[2]) >= (s[1] + s[3]) else "informal"
+
+def combine(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    v = (a + b) / 2.0
+    return v / (np.linalg.norm(v) + 1e-9)
+
+def resize_uploaded_image(image_bytes, size=(128, 128)):
+    img = Image.open(io.BytesIO(image_bytes))
+    img = img.resize(size, Image.Resampling.LANCZOS)
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG', optimize=True)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+# ---------- Zero-shot prompts para "¿es prenda?" ----------
+CLOTHING_LABELS_EN = [
+    "a photo of a piece of clothing", "a photo of clothing", "a photo of an outfit",
+    "a photo of a shirt", "a photo of a blouse", "a photo of a t-shirt",
+    "a photo of a sweater", "a photo of a hoodie", "a photo of pants", "a photo of jeans",
+    "a photo of a skirt", "a photo of shorts", "a photo of a dress",
+    "a photo of a jacket", "a photo of a coat", "a photo of a blazer", "a photo of a parka",
+    "a photo of a pair of shoes", "a photo of sneakers", "a photo of boots",
+    "a photo of heels", "a photo of loafers", "a photo of sandals",
+    "a photo of a handbag", "a photo of a purse", "a photo of a backpack",
+    "a photo of a belt", "a photo of a scarf", "a photo of sunglasses",
+    "a photo of jewelry", "a photo of a wallet", "a photo of socks"
+]
+
+NON_CLOTHING_LABELS_EN = [
+    "a photo of an animal", "a photo of a dog", "a photo of a cat",
+    "a photo of a house", "a photo of a room", "a photo of a window",
+    "a photo of a car", "a photo of a wheel", "a photo of a motorcycle",
+    "a photo of furniture", "a photo of a chair", "a photo of a table",
+    "a photo of food", "a photo of electronics", "a photo of a phone",
+    "a photo of a landscape", "a photo of a city", "a photo of a person portrait"
+]
+
+_text_cache = {"clothing": None, "non_clothing": None}
+
+def _get_text_embs():
+    model = get_model()
+    if _text_cache["clothing"] is None:
+        _text_cache["clothing"] = model.encode(
+            CLOTHING_LABELS_EN, convert_to_numpy=True, normalize_embeddings=True
+        )
+    if _text_cache["non_clothing"] is None:
+        _text_cache["non_clothing"] = model.encode(
+            NON_CLOTHING_LABELS_EN, convert_to_numpy=True, normalize_embeddings=True
+        )
+    return _text_cache["clothing"], _text_cache["non_clothing"]
+
+def is_clothing_image(img: Image.Image, thr: float = 0.30, margin: float = 0.10):
+    """
+    Zero-shot con CLIP para decidir si una imagen es de prenda/accesorio/outfit.
+    thr: similitud mínima con 'ropa' para aceptar.
+    margin: 'ropa' debe superar a 'no-ropa' al menos por este margen.
+    """
+    model = get_model()
+    clothing_embs, non_clothing_embs = _get_text_embs()
+
+    img_emb = model.encode(img, convert_to_numpy=True, normalize_embeddings=True).reshape(1, -1)
+
+    sim_clothing = cosine_similarity(img_emb, clothing_embs)[0]
+    sim_non_clothing = cosine_similarity(img_emb, non_clothing_embs)[0]
+
+    best_clothing = float(np.max(sim_clothing))
+    best_non_clothing = float(np.max(sim_non_clothing))
+    best_label = CLOTHING_LABELS_EN[int(np.argmax(sim_clothing))]
+
+    ok = (best_clothing >= thr) and (best_clothing > best_non_clothing + margin)
+
+    return ok, {
+        "best_clothing_score": round(best_clothing, 3),
+        "best_non_clothing_score": round(best_non_clothing, 3),
+        "predicted_label": best_label if ok else "NOT_CLOTHING"
+    }
+
+# (Opcional) filtro específico para calzado
+FOOTWEAR_LABELS_EN = [
+    "a photo of a pair of shoes", "a photo of sneakers", "a photo of boots",
+    "a photo of heels", "a photo of loafers", "a photo of sandals"
+]
+def is_footwear_image(img: Image.Image, thr: float = 0.30):
+    model = get_model()
+    footwear_embs = model.encode(FOOTWEAR_LABELS_EN, convert_to_numpy=True, normalize_embeddings=True)
+    img_emb = model.encode(img, convert_to_numpy=True, normalize_embeddings=True).reshape(1, -1)
+    sim = cosine_similarity(img_emb, footwear_embs)[0]
+    return (float(np.max(sim)) >= thr)
+
+# ---------- Main Endpoints ----------
+@app.get("/")
+def read_root():
+    return {
+        "message": "I Love Reuse AI - Outfit Recommender funcionando!",
+        "version": "4.0",
+        "auth": "Google Login integrado",
+        "model": "lazy-loaded",
+        "max_file_size": f"{MAX_MB}MB",
+        "database": "SQLite - ailovereuse.db",
+        "feedback_system": "Activo"
+    }
+
+@app.get("/health")
+def health():
+    return {
+        "ok": True,
+        "ts": int(time.time()),
+        "model_loaded": _model is not None,
+        "max_file_size": f"{MAX_MB}MB",
+        "auth_system": "google_integrated",
+        "database": "ailovereuse.db",
+        "features": ["recommendations", "user_tracking", "feedback_system"]
+    }
+
+# ---------- User History Endpoint ----------
+@app.get("/user/history/{email}")
+async def get_user_history_by_email(email: str, db: Session = Depends(get_db)):
+    """Obtener historial de usuario por email (para usuarios loggeados con Google)"""
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        # Si no existe, crear usuario automáticamente
+        user = get_or_create_user_by_email(db, email)
+
+    history = db.query(UserHistory).filter(UserHistory.user_id == user.id).first()
+
+    if not history:
+        # Crear historial si no existe
+        history = UserHistory(user_id=user.id)
+        db.add(history)
+        db.commit()
+        db.refresh(history)
+
+    # Calcular días restantes
+    days_passed = (datetime.utcnow() - history.start_date).days
+    days_remaining = max(0, 30 - days_passed)
+
+    # Obtener estadísticas de feedback
+    total_feedback = db.query(UserFeedback).filter(UserFeedback.user_id == user.id).count()
+    accepted_feedback = db.query(UserFeedback).filter(
+        UserFeedback.user_id == user.id,
+        UserFeedback.accepted == 'si'
+    ).count()
+
+    return {
+        "success": True,
+        "user": {
+            "email": user.email,
+            "name": user.name,
+            "joined": user.created_at.strftime('%d/%m/%Y')
+        },
+        "data": {
+            "start_date": history.start_date.strftime('%d/%m/%Y'),
+            "plan_type": history.plan_type,
+            "days_remaining": days_remaining,
+            "recommendations_count": history.recommendations_count,
+            "outfits_created": json.loads(history.outfits_created),
+            "feedback_given": total_feedback,
+            "acceptance_rate": round(accepted_feedback / max(total_feedback, 1) * 100, 1)
         }
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+# ---------- Classification Endpoint ----------
+@app.post("/classify")
+async def classify(file: UploadFile = File(...)):
+    # Verificar tipo de archivo (case-insensitive)
+    if file.content_type.lower() not in ALLOWED:
+        raise HTTPException(415, f"Tipo de archivo no permitido: {file.content_type}. Por favor sube una imagen válida (JPG, PNG, etc.)")
 
-        body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #1b5e20 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            color: var(--white);
-            min-height: 100vh;
-        }
+    b = await file.read()
+    file_size_mb = len(b) / (1024 * 1024)  # Convertir a MB
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+    if len(b) > MAX_MB * 1024 * 1024:
+        raise HTTPException(413, f"La imagen es muy grande ({file_size_mb:.1f}MB). Por favor sube una foto más pequeña (máximo {MAX_MB}MB)")
 
-        /* Floating Elements */
-        .floating-elements {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.6;
-        }
+    try:
+        img = _load_img(b)
+    except Exception:
+        raise HTTPException(400, "Archivo de imagen inválido. Por favor verifica que sea una imagen válida")
 
-        .floating-item {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.3;
-            animation: float 25s infinite linear;
-        }
-
-        .floating-item:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .floating-item:nth-child(2) { left: 25%; animation-delay: 5s; }
-        .floating-item:nth-child(3) { left: 65%; animation-delay: 10s; }
-        .floating-item:nth-child(4) { left: 85%; animation-delay: 15s; }
-        .floating-item:nth-child(5) { left: 45%; animation-delay: 20s; }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); }
-            100% { transform: translateY(-100px) rotate(360deg); }
-        }
-
-        /* Header */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1rem 5%;
-            background: rgba(102, 126, 234, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .nav-center {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-left: auto;
-            margin-right: 2rem;
-        }
-
-        .nav-pills {
-            display: flex;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            gap: 0.5rem;
-        }
-
-        .nav-pill {
-            padding: 0.7rem 1.5rem;
-            border-radius: 25px;
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .nav-pill:hover, .nav-pill.active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .auth-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .google-login-btn {
-            background: white;
-            color: #333;
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            font-size: 0.9rem;
-        }
-
-        .google-login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .google-login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            padding: 6rem 2rem 4rem;
-        }
-
-        .hero-content {
-            max-width: 900px;
-            animation: fadeInUp 1s ease;
-        }
-
-        .hero-emoji {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: white;
-            line-height: 1.2;
-        }
-
-        .hero-subtitle {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-            font-weight: 600;
-        }
-
-        .hero-description {
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-            opacity: 0.8;
-            line-height: 1.6;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-button {
-            padding: 1.2rem 3rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 4rem;
-            text-decoration: none;
-        }
-
-        .hero-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 188, 212, 0.4);
-        }
-
-        /* Stats Section */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem 1rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
+    # ✅ Validación de prenda/outfit antes de clasificar
+    ok, info = is_clothing_image(img)
+    if not ok:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "NOT_CLOTHING",
+                "message": "La imagen no corresponde a una prenda ni outfit.",
+                "debug": info  # quita 'debug' en producción si no quieres exponer detalles
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Secciones */
-        section {
-            padding: 6rem 5%;
-            position: relative;
-            z-index: 2;
-        }
-
-        .section-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .section-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            margin-bottom: 4rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Impact Section */
-        .impact-section {
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .impact-bars {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: left;
-        }
-
-        .impact-item {
-            margin-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .impact-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .impact-bar {
-            height: 16px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .impact-fill {
-            height: 100%;
-            border-radius: 10px;
-            width: 0;
-            transition: width 1.5s ease-in-out;
-        }
-
-        .impact-item:nth-child(1) .impact-fill {
-            background: linear-gradient(90deg, #ff6b6b, #ff5252);
-        }
-
-        .impact-item:nth-child(2) .impact-fill {
-            background: linear-gradient(90deg, #4ecdc4, #26a69a);
-        }
-
-        .impact-item:nth-child(3) .impact-fill {
-            background: linear-gradient(90deg, #ffd166, #ffb300);
-        }
-
-        .impact-item:nth-child(4) .impact-fill {
-            background: linear-gradient(90deg, #a8e6cf, #66bb6a);
-        }
-
-        /* Features Grid */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2.5rem 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 1.5rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .feature-card p {
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        /* Team Section */
-        .team-members {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-
-        .team-member {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 3rem;
-            border-radius: 25px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .team-member:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-        }
-
-        .member-image {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: white;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .member-info h3 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .member-role {
-            font-size: 1.1rem;
-            color: var(--accent);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .member-description {
-            opacity: 0.8;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-
-        /* Upload Section */
-        .upload-section {
-            display: none;
-        }
-
-        .upload-section.active {
-            display: block;
-        }
-
-        .login-required {
-            background: rgba(255, 193, 7, 0.15);
-            border: 2px solid #ffc107;
-            border-radius: 20px;
-            padding: 3rem 2rem;
-            text-align: center;
-            margin: 2rem 0;
-        }
-
-        .login-required h3 {
-            color: #ffc107;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-
-        .upload-area {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            padding: 4rem 2rem;
-            margin: 2rem 0;
-            backdrop-filter: blur(20px);
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        .upload-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .upload-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem 1.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .upload-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-label {
-            display: block;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border-radius: 25px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-        }
-
-        .file-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3);
-        }
-
-        .preview-area {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 0.5rem;
-            border-radius: 10px;
-        }
-
-        .preview-image {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 15px;
-            border: 2px solid var(--accent);
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .preview-image:hover {
-            transform: scale(1.05);
-            border-color: var(--accent-light);
-            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
-        }
-
-        .remove-image {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff5252;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Footer CTA Section */
-        .footer-cta {
-            background: linear-gradient(135deg, var(--green), var(--green-dark));
-            color: var(--white);
-            padding: 4rem 5%;
-            text-align: center;
-            border-radius: 0;
-            margin: 0;
-            box-shadow: 0 -10px 30px rgba(39, 174, 96, 0.3);
-        }
-
-        .footer-cta h3 {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-        }
-
-        .footer-cta p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-feature {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem 1.5rem;
-            transition: transform 0.3s;
-        }
-
-        .cta-feature:hover {
-            transform: translateY(-5px);
-        }
-
-        .cta-feature i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #FFD166;
-        }
-
-        .cta-feature h4 {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: var(--white);
-        }
-
-        .cta-feature p {
-            font-size: 1rem;
-            margin: 0;
-            opacity: 0.8;
-        }
-
-        .cta-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .btn-primary {
-            background-color: var(--white);
-            color: var(--green);
-            padding: 1rem 2.5rem;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            background-color: #FFD166;
-            color: var(--dark);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--white);
-            padding: 1rem 2.5rem;
-            border: 2px solid var(--white);
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--white);
-            color: var(--green);
-            transform: translateY(-3px);
-        }
-
-        /* Footer */
-        footer {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 3rem 5% 2rem;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            backdrop-filter: blur(20px);
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-column h3 {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: white;
-        }
-
-        .footer-column p, .footer-column a {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.8rem;
-            display: block;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .footer-column a:hover {
-            color: var(--accent);
-            transform: translateX(5px);
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        .social-icons a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-        }
-
-        .social-icons a:hover {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-5px);
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            color: white;
-            font-weight: 600;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideInRight 0.3s ease;
-        }
-
-        .notification.success {
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-        }
-
-        .notification.error {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-        }
-
-        .notification.info {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Popup Modal */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .popup-content {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-            border-radius: 25px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            animation: slideInUp 0.4s ease;
-            color: #333;
-        }
-
-        .popup-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            display: block;
-        }
-
-        .popup-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: #d32f2f;
-        }
-
-        .popup-message {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            color: #555;
-        }
-
-        .popup-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .popup-btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 120px;
-        }
-
-        .popup-btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
-        }
-
-        .popup-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4);
-        }
-
-        .popup-btn-secondary {
-            background: transparent;
-            color: #666;
-            border: 2px solid #ddd;
-        }
-
-        .popup-btn-secondary:hover {
-            background: #f5f5f5;
-            border-color: #ccc;
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #ffffff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .nav-center {
-                flex-direction: column;
-                gap: 1rem;
-                margin-left: 0;
-                margin-right: 0;
-            }
-            
-            .nav-pills {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .nav-pill {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-description {
-                font-size: 1rem;
-            }
-
-            .section-title h2 {
-                font-size: 2rem;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .features-grid,
-            .team-members {
-                grid-template-columns: 1fr;
-            }
-
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-cta h3 {
-                font-size: 1.8rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .preview-image {
-                width: 100px;
-                height: 100px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            header {
-                padding: 1rem 3%;
-            }
-
-            .hero {
-                padding: 5rem 1rem 3rem;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            section {
-                padding: 4rem 3%;
-            }
-
-            .team-member, .feature-card {
-                max-width: 400px;
-                margin: 0 auto;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 1.3rem;
-            }
-
-            .hero {
-                padding: 4rem 1rem 2rem;
-            }
-
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-
-            .hero-description {
-                font-size: 0.95rem;
-            }
-
-            .stat-item {
-                padding: 1.5rem 1rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .section-title h2 {
-                font-size: 1.8rem;
-            }
-
-            .hero-button, .btn-primary, .btn-secondary {
-                padding: 0.8rem 2rem;
-                font-size: 1rem;
-            }
-
-            .footer-cta h3 {
-                font-size: 1.6rem;
-            }
-
-            .footer-cta p {
-                font-size: 1rem;
-            }
-
-            .cta-feature {
-                padding: 1.5rem 1rem;
-            }
-
-            .popup-content {
-                padding: 2rem;
-                margin: 1rem;
-            }
-
-            .popup-title {
-                font-size: 1.5rem;
-            }
-
-            .popup-message {
-                font-size: 1rem;
-            }
-
-            .popup-buttons {
-                flex-direction: column;
-            }
-        }
-
-        /* Scroll animations */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.6s ease;
-        }
-
-        .animate-on-scroll.animated {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    </style>
-</head>
-<body>
-    <div class="floating-elements">
-        <div class="floating-item">👕</div>
-        <div class="floating-item">👗</div>
-        <div class="floating-item">👠</div>
-        <div class="floating-item">🧥</div>
-        <div class="floating-item">👖</div>
-    </div>
-
-    <header>
-        <nav>
-            <div class="logo">
-                <div class="logo-icon">♻️</div>
-                AI love reuse
-            </div>
-            <div class="nav-center">
-                <div class="nav-pills">
-                    <a href="#inicio" class="nav-pill active">
-                        🏠 Inicio
-                    </a>
-                    <a href="#Impacto Ambiental" class="nav-pill">
-                        🌍 Impacto Ambiental
-                    </a>
-                    <a href="#funcionamiento" class="nav-pill">
-                        ⚙️ Cómo funciona
-                    </a>
-                    <a href="#equipo" class="nav-pill">
-                        👥 Equipo
-                    </a>
-                </div>
-                <div class="auth-container">
-                    <button class="google-login-btn" onclick="loginWithGoogle()" id="loginBtn">
-                        <svg width="18" height="18" viewBox="0 0 18 18">
-                            <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
-                            <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                            <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
-                            <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
-                        </svg>
-                        Acceder con Gmail
-                    </button>
-                    
-                    <div class="user-info" id="userInfo">
-                        <img class="user-avatar" id="userAvatar" alt="Usuario">
-                        <span id="userName"></span>
-                        <button onclick="logout()" style="background: transparent; border: 1px solid white; color: white; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <section id="inicio" class="hero">
-        <div class="hero-content">
-            <span class="hero-emoji">♻️👕</span>
-            <h1>Reutiliza tu ropa con IA y minimiza tu Impacto Ambiental</h1>
-            <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
-            <p class="hero-description">Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.</p>
-            
-            <a href="#funcionamiento" class="hero-button">
-                🎯 Ver Cómo Funciona
-            </a>
-            
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-number">15min</span>
-                    <span class="stat-label">Ahorrados cada mañana</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">10s</span>
-                    <span class="stat-label">Para generar outfit</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">25kg</span>
-                    <span class="stat-label">Reduce CO₂ por cada kilo reutilizado</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="Impacto Ambiental" class="impact-section animate-on-scroll">
-        <div class="section-container">
-            <div class="section-title">
-                <h2>🌍 Impacto Ambiental</h2>
-                <p class="section-subtitle">La industria de la moda es una de las más contaminantes. Reutilizar tu ropa tiene un Impacto Ambiental positivo inmediato en el medio ambiente</p>
-            </div>
-            
-            <div class="impact-bars">
-                <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Reducción en consumo de agua</span>
-                        <span>85%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="85"></div>
-                    </div>
-                </div>
-                
-                <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Menos emisiones de CO₂</span>
-                        <span>72%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="72"></div>
-                    </div>
-                </div>
-                
-                <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Reducción residuos textiles</span>
-                        <span>68%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="68"></div>
-                    </div>
-                </div>
-                
-                <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Menos uso de químicos</span>
-                        <span>63%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="63"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="funcionamiento" class="animate-on-scroll">
-        <div class="section-container">
-            <div class="section-title">
-                <h2>⚙️ Cómo Funciona</h2>
-                <p class="section-subtitle">Descubre combinaciones únicas con tu ropa actual en solo tres simples pasos</p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        📱
-                    </div>
-                    <h3>1. Sube tus prendas</h3>
-                    <p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        🤖
-                    </div>
-                    <h3>2. IA genera combinaciones</h3>
-                    <p>Nuestro algoritmo analiza colores, estilos y tendencias para crear outfits únicos</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        ✨
-                    </div>
-                    <h3>3. Recibe sugerencias</h3>
-                    <p>Obtén recomendaciones personalizadas en menos de 10 segundos</p>
-                </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 3rem;">
-                <a href="#upload" class="hero-button">
-                    🚀 Empezar Ahora - Es Gratis
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section id="upload" class="upload-section animate-on-scroll">
-        <div class="section-container">
-            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">✨ Termina con el Drama Matutino</h2>
-            <p style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 2rem;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles que no sabías que existían</p>
-            
-            <div id="loginRequired" class="login-required">
-                <h3>🔐 Inicia sesión para continuar</h3>
-                <p>Accede con Google para usar nuestro algoritmo de IA que revolucionará tus mañanas</p>
-                <button class="google-login-btn" onclick="loginWithGoogle()" style="margin-top: 1rem;">
-                    <svg width="18" height="18" viewBox="0 0 18 18">
-                        <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
-                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                        <path fill="#FBBC4" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
-                        <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
-                    </svg>
-                    Acceder con Google
-                </button>
-            </div>
-
-            <div class="upload-area" id="uploadArea" style="display: none;">
-                <div class="upload-grid">
-                    <div class="upload-item">
-                        <i class="fas fa-tshirt" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
-                        <h4>Parte Superior</h4>
-                        <p>Camisas, blusas, suéteres</p>
-                        <label for="top-upload" class="file-label">
-                            📤 Subir Superiores (máx 3)
-                        </label>
-                        <input type="file" id="top-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('top', this)">
-                        <div id="top-preview" class="preview-area"></div>
-                    </div>
-                    
-                    <div class="upload-item">
-                        <i class="fas fa-user-tie" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
-                        <h4>Parte Inferior</h4>
-                        <p>Pantalones, faldas, shorts</p>
-                        <label for="bottom-upload" class="file-label">
-                            📤 Subir Inferiores (máx 3)
-                        </label>
-                        <input type="file" id="bottom-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottom', this)">
-                        <div id="bottom-preview" class="preview-area"></div>
-                    </div>
-                    
-                    <div class="upload-item">
-                        <i class="fas fa-shoe-prints" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
-                        <h4>Calzado</h4>
-                        <p>Zapatos, sneakers, botas</p>
-                        <label for="shoes-upload" class="file-label">
-                            📤 Subir Zapatos (máx 5)
-                        </label>
-                        <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('shoes', this)">
-                        <div id="shoes-preview" class="preview-area"></div>
-                    </div>
-                </div>
-                
-                <button class="hero-button" onclick="getRecommendation()" style="margin-top: 2rem; font-size: 1.2rem;" id="generateBtn">
-                    🪄 Generar Combinaciones Inteligentes
-                </button>
-                
-                <div id="result" class="results-section"></div>
-            </div>
-        </div>
-    </section>
-
-    <section id="equipo" class="animate-on-scroll">
-        <div class="section-container">
-            <div class="section-title">
-                <h2>👥 Nuestro Equipo</h2>
-                <p class="section-subtitle">Conoce a las personas detrás de AI love reuse</p>
-            </div>
-            
-            <div class="team-members">
-                <div class="team-member">
-                    <div class="member-image">
-                        
-                    </div>
-                    <div class="member-info">
-                        <h3>José Francisco Corti Badia</h3>
-                        <p class="member-role">Founder & CEO</p>
-                        <p class="member-description">Ingeniero Comercial, Diplomado en GenAI U. De Chile 2025 y Diplomado en AI PUC 2022. Experto en Inteligencia Artificial con más de 15 años creando soluciones en distintas industrias.</p>
-                    </div>
-                </div>
-                
-                <div class="team-member">
-                    <div class="member-image">
-                        
-                    </div>
-                    <div class="member-info">
-                        <h3>Paola Andrea Curti Simpson</h3>
-                        <p class="member-role">Directora Creativa</p>
-                        <p class="member-description">Arquitecta, especialista en moda sustentable con amplia experiencia en diseño y sostenibilidad.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer CTA Section -->
-    <section class="footer-cta">
-        <div class="section-container">
-            <h3>🚀 ¡Comienza Ahora!</h3>
-            <p>Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
-            
-            <div class="cta-features">
-                <div class="cta-feature">
-                    <i class="fas fa-gift"></i>
-                    <h4>Gratis</h4>
-                    <p>Sin costo inicial</p>
-                </div>
-                <div class="cta-feature">
-                    <i class="fas fa-clock"></i>
-                    <h4>Instantáneo</h4>
-                    <p>Resultados en 10 segundos</p>
-                </div>
-            </div>
-            
-            <div class="cta-buttons">
-                <a href="#upload" class="btn-primary">
-                    <i class="fas fa-play"></i>
-                    Empezar Gratis
-                </a>
-                <a href="https://wa.me/56912345678" class="btn-secondary" target="_blank">
-                    <i class="fab fa-whatsapp"></i>
-                    Pregúntanos
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3>AI love reuse</h3>
-                <p>Maximiza tu ropa, minimiza tu Impacto Ambiental con nuestra tecnología de inteligencia artificial.</p>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                </div>
-            </div>
-            
-            <div class="footer-column">
-                <h3>Enlaces Rápidos</h3>
-                <a href="#inicio">Inicio</a>
-                <a href="#Impacto Ambiental">Impacto Ambiental</a>
-                <a href="#funcionamiento">Cómo Funciona</a>
-                <a href="#equipo">Nuestro Equipo</a>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; 2023 AI love reuse. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
-    <script>
-        // Google OAuth Configuration
-        const GOOGLE_CLIENT_ID = '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
-
-        // Estado global de la aplicación
-        let isLoggedIn = false;
-        let currentUser = null;
-        let uploadedFiles = {
-            top: [],
-            bottom: [],
-            shoes: []
-        };
-
-        // Configuración de límites por categoría
-        const FILE_LIMITS = {
-            top: 3,
-            bottom: 3,
-            shoes: 5
-        };
-
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
-                    });
+        )
+
+    return {"formality": classify_formality(img)}
+
+# ---------- Recommendation Endpoint (CON GOOGLE AUTH INTEGRADO) ----------
+@app.post("/recommend")
+async def recommend(
+    request: Request,
+    top: UploadFile = File(...),
+    bottom: UploadFile = File(...),
+    shoes: List[UploadFile] = File(...),
+    user_email: str = Form(...),  # 👈 Email del usuario loggeado con Google
+    user_name: str = Form(None),  # 👈 Nombre opcional de Google
+    db: Session = Depends(get_db)
+):
+    """
+    Generar recomendación de outfit.
+
+    Parámetros:
+    - top: Imagen de parte superior
+    - bottom: Imagen de parte inferior
+    - shoes: Lista de imágenes de zapatos
+    - user_email: Email del usuario (obtenido del login de Google)
+    - user_name: Nombre del usuario (opcional, de Google)
+    """
+
+    # Validar email
+    if not user_email or "@" not in user_email:
+        raise HTTPException(400, "Email de usuario requerido y válido")
+
+    # Obtener o crear usuario automáticamente
+    user = get_or_create_user_by_email(db, user_email, user_name)
+
+    # Validar y leer archivos
+    files_all = [("top", top), ("bottom", bottom)] + [(f"shoe[{i}]", s) for i, s in enumerate(shoes)]
+    buffers: dict[str, bytes] = {}
+
+    for name, f in files_all:
+        # Verificar tipo de archivo (case-insensitive)
+        if f.content_type.lower() not in ALLOWED:
+            raise HTTPException(415, f"Tipo de archivo no permitido en {name}: {f.content_type}. Por favor sube una imagen válida (JPG, PNG, etc.)")
+
+        b = await f.read()
+        if not b:
+            raise HTTPException(400, f"El archivo {name} está vacío. Por favor selecciona una imagen válida")
+
+        file_size_mb = len(b) / (1024 * 1024)  # Convertir a MB
+        if len(b) > MAX_MB * 1024 * 1024:
+            raise HTTPException(413, f"La imagen {name} es muy grande ({file_size_mb:.1f}MB). Por favor sube una foto más pequeña (máximo {MAX_MB}MB)")
+
+        # ✅ Validación semántica: debe ser prenda/outfit/accesorio
+        try:
+            _img_tmp = _load_img(b)
+        except Exception:
+            raise HTTPException(400, f"El archivo {name} no es una imagen válida")
+
+        ok, info = is_clothing_image(_img_tmp)
+        if not ok:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "NOT_CLOTHING",
+                    "field": name,  # ej: "top", "bottom", "shoe[0]"
+                    "message": "La imagen no corresponde a una prenda, calzado, accesorio ni outfit.",
+                    "debug": info
                 }
-            });
-        });
+            )
 
-        // Update active nav pill
-        function updateActiveNav() {
-            const sections = ['inicio', 'Impacto Ambiental', 'funcionamiento', 'equipo'];
-            const navPills = document.querySelectorAll('.nav-pill');
-            
-            sections.forEach((section, index) => {
-                const element = document.getElementById(section);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= 100 && rect.bottom >= 100) {
-                        navPills.forEach(pill => pill.classList.remove('active'));
-                        if (navPills[index]) {
-                            navPills[index].classList.add('active');
-                        }
+        # (Opcional) si quieres que 'shoes' solo acepte calzado:
+        if name.startswith("shoe["):
+            if not is_footwear_image(_img_tmp):
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "code": "NOT_FOOTWEAR",
+                        "field": name,
+                        "message": "La imagen en la sección de calzado no parece ser un zapato/zapatilla.",
                     }
-                }
-            });
+                )
+
+        buffers[name] = b
+
+    def get_emb(b: bytes) -> np.ndarray:
+        key = _hash(b)
+        if key not in _cache:
+            _cache[key] = _embed(_load_img(b))
+        return _cache[key]
+
+    e_top = get_emb(buffers["top"])
+    e_bot = get_emb(buffers["bottom"])
+    outfit = combine(e_top, e_bot).reshape(1, -1)
+
+    shoe_keys = [k for k in buffers.keys() if k.startswith("shoe[")]
+    if not shoe_keys:
+        raise HTTPException(400, "Debes enviar al menos una imagen de zapatos")
+
+    shoe_embs = [get_emb(buffers[k]).reshape(1, -1) for k in shoe_keys]
+    sims = [float(cosine_similarity(outfit, e)[0][0]) for e in shoe_embs]
+    order = np.argsort(-np.array(sims)).tolist()
+    k = min(3, len(order))
+
+    results = []
+    for rank, i in enumerate(order[:k], start=1):
+        key = shoe_keys[i]
+        label = classify_formality(_load_img(buffers[key]))
+        results.append({
+            "index": i,
+            "score": sims[i],
+            "formality": label,
+            "combination": rank
+        })
+
+    # 🎯 ACTUALIZAR ESTADÍSTICAS DEL USUARIO
+    update_user_stats(db, user.id, 'recommendation')
+
+    # Obtener contador actualizado
+    history = db.query(UserHistory).filter(UserHistory.user_id == user.id).first()
+    total_recommendations = history.recommendations_count if history else 1
+
+    payload = {
+        "best_index": results[0]["index"] if results else None,
+        "results": results,
+        "user": {
+            "email": user.email,
+            "recommendations_total": total_recommendations
+        }
+    }
+
+    print(f"✅ Recomendación generada para {user.email} (Total: {total_recommendations})")
+    return payload
+
+# ---------- 🎯 Feedback Endpoint ----------
+@app.post("/api/feedback")
+async def store_user_feedback(
+    user_email: str = Form(...),
+    combination_id: str = Form(...),
+    accepted: str = Form(...),  # 'si' o 'no'
+    rejection_reason: str = Form(None),  # opcional
+    db: Session = Depends(get_db)
+):
+    """Almacenar feedback del usuario sobre combinaciones"""
+
+    # Validar email
+    if not user_email or "@" not in user_email:
+        raise HTTPException(400, "Email válido requerido")
+
+    # Validar accepted
+    if accepted not in ['si', 'no']:
+        raise HTTPException(400, "accepted debe ser 'si' o 'no'")
+
+    # Obtener usuario
+    user = db.query(User).filter(User.email == user_email).first()
+    if not user:
+        raise HTTPException(404, "Usuario no encontrado")
+
+    try:
+        # Crear registro de feedback
+        feedback = UserFeedback(
+            user_id=user.id,
+            combination_id=combination_id,
+            accepted=accepted,
+            rejection_reason=rejection_reason if accepted == 'no' else None
+        )
+
+        db.add(feedback)
+        db.commit()
+        db.refresh(feedback)
+
+        print(f"✅ Feedback almacenado: {user.email} - {combination_id} - {accepted}")
+        if rejection_reason:
+            print(f"   Razón de rechazo: {rejection_reason}")
+
+        return {
+            "success": True,
+            "message": "Feedback almacenado correctamente",
+            "feedback_id": feedback.id
         }
 
-        window.addEventListener('scroll', updateActiveNav);
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(500, f"Error almacenando feedback: {str(e)}")
 
-        // Scroll animations
-        function animateOnScroll() {
-            const elements = document.querySelectorAll('.animate-on-scroll');
-            elements.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
-                
-                if (elementTop < window.innerHeight - elementVisible) {
-                    element.classList.add('animated');
-                }
-            });
-        }
+# ---------- Admin Endpoints ----------
+@app.get("/admin/stats")
+async def get_admin_stats(db: Session = Depends(get_db)):
+    """
+    Estadísticas generales de la aplicación para el administrador
+    """
+    try:
+        # Contar usuarios totales
+        total_users = db.query(User).count()
 
-        window.addEventListener('scroll', animateOnScroll);
-        window.addEventListener('load', animateOnScroll);
+        # Usuarios de hoy
+        today = datetime.utcnow().date()
+        today_users = db.query(User).filter(
+            User.created_at >= datetime.combine(today, datetime.min.time())
+        ).count()
 
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(102, 126, 234, 0.3)';
-            } else {
-                header.style.background = 'rgba(102, 126, 234, 0.1)';
+        # Usuarios de esta semana
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        week_users = db.query(User).filter(User.created_at >= week_ago).count()
+
+        # Usuarios activos (con recomendaciones)
+        active_users = db.query(UserHistory).filter(
+            UserHistory.recommendations_count > 0
+        ).count()
+
+        # Total de recomendaciones generadas
+        total_recommendations = db.query(UserHistory).with_entities(
+            db.func.sum(UserHistory.recommendations_count)
+        ).scalar() or 0
+
+        # 🎯 NUEVAS ESTADÍSTICAS DE FEEDBACK
+        total_feedback = db.query(UserFeedback).count()
+        accepted_feedback = db.query(UserFeedback).filter(UserFeedback.accepted == 'si').count()
+        rejected_feedback = db.query(UserFeedback).filter(UserFeedback.accepted == 'no').count()
+
+        # Top 5 usuarios más activos
+        top_users = db.query(User, UserHistory).join(UserHistory).order_by(
+            UserHistory.recommendations_count.desc()
+        ).limit(5).all()
+
+        top_users_data = [
+            {
+                "email": user.email,
+                "name": user.name,
+                "recommendations": history.recommendations_count,
+                "joined": user.created_at.strftime('%d/%m/%Y')
             }
-        });
+            for user, history in top_users
+        ]
 
-        // Initialize Google OAuth mejorado
-        function initializeGoogleAuth() {
-            if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
-                console.error('Google Identity Services no está disponible');
-                showNotification('Error: Servicios de Google no disponibles', 'error');
-                return;
-            }
-
-            try {
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleSignIn,
-                    auto_select: false,
-                    cancel_on_tap_outside: true,
-                    use_fedcm_for_prompt: false
-                });
-
-                console.log('Google OAuth inicializado correctamente');
-            } catch (error) {
-                console.error('Error inicializando Google OAuth:', error);
-                showNotification('Error inicializando autenticación: ' + error.message, 'error');
-            }
+        return {
+            "success": True,
+            "stats": {
+                "total_users": total_users,
+                "today_users": today_users,
+                "week_users": week_users,
+                "active_users": active_users,
+                "total_recommendations": total_recommendations,
+                "avg_recommendations_per_user": round(total_recommendations / max(total_users, 1), 2),
+                # Nuevas estadísticas de feedback
+                "total_feedback": total_feedback,
+                "accepted_feedback": accepted_feedback,
+                "rejected_feedback": rejected_feedback,
+                "acceptance_rate": round(accepted_feedback / max(total_feedback, 1) * 100, 1)
+            },
+            "top_users": top_users_data,
+            "generated_at": datetime.utcnow().strftime('%d/%m/%Y %H:%M')
         }
 
-        // Handle Google Sign-In response mejorado
-        function handleGoogleSignIn(response) {
-            try {
-                console.log('Respuesta de Google recibida:', response);
-                
-                if (!response.credential) {
-                    throw new Error('No se recibió credential de Google');
-                }
+    except Exception as e:
+        raise HTTPException(500, f"Error obteniendo estadísticas: {str(e)}")
 
-                const token = response.credential;
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                
-                console.log('Payload decodificado:', payload);
-                
-                currentUser = {
-                    name: payload.name,
-                    email: payload.email,
-                    picture: payload.picture,
-                    given_name: payload.given_name,
-                    family_name: payload.family_name,
-                    token: token
-                };
-                
-                isLoggedIn = true;
-                updateAuthUI();
-                showUploadSection();
-                
-                showNotification(`Bienvenido ${currentUser.given_name || currentUser.name}`, 'success');
-                
-            } catch (error) {
-                console.error('Error procesando login de Google:', error);
-                showNotification('Error procesando login: ' + error.message, 'error');
-            }
+@app.get("/admin/feedback-stats")
+async def get_feedback_stats(db: Session = Depends(get_db)):
+    """Estadísticas detalladas de feedback para análisis"""
+
+    try:
+        # Total feedback recibido
+        total_feedback = db.query(UserFeedback).count()
+
+        # Aceptados vs rechazados
+        accepted_count = db.query(UserFeedback).filter(UserFeedback.accepted == 'si').count()
+        rejected_count = db.query(UserFeedback).filter(UserFeedback.accepted == 'no').count()
+
+        # Razones más comunes de rechazo
+        rejection_data = db.query(UserFeedback.rejection_reason).filter(
+            UserFeedback.rejection_reason.isnot(None)
+        ).all()
+
+        # Contar razones
+        reason_counts = {}
+        for (reason,) in rejection_data:
+            if reason:  # Verificar que no sea None
+                reason_counts[reason] = reason_counts.get(reason, 0) + 1
+
+        # Top 5 razones de rechazo
+        top_rejection_reasons = sorted(reason_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        # Feedback por combinación
+        combination_stats = db.query(
+            UserFeedback.combination_id,
+            UserFeedback.accepted,
+            db.func.count(UserFeedback.id).label('count')
+        ).group_by(UserFeedback.combination_id, UserFeedback.accepted).all()
+
+        # Procesar estadísticas por combinación
+        combination_data = {}
+        for combo_id, accepted, count in combination_stats:
+            if combo_id not in combination_data:
+                combination_data[combo_id] = {'accepted': 0, 'rejected': 0}
+            if accepted == 'si':
+                combination_data[combo_id]['accepted'] = count
+            else:
+                combination_data[combo_id]['rejected'] = count
+
+        return {
+            "success": True,
+            "stats": {
+                "total_feedback": total_feedback,
+                "accepted_count": accepted_count,
+                "rejected_count": rejected_count,
+                "acceptance_rate": round(accepted_count / max(total_feedback, 1) * 100, 2),
+                "top_rejection_reasons": top_rejection_reasons,
+                "combination_performance": combination_data
+            },
+            "generated_at": datetime.utcnow().strftime('%d/%m/%Y %H:%M')
         }
 
-        // Main login function mejorado
-        async function loginWithGoogle() {
-            const button = document.getElementById('loginBtn');
-            if (!button) return;
-            
-            const originalText = button.innerHTML;
-            button.innerHTML = '<span class="loading"></span> Conectando...';
-            button.disabled = true;
-            
-            try {
-                if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
-                    throw new Error('Servicios de Google no disponibles. Verifica la configuración.');
-                }
+    except Exception as e:
+        raise HTTPException(500, f"Error obteniendo estadísticas de feedback: {str(e)}")
 
-                google.accounts.id.prompt((notification) => {
-                    console.log('Notificación de prompt:', notification);
-                    
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.log('Prompt no mostrado. Razón:', notification.getNotDisplayedReason());
-                        showNotification('No se pudo mostrar el login de Google. Verifica la configuración.', 'error');
-                    }
-                });
+@app.get("/admin/users")
+async def get_all_users(
+    page: int = 1,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos los usuarios con paginación
+    """
+    try:
+        # Offset para paginación
+        offset = (page - 1) * limit
 
-            } catch (error) {
-                console.error('Error en loginWithGoogle:', error);
-                showNotification('Error: ' + error.message, 'error');
-            } finally {
-                setTimeout(() => {
-                    if (!isLoggedIn) {
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
-                }, 5000);
-            }
-        }
+        # Obtener usuarios con su historial
+        users_with_history = db.query(User, UserHistory).join(UserHistory).offset(offset).limit(limit).all()
 
-        // Logout mejorado
-        function logout() {
-            try {
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-                    google.accounts.id.disableAutoSelect();
-                }
-            } catch (error) {
-                console.error('Error en logout de Google:', error);
-            }
-            
-            isLoggedIn = false;
-            currentUser = null;
-            uploadedFiles = { top: [], bottom: [], shoes: [] };
-            
-            ['top', 'bottom', 'shoes'].forEach(type => {
-                const preview = document.getElementById(`${type}-preview`);
-                if (preview) preview.innerHTML = '';
-                updateUploadLabel(type);
-            });
-            
-            updateAuthUI();
-            hideUploadSection();
-            showNotification('Sesión cerrada correctamente', 'info');
-        }
+        users_data = []
+        for user, history in users_with_history:
+            days_passed = (datetime.utcnow() - history.start_date).days
+            days_remaining = max(0, 30 - days_passed)
 
-        function updateAuthUI() {
-            const loginBtn = document.getElementById('loginBtn');
-            const userInfo = document.getElementById('userInfo');
-            
-            if (isLoggedIn && currentUser) {
-                loginBtn.style.display = 'none';
-                userInfo.style.display = 'flex';
-                document.getElementById('userName').textContent = currentUser.name;
-                document.getElementById('userAvatar').src = currentUser.picture;
-            } else {
-                loginBtn.style.display = 'flex';
-                userInfo.style.display = 'none';
-            }
-        }
+            # Obtener estadísticas de feedback del usuario
+            user_feedback_count = db.query(UserFeedback).filter(UserFeedback.user_id == user.id).count()
+            user_accepted = db.query(UserFeedback).filter(
+                UserFeedback.user_id == user.id,
+                UserFeedback.accepted == 'si'
+            ).count()
 
-        function showUploadSection() {
-            document.getElementById('loginRequired').style.display = 'none';
-            document.getElementById('uploadArea').style.display = 'block';
-            document.querySelector('.upload-section').classList.add('active');
-        }
+            users_data.append({
+                "id": user.id,
+                "email": user.email,
+                "name": user.name or "Sin nombre",
+                "joined": user.created_at.strftime('%d/%m/%Y %H:%M'),
+                "recommendations_count": history.recommendations_count,
+                "plan_type": history.plan_type,
+                "days_remaining": days_remaining,
+                "is_active": user.is_active,
+                "feedback_given": user_feedback_count,
+                "acceptance_rate": round(user_accepted / max(user_feedback_count, 1) * 100, 1)
+            })
 
-        function hideUploadSection() {
-            document.getElementById('loginRequired').style.display = 'block';
-            document.getElementById('uploadArea').style.display = 'none';
-            document.querySelector('.upload-section').classList.remove('active');
-            
-            const resultDiv = document.getElementById('result');
-            if (resultDiv) {
-                resultDiv.innerHTML = '';
-                resultDiv.style.display = 'none';
-            }
-        }
+        # Total de usuarios para paginación
+        total_users = db.query(User).count()
+        total_pages = (total_users + limit - 1) // limit
 
-        // Función para validar si la imagen es de ropa (simulada)
-        async function validateClothingImage(file) {
-            // Simulación de validación - en la realidad usarías una API de IA para detectar si es ropa
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Simulamos la detección basándonos en el nombre del archivo o características
-                    const fileName = file.name.toLowerCase();
-                    const invalidKeywords = ['dog', 'cat', 'perro', 'gato', 'animal', 'food', 'comida', 'landscape', 'paisaje', 'car', 'auto'];
-                    
-                    // Si el nombre tiene palabras que indican que no es ropa, lo rechazamos
-                    const hasInvalidKeyword = invalidKeywords.some(keyword => fileName.includes(keyword));
-                    
-                    // Simulamos una probabilidad aleatoria de detección (70% válido, 30% inválido para demostración)
-                    const isValidByChance = Math.random() > 0.3;
-                    
-                    // Si tiene keyword inválido O falla la validación aleatoria, es inválido
-                    resolve(!hasInvalidKeyword && isValidByChance);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Función para mostrar popup de imagen inválida
-        function showInvalidImagePopup(title, message, redirectToLogin = false) {
-            const overlay = document.createElement('div');
-            overlay.className = 'popup-overlay';
-            
-            overlay.innerHTML = `
-                <div class="popup-content">
-                    <span class="popup-icon">⚠️</span>
-                    <h3 class="popup-title">${title}</h3>
-                    <p class="popup-message">${message}</p>
-                    <div class="popup-buttons">
-                        ${redirectToLogin ? 
-                            `<button class="popup-btn popup-btn-primary" onclick="redirectToGmailLogin()">
-                                Iniciar Sesión con Gmail
-                            </button>` : 
-                            `<button class="popup-btn popup-btn-primary" onclick="closeInvalidImagePopup()">
-                                Entendido
-                            </button>`
-                        }
-                        <button class="popup-btn popup-btn-secondary" onclick="closeInvalidImagePopup()">
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(overlay);
-            
-            // Cerrar popup si se hace clic fuera de él
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    closeInvalidImagePopup();
-                }
-            });
-        }
-
-        // Función para cerrar popup
-        function closeInvalidImagePopup() {
-            const popup = document.querySelector('.popup-overlay');
-            if (popup) {
-                popup.remove();
-            }
-        }
-
-        // Función para redirigir al login de Gmail
-        function redirectToGmailLogin() {
-            closeInvalidImagePopup();
-            
-            // Hacer scroll hacia el header donde está el botón de login
-            const header = document.querySelector('header');
-            if (header) {
-                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                // Animar el botón de login para llamar la atención
-                setTimeout(() => {
-                    const loginBtn = document.getElementById('loginBtn');
-                    if (loginBtn) {
-                        loginBtn.style.animation = 'pulse 1s ease-in-out 3';
-                        loginBtn.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.6)';
-                        
-                        setTimeout(() => {
-                            loginBtn.style.animation = '';
-                            loginBtn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-                        }, 3000);
-                    }
-                }, 500);
-            }
-        }
-
-        // File upload handling con validación mejorada
-        async function handleFileUpload(type, input) {
-            // Verificar si el usuario está logueado PRIMERO
-            if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
-                input.value = ''; // Limpiar el input
-                return;
-            }
-
-            const files = Array.from(input.files);
-            const preview = document.getElementById(`${type}-preview`);
-            const currentCount = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            const availableSlots = maxFiles - currentCount;
-            if (files.length > availableSlots) {
-                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${type}. Máximo: ${maxFiles}`, 'error');
-                return;
-            }
-            
-            for (let file of files) {
-                try {
-                    if (!file.type.startsWith('image/')) {
-                        showNotification('Solo se permiten archivos de imagen', 'error');
-                        continue;
-                    }
-                    
-                    if (file.size > 10 * 1024 * 1024) {
-                        showNotification('La imagen es muy grande. Máximo 10MB', 'error');
-                        continue;
-                    }
-
-                    // Validar que la imagen sea válida para outfit
-                    const isValidImage = await validateClothingImage(file);
-                    if (!isValidImage) {
-                        showInvalidImagePopup('Imagen no válida detectada', 'Por favor sube solo fotos de ropa, zapatos o accesorios. No se permiten fotos de mascotas, comida, paisajes u otros objetos.', false);
-                        continue;
-                    }
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imageContainer = document.createElement('div');
-                        imageContainer.style.position = 'relative';
-                        imageContainer.style.display = 'inline-block';
-                        imageContainer.style.margin = '0.25rem';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'preview-image';
-                        img.title = `${type} - ${file.name}`;
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-image';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.title = 'Eliminar imagen';
-                        removeBtn.onclick = () => {
-                            imageContainer.remove();
-                            const fileIndex = uploadedFiles[type].indexOf(file);
-                            if (fileIndex > -1) {
-                                uploadedFiles[type].splice(fileIndex, 1);
-                            }
-                            updateUploadLabel(type);
-                        };
-                        
-                        imageContainer.appendChild(img);
-                        imageContainer.appendChild(removeBtn);
-                        preview.appendChild(imageContainer);
-                    };
-                    reader.readAsDataURL(file);
-                    
-                    uploadedFiles[type].push(file);
-                    
-                } catch (error) {
-                    console.error('Error procesando archivo:', error);
-                    showNotification(`Error procesando ${file.name}`, 'error');
-                }
-            }
-            
-            updateUploadLabel(type);
-            input.value = '';
-        }
-
-        function updateUploadLabel(type) {
-            const label = document.querySelector(`label[for="${type}-upload"]`);
-            const count = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            if (count > 0) {
-                const remaining = maxFiles - count;
-                label.innerHTML = `✅ ${count}/${maxFiles} foto${count > 1 ? 's' : ''} cargada${count > 1 ? 's' : ''}`;
-                
-                if (remaining === 0) {
-                    label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
-                }
-            } else {
-                const typeText = type === 'top' ? 'Superiores' : 
-                                type === 'bottom' ? 'Inferiores' : 'Zapatos';
-                label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
+        return {
+            "success": True,
+            "users": users_data,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total_users": total_users,
+                "total_pages": total_pages,
+                "has_next": page < total_pages,
+                "has_prev": page > 1
             }
         }
 
-        // Get AI recommendation con verificación de login
-        async function getRecommendation() {
-            // Verificar si el usuario está logueado
-            if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
-                return;
-            }
+    except Exception as e:
+        raise HTTPException(500, f"Error obteniendo usuarios: {str(e)}")
 
-            if (uploadedFiles.top.length === 0 || uploadedFiles.bottom.length === 0 || uploadedFiles.shoes.length === 0) {
-                showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
-                return;
-            }
+@app.get("/admin/user/{email}/details")
+async def get_user_details(email: str, db: Session = Depends(get_db)):
+    """
+    Detalles completos de un usuario específico
+    """
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(404, "Usuario no encontrado")
 
-            const button = document.getElementById('generateBtn');
-            const originalText = button.innerHTML;
-            
-            button.innerHTML = '<span class="loading"></span> La IA está analizando...';
-            button.disabled = true;
+        history = db.query(UserHistory).filter(UserHistory.user_id == user.id).first()
 
-            try {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                const generateCombination = () => ({
-                    topIndex: Math.floor(Math.random() * uploadedFiles.top.length),
-                    bottomIndex: Math.floor(Math.random() * uploadedFiles.bottom.length),
-                    shoesIndex: Math.floor(Math.random() * uploadedFiles.shoes.length)
-                });
-                
-                const mockResponse = {
-                    results: [
-                        { 
-                            index: 1, 
-                            combination: "A1", 
-                            score: 0.92, 
-                            formality: "casual",
-                            selection: generateCombination()
-                        },
-                        { 
-                            index: 2, 
-                            combination: "B1", 
-                            score: 0.87, 
-                            formality: "formal",
-                            selection: generateCombination()
-                        },
-                        { 
-                            index: 3, 
-                            combination: "C1", 
-                            score: 0.84, 
-                            formality: "casual",
-                            selection: generateCombination()
-                        }
-                    ],
-                    best_index: 1
-                };
-                
-                displayRecommendations(mockResponse);
-                showNotification('Recomendaciones generadas exitosamente', 'success');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showNotification(`Error generando recomendaciones: ${error.message}`, 'error');
-            } finally {
-                button.innerHTML = originalText;
-                button.disabled = false;
+        # Parsear historial de outfits
+        outfits_created = json.loads(history.outfits_created) if history and history.outfits_created else []
+
+        days_passed = (datetime.utcnow() - history.start_date).days if history else 0
+        days_remaining = max(0, 30 - days_passed) if history else 30
+
+        # 🎯 OBTENER FEEDBACK DEL USUARIO
+        user_feedback = db.query(UserFeedback).filter(UserFeedback.user_id == user.id).all()
+
+        feedback_data = []
+        for feedback in user_feedback[-10:]:  # Últimos 10 feedbacks
+            feedback_data.append({
+                "combination_id": feedback.combination_id,
+                "accepted": feedback.accepted,
+                "rejection_reason": feedback.rejection_reason,
+                "date": feedback.created_at.strftime('%d/%m/%Y %H:%M')
+            })
+
+        feedback_stats = {
+            "total": len(user_feedback),
+            "accepted": len([f for f in user_feedback if f.accepted == 'si']),
+            "rejected": len([f for f in user_feedback if f.accepted == 'no'])
+        }
+
+        return {
+            "success": True,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "google_id": user.google_id,
+                "created_at": user.created_at.strftime('%d/%m/%Y %H:%M'),
+                "is_active": user.is_active
+            },
+            "history": {
+                "plan_type": history.plan_type if history else "Básico",
+                "start_date": history.start_date.strftime('%d/%m/%Y') if history else "N/A",
+                "recommendations_count": history.recommendations_count if history else 0,
+                "days_remaining": days_remaining,
+                "outfits_created": outfits_created,
+                "last_activity": outfits_created[-1]['date'] if outfits_created else "Sin actividad"
+            },
+            "feedback": {
+                "stats": feedback_stats,
+                "recent_feedback": feedback_data
             }
         }
 
-        function displayRecommendations(data) {
-            const resultDiv = document.getElementById('result');
-            const bestIndex = data.best_index;
-            
-            const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
-            
-            let html = '';
-            
-            sortedResults.forEach((result, index) => {
-                const isBest = result.index === bestIndex;
-                const percentage = (result.score * 100).toFixed(1);
-                
-                const topFile = uploadedFiles.top[result.selection.topIndex];
-                const bottomFile = uploadedFiles.bottom[result.selection.bottomIndex];
-                const shoesFile = uploadedFiles.shoes[result.selection.shoesIndex];
-                
-                const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
-                const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
-                const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
-                
-                html += `
-                    <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;">
-                        ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: bold;">⭐ Mejor opción</div>' : ''}
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
-                                ${isBest ? '⭐ ' : ''}Combinación ${result.combination}
-                            </h3>
-                            <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 1.1rem;">${percentage}%</div>
-                        </div>
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Error obteniendo detalles del usuario: {str(e)}")
 
-                        <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
-                            <div style="text-align: center;">
-                                <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Superior">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Superior</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Inferior">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Inferior</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Calzado">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Calzado</p>
-                            </div>
-                        </div>
+@app.delete("/admin/user/{email}")
+async def delete_user(email: str, db: Session = Depends(get_db)):
+    """
+    Eliminar un usuario (solo para casos necesarios)
+    """
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(404, "Usuario no encontrado")
 
-                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
-                            <p><strong>🎯 Puntuación:</strong> ${percentage}% de compatibilidad</p>
-                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
-                            <p><strong>💬 Recomendación:</strong> ${isBest ? 'Esta es tu mejor combinación. Perfecta para destacar con estilo.' : 'Una excelente opción alternativa para diferentes ocasiones.'}</p>
-                            ${isBest ? '<p><strong>✨ Tip especial:</strong> Esta combinación ha sido seleccionada como la óptima por nuestra IA.</p>' : ''}
-                        </div>
-                        
-                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button onclick="acceptCombination('${result.combination}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                ❤️ Me gusta
-                            </button>
-                            <button onclick="rejectCombination('${result.combination}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                👎 No me convence
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            resultDiv.innerHTML = html;
-            resultDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+        # Eliminar feedback del usuario primero
+        db.query(UserFeedback).filter(UserFeedback.user_id == user.id).delete()
+
+        # Eliminar historial
+        db.query(UserHistory).filter(UserHistory.user_id == user.id).delete()
+
+        # Eliminar usuario
+        db.delete(user)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"Usuario {email} eliminado exitosamente"
         }
 
-        // Funciones para manejar feedback de combinaciones
-        function acceptCombination(combinationId) {
-            sendFeedbackToBackend(combinationId, 'si', null);
-            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
-        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(500, f"Error eliminando usuario: {str(e)}")
 
-        function rejectCombination(combinationId) {
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            let optionsHtml = reasons.map((reason, index) => 
-                `<option value="${index}">${reason}</option>`
-            ).join('');
-
-            const rejectHtml = `
-                <div style="background: rgba(255, 193, 7, 0.15); border: 2px solid #ffc107; border-radius: 15px; padding: 2rem; margin-top: 1rem;">
-                    <h4 style="color: #ffc107; margin-bottom: 1rem;">¿Por qué no te gusta esta combinación?</h4>
-                    <select id="reject-reason-${combinationId}" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #ffc107; background: white; color: #333; font-size: 1rem;">
-                        <option value="">Selecciona una razón...</option>
-                        ${optionsHtml}
-                    </select>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center;">
-                        <button onclick="submitRejection('${combinationId}')" style="background: #ffc107; color: #333; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Enviar feedback
-                        </button>
-                        <button onclick="cancelRejection('${combinationId}')" style="background: transparent; color: #ffc107; border: 2px solid #ffc107; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const buttons = document.querySelectorAll(`button[onclick="rejectCombination('${combinationId}')"]`);
-            if (buttons.length > 0) {
-                const button = buttons[0];
-                const parentDiv = button.closest('div[style*="background: rgba(255, 255, 255, 0.1)"]');
-                if (parentDiv && !parentDiv.querySelector('.rejection-form')) {
-                    const rejectDiv = document.createElement('div');
-                    rejectDiv.className = 'rejection-form';
-                    rejectDiv.innerHTML = rejectHtml;
-                    parentDiv.appendChild(rejectDiv);
-                    
-                    setTimeout(() => {
-                        rejectDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
-            }
-        }
-
-        function submitRejection(combinationId) {
-            const selectElement = document.getElementById(`reject-reason-${combinationId}`);
-            if (!selectElement || selectElement.value === '') {
-                showNotification('Por favor selecciona una razón', 'error');
-                return;
-            }
-
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            const selectedReason = reasons[selectElement.value];
-            
-            sendFeedbackToBackend(combinationId, 'no', selectedReason);
-            
-            showNotification('Gracias por tu feedback. La IA aprenderá de tus preferencias', 'success');
-            
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        function cancelRejection(combinationId) {
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        // Función para enviar feedback al backend
-        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
-            if (!currentUser || !currentUser.email) {
-                console.error('Usuario no loggeado');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('user_email', currentUser.email);
-                formData.append('combination_id', combinationId);
-                formData.append('accepted', accepted);
-                if (rejectionReason) {
-                    formData.append('rejection_reason', rejectionReason);
-                }
-
-                const response = await fetch('/api/feedback', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-
-                console.log('Feedback enviado exitosamente');
-            } catch (error) {
-                console.error('Error enviando feedback:', error);
-            }
-        }
-
-        // Show notification mejorado
-        function showNotification(message, type = 'info') {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 4000);
-        }
-
-        // Initialize mejorado
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, inicializando aplicación...');
-            
-            updateAuthUI();
-            
-            Object.keys(FILE_LIMITS).forEach(type => {
-                updateUploadLabel(type);
-            });
-            
-            const checkGoogleLoaded = () => {
-                if (typeof google !== 'undefined' && google.accounts) {
-                    initializeGoogleAuth();
-                } else {
-                    console.log('Esperando que Google se cargue...');
-                    setTimeout(checkGoogleLoaded, 500);
-                }
-            };
-            
-            setTimeout(checkGoogleLoaded, 1000);
-            
-            setTimeout(() => {
-                const impactBars = document.querySelectorAll('.impact-fill');
-                impactBars.forEach(bar => {
-                    const width = bar.getAttribute('data-width');
-                    bar.style.width = width + '%';
-                });
-            }, 2000);
-            
-            setTimeout(() => {
-                showNotification('Bienvenido a AI love reuse', 'success');
-            }, 2000);
-        });
-    </script>
-</body>
-</html>
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", "8000"))  # Default 8000, configurable
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
