@@ -1484,7 +1484,33 @@
             bottom: 3,
             shoes: 5
         };
-
+        // Función para convertir errores técnicos del backend en mensajes amigables
+        function getFriendlyErrorMessage(backendError) {
+            const errorString = backendError.toLowerCase();
+            
+            if (errorString.includes('low_clothing_confidence')) {
+                return 'No pudimos identificar ropa en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
+            }
+            
+            if (errorString.includes('no_clothing_detected')) {
+                return 'Esta imagen no parece contener ropa. Asegúrate de fotografiar camisas, pantalones, zapatos, etc.';
+            }
+            
+            if (errorString.includes('poor_image_quality')) {
+                return 'La calidad de la imagen no es suficiente. Intenta con mejor iluminación y más cercanía a la prenda.';
+            }
+            
+            if (errorString.includes('multiple_items')) {
+                return 'Detectamos varios elementos en la imagen. Fotografía solo una prenda por imagen.';
+            }
+            
+            if (errorString.includes('invalid_format')) {
+                return 'El formato de la imagen no es compatible. Usa JPG, PNG o similar.';
+            }
+            
+            // Si no coincide con ningún patrón conocido, usar mensaje genérico
+            return 'Esta imagen no es adecuada para el análisis de moda. Intenta con una foto clara de una prenda individual.';
+        }
         // Agregar esta función después de const FILE_LIMITS = {...};
         async function validateClothingImage(file) {
             try {
