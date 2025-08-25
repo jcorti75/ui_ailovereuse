@@ -1489,7 +1489,7 @@
             const errorString = backendError.toLowerCase();
             
             if (errorString.includes('low_clothing_confidence')) {
-                return 'No pudimos identificar ropa en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
+                return 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
             }
             
             if (errorString.includes('no_clothing_detected')) {
