@@ -1954,7 +1954,11 @@
         
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.detail?.message || `Error ${response.status}: ${response.statusText}`);
+                    const backendMessage = errorData.detail?.message || `Error ${response.status}: ${response.statusText}`;
+                    
+                    // AQUÍ ESTÁ EL CAMBIO: convertir mensaje técnico a mensaje amigable
+                    const friendlyMessage = getFriendlyErrorMessage(backendMessage);
+                    throw new Error(friendlyMessage);
                 }
         
                 const data = await response.json();
