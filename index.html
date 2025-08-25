@@ -1698,29 +1698,6 @@
             }
         }
 
-        // Función para validar si la imagen es de ropa (simulada)
-        async function validateClothingImage(file) {
-            // Simulación de validación - en la realidad usarías una API de IA para detectar si es ropa
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Simulamos la detección basándonos en el nombre del archivo o características
-                    const fileName = file.name.toLowerCase();
-                    const invalidKeywords = ['dog', 'cat', 'perro', 'gato', 'animal', 'food', 'comida', 'landscape', 'paisaje', 'car', 'auto'];
-                    
-                    // Si el nombre tiene palabras que indican que no es ropa, lo rechazamos
-                    const hasInvalidKeyword = invalidKeywords.some(keyword => fileName.includes(keyword));
-                    
-                    // Simulamos una probabilidad aleatoria de detección (70% válido, 30% inválido para demostración)
-                    const isValidByChance = Math.random() > 0.3;
-                    
-                    // Si tiene keyword inválido O falla la validación aleatoria, es inválido
-                    resolve(!hasInvalidKeyword && isValidByChance);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
         // Función para mostrar popup de imagen inválida
         function showInvalidImagePopup(title, message, redirectToLogin = false) {
             const overlay = document.createElement('div');
