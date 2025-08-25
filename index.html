@@ -1821,7 +1821,7 @@
                     // Validar que la imagen sea válida para outfit (FUNCIÓN CORREGIDA)
                     const isValidImage = await validateClothingImage(file);
                     if (!isValidImage) {
-                        showNotification(`Error procesando ${file.name}. Intenta con otra imagen.`, 'error');
+                        showNotification(`No pudimos identificar ropa clara en esta foto. Intenta con una imagen más nítida de la prenda sobre un fondo claro.`, 'error');
                         continue;
                     }
                     
