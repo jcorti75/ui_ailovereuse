@@ -1896,145 +1896,228 @@
                 showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
                 return;
             }
-
+        
             if (uploadedFiles.top.length === 0 || uploadedFiles.bottom.length === 0 || uploadedFiles.shoes.length === 0) {
                 showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
                 return;
             }
-
+        
             const button = document.getElementById('generateBtn');
             const originalText = button.innerHTML;
             
             button.innerHTML = '<span class="loading"></span> La IA está analizando...';
             button.disabled = true;
-
+        
             try {
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                // Crear FormData para enviar al backend REAL
+                const formData = new FormData();
                 
-                const generateCombination = () => ({
-                    topIndex: Math.floor(Math.random() * uploadedFiles.top.length),
-                    bottomIndex: Math.floor(Math.random() * uploadedFiles.bottom.length),
-                    shoesIndex: Math.floor(Math.random() * uploadedFiles.shoes.length)
+                // Agregar datos del usuario
+                formData.append('user_email', currentUser.email);
+                formData.append('user_name', currentUser.name || '');
+                
+                // Agregar SOLO la primera imagen de cada categoría para evitar confusión
+                formData.append('top', uploadedFiles.top[0]);
+                formData.append('bottom', uploadedFiles.bottom[0]);
+                
+                // Agregar TODOS los zapatos (aquí está la clave para múltiples recomendaciones)
+                uploadedFiles.shoes.forEach((file) => {
+                    formData.append('shoes', file);
                 });
+        
+                console.log(`📤 Enviando al backend: 1 superior, 1 inferior, ${uploadedFiles.shoes.length} zapatos`);
+        
+                // Llamada REAL al backend corregido
+                const response = await fetch(`${API_BASE}/recommend`, {
+                    method: 'POST',
+                    body: formData
+                });
+        
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail?.message || `Error ${response.status}: ${response.statusText}`);
+                }
+        
+                const data = await response.json();
                 
-                const mockResponse = {
-                    results: [
-                        { 
-                            index: 1, 
-                            combination: "A1", 
-                            score: 0.92, 
-                            formality: "casual",
-                            selection: generateCombination()
-                        },
-                        { 
-                            index: 2, 
-                            combination: "B1", 
-                            score: 0.87, 
-                            formality: "formal",
-                            selection: generateCombination()
-                        },
-                        { 
-                            index: 3, 
-                            combination: "C1", 
-                            score: 0.84, 
-                            formality: "casual",
-                            selection: generateCombination()
-                        }
-                    ],
-                    best_index: 1
-                };
+                // Verificar que la respuesta tenga el formato esperado
+                if (!data.results || !Array.isArray(data.results)) {
+                    throw new Error('Respuesta inválida del servidor - formato incorrecto');
+                }
                 
-                displayRecommendations(mockResponse);
-                showNotification('Recomendaciones generadas exitosamente', 'success');
+                // Verificar lógica: no deberían haber más recomendaciones que zapatos
+                if (data.results.length > uploadedFiles.shoes.length) {
+                    console.warn(`⚠️ Se recibieron ${data.results.length} recomendaciones para ${uploadedFiles.shoes.length} zapatos`);
+                }
+                
+                console.log('✅ Recomendaciones recibidas del backend:', data);
+                displayRecommendations(data);
+                
+                const numRecs = data.recommendations_shown || data.results.length;
+                showNotification(`${numRecs} recomendación${numRecs > 1 ? 'es' : ''} generada${numRecs > 1 ? 's' : ''} con IA`, 'success');
                 
             } catch (error) {
-                console.error('Error:', error);
-                showNotification(`Error generando recomendaciones: ${error.message}`, 'error');
+                console.error('❌ Error conectando con backend:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+                
+                // Fallback solo para errores de conexión
+                if (error.message.includes('fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
+                    console.log('🔄 Usando datos de respaldo por error de conexión...');
+                    const fallbackResponse = getFallbackRecommendations();
+                    displayRecommendations(fallbackResponse);
+                    showNotification('Modo offline - datos de demostración', 'info');
+                }
+                
             } finally {
                 button.innerHTML = originalText;
                 button.disabled = false;
             }
         }
 
+        // Función de respaldo MEJORADA (solo para emergencias)
+        function getFallbackRecommendations() {
+            // Generar combinaciones basadas en el número REAL de zapatos subidos
+            const numShoes = uploadedFiles.shoes.length;
+            const numRecommendations = Math.min(numShoes, 3); // No más recomendaciones que zapatos
+            
+            console.log(`🎭 Modo fallback: ${numShoes} zapatos → ${numRecommendations} recomendaciones`);
+            
+            const generateRealisticScore = (rank) => {
+                // Scores más realistas y variables (no siempre los mismos)
+                const baseScore = 0.95 - (rank * 0.08) + (Math.random() - 0.5) * 0.08;
+                return Math.max(0.60, Math.min(0.98, baseScore));
+            };
+            
+            const results = [];
+            for (let i = 0; i < numRecommendations; i++) {
+                results.push({
+                    index: i,
+                    combination: `D${i + 1}`, // D = Demo
+                    score: generateRealisticScore(i),
+                    formality: Math.random() > 0.5 ? "casual" : "formal",
+                    selection: {
+                        topIndex: 0, // Siempre la primera
+                        bottomIndex: 0, // Siempre la primera
+                        shoesIndex: i // Zapato específico
+                    }
+                });
+            }
+            
+            return {
+                results: results,
+                best_index: 0,
+                total_shoes_analyzed: numShoes,
+                recommendations_shown: numRecommendations,
+                is_fallback: true,
+                algorithm_version: "demo_fallback"
+            };
+        }
         function displayRecommendations(data) {
-            const resultDiv = document.getElementById('result');
-            const bestIndex = data.best_index;
+        const resultDiv = document.getElementById('result');
+        const bestIndex = data.best_index;
+        
+        // Ordenar por score real (no por índices arbitrarios)
+        const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
+        
+        let html = '';
+        
+        // Mensaje si es modo fallback
+        if (data.is_fallback) {
+            html += `
+                <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                    <h4 style="color: #ffc107; margin-bottom: 0.5rem;">⚡ Modo Demo</h4>
+                    <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">No se pudo conectar con el servidor. Mostrando simulación con tus ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''}</p>
+                </div>
+            `;
+        } else if (data.total_shoes_analyzed) {
+            html += `
+                <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                    <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">🎯 Análisis Completado</h4>
+                    <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">IA analizó ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''} y generó ${data.recommendations_shown} recomendación${data.recommendations_shown > 1 ? 'es' : ''}</p>
+                </div>
+            `;
+        }
+        
+        sortedResults.forEach((result, displayIndex) => {
+            const isBest = result.index === bestIndex || displayIndex === 0;
+            const percentage = (result.score * 100).toFixed(1);
             
-            const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
+            // Usar los índices correctos para las imágenes
+            const topFile = uploadedFiles.top[0]; // Siempre la primera superior
+            const bottomFile = uploadedFiles.bottom[0]; // Siempre la primera inferior
             
-            let html = '';
+            // CORRECCIÓN CRÍTICA: usar el índice correcto del zapato
+            let shoesFile;
+            if (result.selection && typeof result.selection.shoesIndex !== 'undefined') {
+                // Formato del fallback
+                shoesFile = uploadedFiles.shoes[result.selection.shoesIndex];
+            } else {
+                // Formato del backend real
+                shoesFile = uploadedFiles.shoes[result.index] || uploadedFiles.shoes[0];
+            }
             
-            sortedResults.forEach((result, index) => {
-                const isBest = result.index === bestIndex;
-                const percentage = (result.score * 100).toFixed(1);
-                
-                const topFile = uploadedFiles.top[result.selection.topIndex];
-                const bottomFile = uploadedFiles.bottom[result.selection.bottomIndex];
-                const shoesFile = uploadedFiles.shoes[result.selection.shoesIndex];
-                
-                const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
-                const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
-                const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
-                
-                html += `
-                    <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;">
-                        ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: bold;">⭐ Mejor opción</div>' : ''}
+            const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
+            const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
+            const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
+            
+            html += `
+                <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;">
+                    ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: bold;">⭐ Mejor compatibilidad</div>' : ''}
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
+                            ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
+                        </h3>
+                        <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 1.1rem;">${percentage}%</div>
+                    </div>
+    
+                    <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
+                        <div style="text-align: center;">
+                            <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Superior">
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Superior</p>
+                        </div>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
-                                ${isBest ? '⭐ ' : ''}Combinación ${result.combination}
-                            </h3>
-                            <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 1.1rem;">${percentage}%</div>
-                        </div>
-
-                        <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
-                            <div style="text-align: center;">
-                                <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Superior">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Superior</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Prenda Inferior">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Inferior</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Calzado">
-                                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Calzado</p>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
-                            <p><strong>🎯 Puntuación:</strong> ${percentage}% de compatibilidad</p>
-                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
-                            <p><strong>💬 Recomendación:</strong> ${isBest ? 'Esta es tu mejor combinación. Perfecta para destacar con estilo.' : 'Una excelente opción alternativa para diferentes ocasiones.'}</p>
-                            ${isBest ? '<p><strong>✨ Tip especial:</strong> Esta combinación ha sido seleccionada como la óptima por nuestra IA.</p>' : ''}
+                        <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
+                        
+                        <div style="text-align: center;">
+                            <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Inferior">
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Inferior</p>
                         </div>
                         
-                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button onclick="acceptCombination('${result.combination}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                ❤️ Me gusta
-                            </button>
-                            <button onclick="rejectCombination('${result.combination}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                👎 No me convence
-                            </button>
+                        <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
+                        
+                        <div style="text-align: center;">
+                            <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Calzado">
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Zapato ${(result.index || displayIndex) + 1}</p>
                         </div>
                     </div>
-                `;
-            });
-            
-            resultDiv.innerHTML = html;
-            resultDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
+    
+                    <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
+                        <p><strong>🎯 Compatibilidad:</strong> ${percentage}% según análisis de IA</p>
+                        <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
+                        <p><strong>💬 Análisis:</strong> ${isBest ? 'Esta combinación tiene la máxima compatibilidad de colores y estilos.' : 'Excelente alternativa con muy buena armonía visual.'}</p>
+                        ${data.algorithm_version ? `<p><strong>🔬 Algoritmo:</strong> ${data.algorithm_version}</p>` : ''}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <button onclick="acceptCombination('${result.combination || displayIndex}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            ❤️ Me gusta
+                        </button>
+                        <button onclick="rejectCombination('${result.combination || displayIndex}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            👎 No me convence
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
         // Funciones para manejar feedback de combinaciones
         function acceptCombination(combinationId) {
             sendFeedbackToBackend(combinationId, 'si', null);
@@ -2129,7 +2212,7 @@
                 console.error('Usuario no loggeado');
                 return;
             }
-
+        
             try {
                 const formData = new FormData();
                 formData.append('user_email', currentUser.email);
@@ -2138,22 +2221,43 @@
                 if (rejectionReason) {
                     formData.append('rejection_reason', rejectionReason);
                 }
-
-                const response = await fetch('/api/feedback', {
+        
+                const response = await fetch(`${API_BASE}/api/feedback`, {
                     method: 'POST',
                     body: formData
                 });
-
+        
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
-
-                console.log('Feedback enviado exitosamente');
+        
+                const result = await response.json();
+                console.log('✅ Feedback enviado exitosamente:', result);
+                
             } catch (error) {
-                console.error('Error enviando feedback:', error);
+                console.error('❌ Error enviando feedback:', error);
+                showNotification('Error enviando feedback - se guardará localmente', 'error');
+                
+                // Guardar feedback localmente como respaldo
+                const localFeedback = {
+                    combinationId,
+                    accepted,
+                    rejectionReason,
+                    timestamp: new Date().toISOString(),
+                    userEmail: currentUser.email
+                };
+                
+                try {
+                    const savedFeedback = localStorage.getItem('pendingFeedback') || '[]';
+                    const feedbackArray = JSON.parse(savedFeedback);
+                    feedbackArray.push(localFeedback);
+                    localStorage.setItem('pendingFeedback', JSON.stringify(feedbackArray));
+                    console.log('💾 Feedback guardado localmente para envío posterior');
+                } catch (localError) {
+                    console.error('Error guardando feedback localmente:', localError);
+                }
             }
         }
-
         // Show notification mejorado
         function showNotification(message, type = 'info') {
             console.log(`[${type.toUpperCase()}] ${message}`);
