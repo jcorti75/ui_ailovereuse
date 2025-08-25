@@ -83,3 +83,4 @@ async function sendFeedback(combinationId, accepted, rejectionReason = "") {
     console.error("Error feedback:", e);
   }
 }
+
