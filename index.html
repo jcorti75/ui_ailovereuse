@@ -1766,8 +1766,8 @@
                 }, 500);
             }
         }
-
-        // File upload handling con validación mejorada
+        const isValidImage = await validateClothingImage(file);
+        // File upload handling con validación mejorada        
         async function handleFileUpload(type, input) {
             // Verificar si el usuario está logueado PRIMERO
             if (!isLoggedIn) {
@@ -1775,7 +1775,7 @@
                 input.value = ''; // Limpiar el input
                 return;
             }
-
+        
             const files = Array.from(input.files);
             const preview = document.getElementById(`${type}-preview`);
             const currentCount = uploadedFiles[type].length;
@@ -1789,6 +1789,7 @@
             
             for (let file of files) {
                 try {
+                    // Validaciones básicas
                     if (!file.type.startsWith('image/')) {
                         showNotification('Solo se permiten archivos de imagen', 'error');
                         continue;
@@ -1798,16 +1799,33 @@
                         showNotification('La imagen es muy grande. Máximo 10MB', 'error');
                         continue;
                     }
-
-                    // Validar que la imagen sea válida para outfit
+        
+                    // Validar que la imagen sea válida para outfit (FUNCIÓN CORREGIDA)
                     const isValidImage = await validateClothingImage(file);
                     if (!isValidImage) {
-                        showInvalidImagePopup('Imagen no válida detectada', 'Por favor sube solo fotos de ropa, zapatos o accesorios. No se permiten fotos de mascotas, comida, paisajes u otros objetos.', false);
+                        showNotification(`Error procesando ${file.name}. Intenta con otra imagen.`, 'error');
                         continue;
                     }
                     
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
+                    // Procesar la imagen
+                    await processImageFile(file, type, preview);
+                    uploadedFiles[type].push(file);
+                    
+                } catch (error) {
+                    console.error('Error procesando archivo:', error);
+                    showNotification(`Error procesando ${file.name}: ${error.message}`, 'error');
+                }
+            }
+            
+            updateUploadLabel(type);
+            input.value = '';
+        }
+        function processImageFile(file, type, preview) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
                         const imageContainer = document.createElement('div');
                         imageContainer.style.position = 'relative';
                         imageContainer.style.display = 'inline-block';
@@ -1817,6 +1835,11 @@
                         img.src = e.target.result;
                         img.className = 'preview-image';
                         img.title = `${type} - ${file.name}`;
+                        
+                        // Manejar error de carga de imagen
+                        img.onerror = function() {
+                            reject(new Error('No se pudo cargar la imagen'));
+                        };
                         
                         const removeBtn = document.createElement('button');
                         removeBtn.className = 'remove-image';
@@ -1834,21 +1857,20 @@
                         imageContainer.appendChild(img);
                         imageContainer.appendChild(removeBtn);
                         preview.appendChild(imageContainer);
-                    };
-                    reader.readAsDataURL(file);
-                    
-                    uploadedFiles[type].push(file);
-                    
-                } catch (error) {
-                    console.error('Error procesando archivo:', error);
-                    showNotification(`Error procesando ${file.name}`, 'error');
-                }
-            }
-            
-            updateUploadLabel(type);
-            input.value = '';
+                        
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('Error leyendo el archivo'));
+                };
+                
+                reader.readAsDataURL(file);
+            });
         }
-
         function updateUploadLabel(type) {
             const label = document.querySelector(`label[for="${type}-upload"]`);
             const count = uploadedFiles[type].length;
