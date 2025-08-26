@@ -6,1165 +6,423 @@
     <title>AI love reuse</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Google OAuth -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #00bcd4;
-            --accent-light: #4dd0e1;
-            --green: #27AE60;
-            --green-dark: #229954;
-            --green-light: #58D68D;
-            --white: #ffffff;
-            --dark: #1a1a2e;
-            --light-gray: #f8f9fa;
+            --primary: #667eea; --secondary: #764ba2; --accent: #00bcd4; --accent-light: #4dd0e1;
+            --green: #27AE60; --green-dark: #229954; --white: #ffffff; --dark: #1a1a2e;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
+            font-family: 'Poppins', sans-serif; line-height: 1.6;
             background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #1b5e20 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            color: var(--white);
-            min-height: 100vh;
+            background-size: 400% 400%; animation: gradientShift 15s ease infinite;
+            color: var(--white); min-height: 100vh;
         }
 
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Floating Elements */
-        .floating-elements {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.6;
-        }
-
-        .floating-item {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.3;
-            animation: float 25s infinite linear;
-        }
-
-        .floating-item:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .floating-item:nth-child(2) { left: 25%; animation-delay: 5s; }
-        .floating-item:nth-child(3) { left: 65%; animation-delay: 10s; }
-        .floating-item:nth-child(4) { left: 85%; animation-delay: 15s; }
-        .floating-item:nth-child(5) { left: 45%; animation-delay: 20s; }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); }
-            100% { transform: translateY(-100px) rotate(360deg); }
+            0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; }
         }
 
         /* Header */
         header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1rem 5%;
-            background: rgba(102, 126, 234, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
+            position: fixed; top: 0; width: 100%; padding: 1rem 5%;
+            background: rgba(102, 126, 234, 0.1); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 1000;
             transition: all 0.3s ease;
         }
 
         nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            max-width: 1200px; margin: 0 auto;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
+            font-size: 1.5rem; font-weight: 800; color: white;
+            display: flex; align-items: center; gap: 0.8rem;
         }
 
         .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            animation: pulse 2s infinite;
+            width: 45px; height: 45px; background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .nav-center {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-left: auto;
-            margin-right: 2rem;
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
         .nav-pills {
-            display: flex;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            gap: 0.5rem;
+            display: flex; background: rgba(255, 255, 255, 0.1); padding: 0.5rem;
+            border-radius: 50px; backdrop-filter: blur(10px); gap: 0.5rem; margin-right: 2rem;
         }
 
         .nav-pill {
-            padding: 0.7rem 1.5rem;
-            border-radius: 25px;
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
+            padding: 0.7rem 1.5rem; border-radius: 25px; color: white; text-decoration: none;
+            font-weight: 500; transition: all 0.3s ease; font-size: 0.9rem;
         }
 
         .nav-pill:hover, .nav-pill.active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .auth-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            background: rgba(255, 255, 255, 0.2); transform: translateY(-2px);
         }
 
         .google-login-btn {
-            background: white;
-            color: #333;
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            font-size: 0.9rem;
+            background: white; color: #333; padding: 0.8rem 2rem; border: none; border-radius: 50px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex;
+            align-items: center; gap: 0.8rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .google-login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
+        .google-login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); }
 
-        .google-login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .user-info { display: none; align-items: center; gap: 1rem; }
+        .user-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid white; }
 
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 1rem;
-        }
+        /* Sections */
+        section { padding: 6rem 5%; position: relative; z-index: 2; }
+        .section-container { max-width: 1200px; margin: 0 auto; text-align: center; }
+        .section-title h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .section-subtitle { font-size: 1.2rem; opacity: 0.8; margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; }
 
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-
-        /* Hero Section */
+        /* Hero */
         .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            padding: 6rem 2rem 4rem;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 6rem 2rem 4rem;
         }
 
-        .hero-content {
-            max-width: 900px;
-            animation: fadeInUp 1s ease;
-        }
-
-        .hero-emoji {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: white;
-            line-height: 1.2;
-        }
-
-        .hero-subtitle {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-            font-weight: 600;
-        }
-
-        .hero-description {
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-            opacity: 0.8;
-            line-height: 1.6;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+        .hero-subtitle { font-size: 1.3rem; margin-bottom: 0.5rem; opacity: 0.9; font-weight: 600; }
+        .hero-description { font-size: 1.1rem; margin-bottom: 3rem; opacity: 0.8; line-height: 1.6; max-width: 700px; }
 
         .hero-button {
-            padding: 1.2rem 3rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 4rem;
-            text-decoration: none;
+            padding: 1.2rem 3rem; background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none; border-radius: 50px; color: white; font-weight: 600; font-size: 1.1rem;
+            cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center;
+            gap: 0.8rem; margin-bottom: 4rem; text-decoration: none;
         }
 
-        .hero-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 188, 212, 0.4);
-        }
+        .hero-button:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0, 188, 212, 0.4); }
 
-        /* Stats Section */
         .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem; max-width: 800px; margin: 0 auto;
         }
 
         .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem 1rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.1); padding: 2rem 1rem; border-radius: 20px;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease; text-align: center;
         }
 
-        .stat-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.15);
+        .stat-item:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
+        .stat-number { font-size: 2.5rem; font-weight: 900; color: var(--accent); margin-bottom: 0.5rem; display: block; }
+        .stat-label { font-size: 1rem; opacity: 0.9; font-weight: 500; }
+
+        /* Impact */
+        .impact-section { background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); }
+        .impact-bars { max-width: 800px; margin: 0 auto; text-align: left; }
+
+        .impact-item {
+            margin-bottom: 2rem; background: rgba(255, 255, 255, 0.1); padding: 1.5rem;
+            border-radius: 15px; backdrop-filter: blur(10px);
         }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            display: block;
+        .impact-label { display: flex; justify-content: space-between; margin-bottom: 1rem; font-weight: 600; }
+        .impact-bar { height: 16px; background-color: rgba(255, 255, 255, 0.2); border-radius: 10px; overflow: hidden; }
+        .impact-fill { height: 100%; border-radius: 10px; width: 0; transition: width 1.5s ease-in-out; }
+
+        .impact-item:nth-child(1) .impact-fill { background: linear-gradient(90deg, #ff6b6b, #ff5252); }
+        .impact-item:nth-child(2) .impact-fill { background: linear-gradient(90deg, #4ecdc4, #26a69a); }
+        .impact-item:nth-child(3) .impact-fill { background: linear-gradient(90deg, #ffd166, #ffb300); }
+        .impact-item:nth-child(4) .impact-fill { background: linear-gradient(90deg, #a8e6cf, #66bb6a); }
+
+        /* Pricing */
+        .pricing-section { background: rgba(0, 0, 0, 0.05); backdrop-filter: blur(10px); }
+
+        .pricing-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem; max-width: 900px; margin: 0 auto;
         }
 
-        .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
-            font-weight: 500;
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 3rem 2rem;
+            backdrop-filter: blur(20px); border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease; text-align: center; position: relative;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .pricing-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.15); }
+        .pricing-card.premium { border-color: #ffc107; box-shadow: 0 0 30px rgba(255, 193, 7, 0.3); }
+
+        .pricing-badge {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            background: #ffc107; color: #333; padding: 0.5rem 1.5rem; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 700;
         }
 
-        /* Secciones */
-        section {
-            padding: 6rem 5%;
-            position: relative;
-            z-index: 2;
+        .pricing-icon { font-size: 3.5rem; margin-bottom: 1.5rem; color: var(--accent); }
+        .pricing-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; }
+        .pricing-price { font-size: 3rem; font-weight: 900; color: var(--accent); margin-bottom: 0.5rem; }
+        .pricing-period { font-size: 1rem; opacity: 0.7; margin-bottom: 2rem; }
+
+        .pricing-features {
+            list-style: none; margin-bottom: 2.5rem; text-align: left;
+            background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 1.5rem;
         }
 
-        .section-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
+        .pricing-features li {
+            padding: 0.8rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; align-items: center; gap: 1rem;
         }
 
-        .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
+        .pricing-features li:last-child { border-bottom: none; }
+
+        .pricing-btn {
+            width: 100%; padding: 1.2rem; border: none; border-radius: 25px; font-weight: 700;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;
+        }
+
+        .pricing-btn.free {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
             color: white;
         }
 
-        .section-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            margin-bottom: 4rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+        .pricing-btn.premium {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #333;
         }
 
-        /* Impact Section */
-        .impact-section {
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
+        .pricing-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
 
-        .impact-bars {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: left;
-        }
-
-        .impact-item {
-            margin-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .impact-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .impact-bar {
-            height: 16px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .impact-fill {
-            height: 100%;
-            border-radius: 10px;
-            width: 0;
-            transition: width 1.5s ease-in-out;
-        }
-
-        .impact-item:nth-child(1) .impact-fill {
-            background: linear-gradient(90deg, #ff6b6b, #ff5252);
-        }
-
-        .impact-item:nth-child(2) .impact-fill {
-            background: linear-gradient(90deg, #4ecdc4, #26a69a);
-        }
-
-        .impact-item:nth-child(3) .impact-fill {
-            background: linear-gradient(90deg, #ffd166, #ffb300);
-        }
-
-        .impact-item:nth-child(4) .impact-fill {
-            background: linear-gradient(90deg, #a8e6cf, #66bb6a);
-        }
-
-        /* Features Grid */
+        /* Features */
         .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;
         }
 
         .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2.5rem 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.1); padding: 2.5rem 2rem; border-radius: 20px;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease; text-align: center;
         }
 
-        .feature-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
+        .feature-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.15); }
+        .feature-icon { font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem; }
+        .feature-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+        .feature-card p { opacity: 0.8; line-height: 1.6; }
 
-        .feature-icon {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 1.5rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .feature-card p {
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        /* Team Section */
-        .team-members {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-
-        .team-member {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 3rem;
-            border-radius: 25px;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .team-member:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-        }
-
-        .member-image {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            color: white;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .member-info h3 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .member-role {
-            font-size: 1.1rem;
-            color: var(--accent);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .member-description {
-            opacity: 0.8;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-
-        /* Upload Section */
-        .upload-section {
-            display: none;
-        }
-
-        .upload-section.active {
-            display: block;
-        }
+        /* Upload */
+        .upload-section { display: none; }
+        .upload-section.active { display: block; }
 
         .login-required {
-            background: rgba(255, 193, 7, 0.15);
-            border: 2px solid #ffc107;
-            border-radius: 20px;
-            padding: 3rem 2rem;
-            text-align: center;
-            margin: 2rem 0;
+            background: rgba(255, 193, 7, 0.15); border: 2px solid #ffc107; border-radius: 20px;
+            padding: 3rem 2rem; text-align: center; margin: 2rem 0;
         }
 
-        .login-required h3 {
-            color: #ffc107;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
+        .login-required h3 { color: #ffc107; margin-bottom: 1rem; font-size: 1.8rem; }
 
         .upload-area {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 25px;
-            padding: 4rem 2rem;
-            margin: 2rem 0;
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.08); border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 25px; padding: 4rem 2rem; margin: 2rem 0; backdrop-filter: blur(20px);
             transition: all 0.3s ease;
         }
 
-        .upload-area:hover {
-            border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.12);
-        }
+        .upload-area:hover { border-color: var(--accent); background: rgba(255, 255, 255, 0.12); }
 
         .upload-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem; margin: 2rem 0;
         }
 
         .upload-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem 1.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 2rem 1.5rem;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease; text-align: center;
         }
 
-        .upload-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.15);
-        }
+        .upload-item:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.15); }
 
-        .file-input {
-            display: none;
-        }
+        .file-input { display: none; }
 
         .file-label {
-            display: block;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            border-radius: 25px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            display: block; padding: 1rem 2rem; background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 25px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
             margin-top: 1rem;
         }
 
-        .file-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3);
-        }
+        .file-label:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 188, 212, 0.3); }
 
         .preview-area {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 0.5rem;
-            border-radius: 10px;
+            margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+            max-height: 200px; overflow-y: auto; padding: 0.5rem; border-radius: 10px;
         }
 
         .preview-image {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 15px;
-            border: 2px solid var(--accent);
-            position: relative;
-            transition: all 0.3s ease;
+            width: 120px; height: 120px; object-fit: cover; border-radius: 15px;
+            border: 2px solid var(--accent); transition: all 0.3s ease;
         }
 
-        .preview-image:hover {
-            transform: scale(1.05);
-            border-color: var(--accent-light);
-            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
-        }
+        .preview-image:hover { transform: scale(1.05); border-color: var(--accent-light); }
 
         .remove-image {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff5252;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; top: -8px; right: -8px; background: #ff5252; color: white;
+            border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;
+            font-size: 12px; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Footer CTA Section */
+        /* Footer CTA */
         .footer-cta {
             background: linear-gradient(135deg, var(--green), var(--green-dark));
-            color: var(--white);
-            padding: 4rem 5%;
-            text-align: center;
-            border-radius: 0;
-            margin: 0;
-            box-shadow: 0 -10px 30px rgba(39, 174, 96, 0.3);
+            padding: 4rem 5%; text-align: center; box-shadow: 0 -10px 30px rgba(39, 174, 96, 0.3);
         }
 
-        .footer-cta h3 {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-        }
-
-        .footer-cta p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .footer-cta h3 { font-size: 2.2rem; margin-bottom: 1rem; font-weight: 800; }
+        .footer-cta p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto; }
 
         .cta-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem; margin: 3rem 0; max-width: 600px; margin-left: auto; margin-right: auto;
         }
 
         .cta-feature {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem 1.5rem;
-            transition: transform 0.3s;
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 2rem 1.5rem; transition: transform 0.3s;
         }
 
-        .cta-feature:hover {
-            transform: translateY(-5px);
-        }
-
-        .cta-feature i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #FFD166;
-        }
-
-        .cta-feature h4 {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            color: var(--white);
-        }
-
-        .cta-feature p {
-            font-size: 1rem;
-            margin: 0;
-            opacity: 0.8;
-        }
-
-        .cta-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
+        .cta-feature:hover { transform: translateY(-5px); }
+        .cta-feature i { font-size: 2.5rem; margin-bottom: 1rem; color: #FFD166; }
+        .cta-feature h4 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .cta-feature p { font-size: 1rem; margin: 0; opacity: 0.8; }
 
         .btn-primary {
-            background-color: var(--white);
-            color: var(--green);
-            padding: 1rem 2.5rem;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background-color: var(--white); color: var(--green); padding: 1rem 2.5rem; border-radius: 30px;
+            text-decoration: none; font-weight: 700; font-size: 1.1rem; transition: all 0.3s ease;
+            display: inline-flex; align-items: center; gap: 0.8rem; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            background-color: #FFD166;
-            color: var(--dark);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--white);
-            padding: 1rem 2.5rem;
-            border: 2px solid var(--white);
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--white);
-            color: var(--green);
-            transform: translateY(-3px);
-        }
+        .btn-primary:hover { transform: translateY(-3px); background-color: #FFD166; color: var(--dark); }
 
         /* Footer */
         footer {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 3rem 5% 2rem;
-            text-align: center;
-            position: relative;
-            z-index: 2;
+            background: rgba(0, 0, 0, 0.3); padding: 3rem 5% 2rem; text-align: center;
             backdrop-filter: blur(20px);
         }
 
         .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
+            max-width: 1200px; margin: 0 auto; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 3rem;
         }
 
-        .footer-column h3 {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: white;
-        }
-
+        .footer-column h3 { font-size: 1.4rem; margin-bottom: 1.5rem; }
         .footer-column p, .footer-column a {
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.8rem;
-            display: block;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.7); margin-bottom: 0.8rem; display: block;
+            text-decoration: none; transition: all 0.3s ease;
         }
 
-        .footer-column a:hover {
-            color: var(--accent);
-            transform: translateX(5px);
-        }
+        .footer-column a:hover { color: var(--accent); transform: translateX(5px); }
 
-        .social-icons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
+        .social-icons { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
 
         .social-icons a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
+            display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px;
+            background: rgba(255, 255, 255, 0.1); border-radius: 50%; transition: all 0.3s ease; font-size: 1.2rem;
         }
 
-        .social-icons a:hover {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-5px);
-        }
+        .social-icons a:hover { background: var(--accent); transform: translateY(-5px); }
 
         .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 2rem;
             color: rgba(255, 255, 255, 0.6);
         }
 
         /* Notifications */
         .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            color: white;
-            font-weight: 600;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideInRight 0.3s ease;
+            position: fixed; top: 20px; right: 20px; padding: 1rem 2rem; border-radius: 15px;
+            color: white; font-weight: 600; z-index: 10000; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); animation: slideInRight 0.3s ease;
         }
 
-        .notification.success {
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-        }
+        .notification.success { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+        .notification.error { background: linear-gradient(135deg, #f44336, #d32f2f); }
+        .notification.info { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
 
-        .notification.error {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-        }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        .notification.info {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Popup Modal */
+        /* Popup */
         .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px); z-index: 10000; display: flex; align-items: center;
+            justify-content: center; animation: fadeIn 0.3s ease;
         }
 
         .popup-content {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-            border-radius: 25px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            animation: slideInUp 0.4s ease;
-            color: #333;
+            border-radius: 25px; padding: 3rem; max-width: 500px; width: 90%; text-align: center;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: slideInUp 0.4s ease; color: #333;
         }
 
-        .popup-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            display: block;
-        }
+        .popup-icon { font-size: 4rem; margin-bottom: 1.5rem; display: block; }
+        .popup-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; color: #d32f2f; }
+        .popup-message { font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.6; color: #555; }
 
-        .popup-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            color: #d32f2f;
-        }
-
-        .popup-message {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            color: #555;
-        }
-
-        .popup-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .popup-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
         .popup-btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 120px;
+            padding: 1rem 2rem; border: none; border-radius: 25px; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: all 0.3s ease; min-width: 120px;
         }
 
         .popup-btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: white;
         }
 
-        .popup-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4);
-        }
+        .popup-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4); }
 
         .popup-btn-secondary {
-            background: transparent;
-            color: #666;
-            border: 2px solid #ddd;
+            background: transparent; color: #666; border: 2px solid #ddd;
         }
 
-        .popup-btn-secondary:hover {
-            background: #f5f5f5;
-            border-color: #ccc;
-        }
+        .popup-btn-secondary:hover { background: #f5f5f5; border-color: #ccc; }
 
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Loading animation */
         .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #ffffff;
-            animation: spin 1s ease-in-out infinite;
+            display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; border-top-color: #ffffff; animation: spin 1s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .nav-center {
-                flex-direction: column;
-                gap: 1rem;
-                margin-left: 0;
-                margin-right: 0;
-            }
-            
-            .nav-pills {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .nav-pill {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-description {
-                font-size: 1rem;
-            }
-
-            .section-title h2 {
-                font-size: 2rem;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .features-grid,
-            .team-members {
-                grid-template-columns: 1fr;
-            }
-
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-cta h3 {
-                font-size: 1.8rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .preview-image {
-                width: 100px;
-                height: 100px;
-            }
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
-            header {
-                padding: 1rem 3%;
-            }
-
-            .hero {
-                padding: 5rem 1rem 3rem;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            section {
-                padding: 4rem 3%;
-            }
-
-            .team-member, .feature-card {
-                max-width: 400px;
-                margin: 0 auto;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
+            .nav-pills { flex-direction: column; gap: 0.5rem; margin-right: 1rem; }
+            .hero h1 { font-size: 2rem; }
+            section { padding: 4rem 3%; }
+            .pricing-cards, .features-grid { grid-template-columns: 1fr; }
+            .upload-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 480px) {
-            .logo {
-                font-size: 1.3rem;
-            }
-
-            .hero {
-                padding: 4rem 1rem 2rem;
-            }
-
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-
-            .hero-description {
-                font-size: 0.95rem;
-            }
-
-            .stat-item {
-                padding: 1.5rem 1rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .section-title h2 {
-                font-size: 1.8rem;
-            }
-
-            .hero-button, .btn-primary, .btn-secondary {
-                padding: 0.8rem 2rem;
-                font-size: 1rem;
-            }
-
-            .footer-cta h3 {
-                font-size: 1.6rem;
-            }
-
-            .footer-cta p {
-                font-size: 1rem;
-            }
-
-            .cta-feature {
-                padding: 1.5rem 1rem;
-            }
-
-            .popup-content {
-                padding: 2rem;
-                margin: 1rem;
-            }
-
-            .popup-title {
-                font-size: 1.5rem;
-            }
-
-            .popup-message {
-                font-size: 1rem;
-            }
-
-            .popup-buttons {
-                flex-direction: column;
-            }
-        }
-
-        /* Scroll animations */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.6s ease;
-        }
-
-        .animate-on-scroll.animated {
-            opacity: 1;
-            transform: translateY(0);
+            header { padding: 1rem 3%; }
+            .hero { padding: 4rem 1rem 2rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .popup-content { padding: 2rem; margin: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="floating-elements">
-        <div class="floating-item">👕</div>
-        <div class="floating-item">👗</div>
-        <div class="floating-item">👠</div>
-        <div class="floating-item">🧥</div>
-        <div class="floating-item">👖</div>
-    </div>
-
     <header>
         <nav>
             <div class="logo">
                 <div class="logo-icon">♻️</div>
                 AI love reuse
             </div>
-            <div class="nav-center">
+            <div style="display: flex; align-items: center;">
                 <div class="nav-pills">
-                    <a href="#inicio" class="nav-pill active">
-                        🏠 Inicio
-                    </a>
-                    <a href="#Impacto Ambiental" class="nav-pill">
-                        🌍 Impacto Ambiental
-                    </a>
-                    <a href="#funcionamiento" class="nav-pill">
-                        ⚙️ Cómo funciona
-                    </a>
-                    <a href="#equipo" class="nav-pill">
-                        👥 Equipo
-                    </a>
+                    <a href="#inicio" class="nav-pill active">🏠 Inicio</a>
+                    <a href="#impacto" class="nav-pill">🌍 Impacto Ambiental</a>
+                    <a href="#precios" class="nav-pill">💳 Precios</a>
+                    <a href="#funcionamiento" class="nav-pill">⚙️ Cómo funciona</a>
+                    <a href="#equipo" class="nav-pill">👥 Equipo</a>
                 </div>
                 <div class="auth-container">
                     <button class="google-login-btn" onclick="loginWithGoogle()" id="loginBtn">
@@ -1188,15 +446,13 @@
     </header>
 
     <section id="inicio" class="hero">
-        <div class="hero-content">
-            <span class="hero-emoji">♻️👕</span>
+        <div style="max-width: 900px; animation: fadeInUp 1s ease;">
+            <span style="font-size: 4rem; margin-bottom: 1rem; display: block;">♻️👕</span>
             <h1>Reutiliza tu ropa con IA y minimiza tu Impacto Ambiental</h1>
             <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
             <p class="hero-description">Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.</p>
             
-            <a href="#funcionamiento" class="hero-button">
-                🎯 Ver Cómo Funciona
-            </a>
+            <a href="#funcionamiento" class="hero-button">🎯 Ver Cómo Funciona</a>
             
             <div class="stats">
                 <div class="stat-item">
@@ -1215,7 +471,7 @@
         </div>
     </section>
 
-    <section id="Impacto Ambiental" class="impact-section animate-on-scroll">
+    <section id="impacto" class="impact-section">
         <div class="section-container">
             <div class="section-title">
                 <h2>🌍 Impacto Ambiental</h2>
@@ -1224,49 +480,80 @@
             
             <div class="impact-bars">
                 <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Reducción en consumo de agua</span>
-                        <span>85%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="85"></div>
-                    </div>
+                    <div class="impact-label"><span>Reducción en consumo de agua</span><span>85%</span></div>
+                    <div class="impact-bar"><div class="impact-fill" data-width="85"></div></div>
                 </div>
-                
                 <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Menos emisiones de CO₂</span>
-                        <span>72%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="72"></div>
-                    </div>
+                    <div class="impact-label"><span>Menos emisiones de CO₂</span><span>72%</span></div>
+                    <div class="impact-bar"><div class="impact-fill" data-width="72"></div></div>
                 </div>
-                
                 <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Reducción residuos textiles</span>
-                        <span>68%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="68"></div>
-                    </div>
+                    <div class="impact-label"><span>Reducción residuos textiles</span><span>68%</span></div>
+                    <div class="impact-bar"><div class="impact-fill" data-width="68"></div></div>
                 </div>
-                
                 <div class="impact-item">
-                    <div class="impact-label">
-                        <span>Menos uso de químicos</span>
-                        <span>63%</span>
-                    </div>
-                    <div class="impact-bar">
-                        <div class="impact-fill" data-width="63"></div>
-                    </div>
+                    <div class="impact-label"><span>Menos uso de químicos</span><span>63%</span></div>
+                    <div class="impact-bar"><div class="impact-fill" data-width="63"></div></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="funcionamiento" class="animate-on-scroll">
+    <section id="precios" class="pricing-section">
+        <div class="section-container">
+            <div class="section-title">
+                <h2>💳 Precios Simples y Claros</h2>
+                <p class="section-subtitle">Elige el plan que mejor se adapte a tu estilo de vida</p>
+            </div>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-icon">🎁</div>
+                    <h3 class="pricing-title">Plan Free</h3>
+                    <div class="pricing-price">Gratis</div>
+                    <div class="pricing-period">Primer mes completo</div>
+                    
+                    <ul class="pricing-features">
+                        <li>✅ 30 combinaciones incluidas</li>
+                        <li>✅ Análisis básico de IA</li>
+                        <li>✅ 3 prendas superiores</li>
+                        <li>✅ 3 prendas inferiores</li>
+                        <li>✅ 5 zapatos diferentes</li>
+                        <li>✅ Recomendaciones instantáneas</li>
+                        <li>✅ Sin compromiso</li>
+                    </ul>
+                    
+                    <button class="pricing-btn free" onclick="startFreePlan()">
+                        Empezar Gratis
+                    </button>
+                </div>
+                
+                <div class="pricing-card premium">
+                    <div class="pricing-badge">Más Popular</div>
+                    <div class="pricing-icon">⭐</div>
+                    <h3 class="pricing-title">Plan Premium</h3>
+                    <div class="pricing-price">$5,000</div>
+                    <div class="pricing-period">por mes</div>
+                    
+                    <ul class="pricing-features">
+                        <li>🚀 Combinaciones ilimitadas</li>
+                        <li>🧠 IA avanzada personalizada</li>
+                        <li>👗 Prendas ilimitadas</li>
+                        <li>👠 Zapatos ilimitados</li>
+                        <li>⚡ Análisis en tiempo real</li>
+                        <li>🎨 Sugerencias de estilo</li>
+                        <li>📱 Soporte prioritario</li>
+                    </ul>
+                    
+                    <button class="pricing-btn premium" onclick="upgradeToPremium()">
+                        Actualizar a Premium
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="funcionamiento">
         <div class="section-container">
             <div class="section-title">
                 <h2>⚙️ Cómo Funciona</h2>
@@ -1275,41 +562,31 @@
             
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        📱
-                    </div>
+                    <div class="feature-icon">📱</div>
                     <h3>1. Sube tus prendas</h3>
                     <p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado</p>
                 </div>
-                
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        🤖
-                    </div>
+                    <div class="feature-icon">🤖</div>
                     <h3>2. IA genera combinaciones</h3>
                     <p>Nuestro algoritmo analiza colores, estilos y tendencias para crear outfits únicos</p>
                 </div>
-                
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        ✨
-                    </div>
+                    <div class="feature-icon">✨</div>
                     <h3>3. Recibe sugerencias</h3>
                     <p>Obtén recomendaciones personalizadas en menos de 10 segundos</p>
                 </div>
             </div>
             
             <div style="text-align: center; margin-top: 3rem;">
-                <a href="#upload" class="hero-button">
-                    🚀 Empezar Ahora - Es Gratis
-                </a>
+                <a href="#upload" class="hero-button">🚀 Empezar Ahora - Es Gratis</a>
             </div>
         </div>
     </section>
 
-    <section id="upload" class="upload-section animate-on-scroll">
+    <section id="upload" class="upload-section">
         <div class="section-container">
-            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">✨ Termina con el Drama Matutino</h2>
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">✨ Termina con el Drama Matutino</h2>
             <p style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 2rem;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles que no sabías que existían</p>
             
             <div id="loginRequired" class="login-required">
@@ -1319,7 +596,7 @@
                     <svg width="18" height="18" viewBox="0 0 18 18">
                         <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
                         <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                        <path fill="#FBBC4" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
+                        <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
                         <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
                     </svg>
                     Acceder con Google
@@ -1332,9 +609,7 @@
                         <i class="fas fa-tshirt" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
                         <h4>Parte Superior</h4>
                         <p>Camisas, blusas, suéteres</p>
-                        <label for="top-upload" class="file-label">
-                            📤 Subir Superiores (máx 3)
-                        </label>
+                        <label for="top-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
                         <input type="file" id="top-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('top', this)">
                         <div id="top-preview" class="preview-area"></div>
                     </div>
@@ -1343,9 +618,7 @@
                         <i class="fas fa-user-tie" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
                         <h4>Parte Inferior</h4>
                         <p>Pantalones, faldas, shorts</p>
-                        <label for="bottom-upload" class="file-label">
-                            📤 Subir Inferiores (máx 3)
-                        </label>
+                        <label for="bottom-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
                         <input type="file" id="bottom-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottom', this)">
                         <div id="bottom-preview" class="preview-area"></div>
                     </div>
@@ -1354,9 +627,7 @@
                         <i class="fas fa-shoe-prints" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
                         <h4>Calzado</h4>
                         <p>Zapatos, sneakers, botas</p>
-                        <label for="shoes-upload" class="file-label">
-                            📤 Subir Zapatos (máx 5)
-                        </label>
+                        <label for="shoes-upload" class="file-label">📤 Subir Zapatos (máx 5)</label>
                         <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('shoes', this)">
                         <div id="shoes-preview" class="preview-area"></div>
                     </div>
@@ -1366,45 +637,34 @@
                     🪄 Generar Combinaciones Inteligentes
                 </button>
                 
-                <div id="result" class="results-section"></div>
+                <div id="result" style="display: none; margin-top: 3rem;"></div>
             </div>
         </div>
     </section>
 
-    <section id="equipo" class="animate-on-scroll">
+    <section id="equipo">
         <div class="section-container">
             <div class="section-title">
                 <h2>👥 Nuestro Equipo</h2>
                 <p class="section-subtitle">Conoce a las personas detrás de AI love reuse</p>
             </div>
             
-            <div class="team-members">
-                <div class="team-member">
-                    <div class="member-image">
-                        
-                    </div>
-                    <div class="member-info">
-                        <h3>José Francisco Corti Badia</h3>
-                        <p class="member-role">Founder & CEO</p>
-                        <p class="member-description">Ingeniero Comercial, Diplomado en GenAI U. De Chile 2025 y Diplomado en AI PUC 2022. Experto en Inteligencia Artificial con más de 15 años creando soluciones en distintas industrias.</p>
-                    </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 3rem; margin-top: 3rem;">
+                <div class="feature-card" style="padding: 3rem; text-align: center;">
+                    <h3>José Francisco Corti Badia</h3>
+                    <p style="color: var(--accent); font-weight: 600; margin-bottom: 1rem;">Founder & CEO</p>
+                    <p>Ingeniero Comercial, Diplomado en GenAI U. De Chile 2025 y Diplomado en AI PUC 2022. Experto en Inteligencia Artificial con más de 15 años creando soluciones en distintas industrias.</p>
                 </div>
                 
-                <div class="team-member">
-                    <div class="member-image">
-                        
-                    </div>
-                    <div class="member-info">
-                        <h3>Paola Andrea Curti Simpson</h3>
-                        <p class="member-role">Directora Creativa</p>
-                        <p class="member-description">Arquitecta, especialista en moda sustentable con amplia experiencia en diseño y sostenibilidad.</p>
-                    </div>
+                <div class="feature-card" style="padding: 3rem; text-align: center;">
+                    <h3>Paola Andrea Curti Simpson</h3>
+                    <p style="color: var(--accent); font-weight: 600; margin-bottom: 1rem;">Directora Creativa</p>
+                    <p>Arquitecta, especialista en moda sustentable con amplia experiencia en diseño y sostenibilidad.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer CTA Section -->
     <section class="footer-cta">
         <div class="section-container">
             <h3>🚀 ¡Comienza Ahora!</h3>
@@ -1423,14 +683,10 @@
                 </div>
             </div>
             
-            <div class="cta-buttons">
+            <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
                 <a href="#upload" class="btn-primary">
                     <i class="fas fa-play"></i>
                     Empezar Gratis
-                </a>
-                <a href="https://wa.me/56912345678" class="btn-secondary" target="_blank">
-                    <i class="fab fa-whatsapp"></i>
-                    Pregúntanos
                 </a>
             </div>
         </div>
@@ -1452,149 +708,399 @@
             <div class="footer-column">
                 <h3>Enlaces Rápidos</h3>
                 <a href="#inicio">Inicio</a>
-                <a href="#Impacto Ambiental">Impacto Ambiental</a>
+                <a href="#impacto">Impacto Ambiental</a>
+                <a href="#precios">Precios</a>
                 <a href="#funcionamiento">Cómo Funciona</a>
                 <a href="#equipo">Nuestro Equipo</a>
             </div>
         </div>
         
         <div class="footer-bottom">
-            <p>&copy; 2023 AI love reuse. Todos los derechos reservados.</p>
+            <p>&copy; 2024 AI love reuse. Todos los derechos reservados.</p>
         </div>
     </footer>
 
     <script>
-        // Google OAuth Configuration
+        // ✅ CONFIGURACIÓN SINCRONIZADA CON BACKEND
         const GOOGLE_CLIENT_ID = '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
-        // Configuración del backend
-        const API_BASE = "https://outfit-recommender.fly.dev"; // Cambiar por tu URL real
+        const API_BASE = "https://outfit-recommender.fly.dev"; // Tu URL backend
 
-        // Estado global de la aplicación
+        // ✅ ESTADO GLOBAL
         let isLoggedIn = false;
         let currentUser = null;
-        let uploadedFiles = {
-            top: [],
-            bottom: [],
-            shoes: []
-        };
+        let uploadedFiles = { top: [], bottom: [], shoes: [] };
+        const FILE_LIMITS = { top: 3, bottom: 3, shoes: 5 };
 
-        // Configuración de límites por categoría
-        const FILE_LIMITS = {
-            top: 3,
-            bottom: 3,
-            shoes: 5
-        };
-        // Función para convertir errores técnicos del backend en mensajes amigables
+        // ✅ FUNCIÓN SINCRONIZADA - Maneja EXACTAMENTE los códigos del backend
         function getFriendlyErrorMessage(backendError) {
-            const errorString = backendError.toLowerCase();
+            const errorString = JSON.stringify(backendError).toLowerCase();
             
-            if (errorString.includes('low_clothing_confidence')) {
+            // CÓDIGOS EXACTOS DEL BACKEND
+            if (errorString.includes('not_in_whitelist')) {
                 return 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
             }
             
-            if (errorString.includes('no_clothing_detected')) {
-                return 'Esta imagen no parece contener ropa. Asegúrate de fotografiar camisas, pantalones, zapatos, etc.';
+            if (errorString.includes('not_footwear')) {
+                return 'Esta imagen no parece ser calzado válido. Sube una foto clara de zapatos, botas o sandalias.';
             }
             
-            if (errorString.includes('poor_image_quality')) {
-                return 'La calidad de la imagen no es suficiente. Intenta con mejor iluminación y más cercanía a la prenda.';
-            }
-            
-            if (errorString.includes('multiple_items')) {
-                return 'Detectamos varios elementos en la imagen. Fotografía solo una prenda por imagen.';
-            }
-            
-            if (errorString.includes('invalid_format')) {
+            if (errorString.includes('tipo de archivo no permitido')) {
                 return 'El formato de la imagen no es compatible. Usa JPG, PNG o similar.';
             }
             
-            // Si no coincide con ningún patrón conocido, usar mensaje genérico
-            return 'Esta imagen no es adecuada para el análisis de moda. Intenta con una foto clara de una prenda individual.';
+            if (errorString.includes('muy grande')) {
+                return 'La imagen es muy grande. Por favor usa una foto más pequeña (máximo 20MB).';
+            }
+            
+            // Usar mensaje directo del backend si existe
+            if (backendError.message) {
+                return backendError.message;
+            }
+            
+            // Mensaje por defecto IDÉNTICO al backend
+            return 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
         }
-        // Agregar esta función después de const FILE_LIMITS = {...};
+
+        // ✅ VALIDACIÓN SIMPLIFICADA - Solo técnica, backend hace semántica
         async function validateClothingImage(file) {
+            if (!file.type.startsWith('image/')) {
+                throw new Error('Solo se permiten archivos de imagen');
+            }
+            
+            if (file.size > 20 * 1024 * 1024) { // 20MB como backend
+                throw new Error('La imagen es muy grande. Máximo 20MB');
+            }
+            
+            return true;
+        }
+
+        // ✅ SUBIDA DE ARCHIVOS SINCRONIZADA
+        async function handleFileUpload(type, input) {
+            if (!isLoggedIn) {
+                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
+                input.value = '';
+                return;
+            }
+
+            const files = Array.from(input.files);
+            const preview = document.getElementById(`${type}-preview`);
+            const currentCount = uploadedFiles[type].length;
+            const maxFiles = FILE_LIMITS[type];
+            
+            const availableSlots = maxFiles - currentCount;
+            if (files.length > availableSlots) {
+                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${type}. Máximo: ${maxFiles}`, 'error');
+                return;
+            }
+            
+            for (let file of files) {
+                try {
+                    await validateClothingImage(file);
+                    await processImageFile(file, type, preview);
+                    uploadedFiles[type].push(file);
+                    console.log(`✅ Archivo cargado: ${file.name} (${type})`);
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                    continue;
+                }
+            }
+            
+            updateUploadLabel(type);
+            input.value = '';
+        }
+
+        function processImageFile(file, type, preview) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const container = document.createElement('div');
+                        container.style.position = 'relative';
+                        container.style.display = 'inline-block';
+                        container.style.margin = '0.25rem';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'preview-image';
+                        img.title = `${type} - ${file.name}`;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-image';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.onclick = () => {
+                            container.remove();
+                            const fileIndex = uploadedFiles[type].indexOf(file);
+                            if (fileIndex > -1) {
+                                uploadedFiles[type].splice(fileIndex, 1);
+                            }
+                            updateUploadLabel(type);
+                        };
+                        
+                        container.appendChild(img);
+                        container.appendChild(removeBtn);
+                        preview.appendChild(container);
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Error leyendo el archivo'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateUploadLabel(type) {
+            const label = document.querySelector(`label[for="${type}-upload"]`);
+            const count = uploadedFiles[type].length;
+            const maxFiles = FILE_LIMITS[type];
+            
+            if (count > 0) {
+                const remaining = maxFiles - count;
+                label.innerHTML = `✅ ${count}/${maxFiles} foto${count > 1 ? 's' : ''} cargada${count > 1 ? 's' : ''}`;
+                if (remaining === 0) {
+                    label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
+                }
+            } else {
+                const typeText = type === 'top' ? 'Superiores' : type === 'bottom' ? 'Inferiores' : 'Zapatos';
+                label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
+            }
+        }
+
+        // ✅ RECOMENDACIÓN SINCRONIZADA CON BACKEND
+        async function getRecommendation() {
+            if (!isLoggedIn) {
+                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
+                return;
+            }
+
+            if (uploadedFiles.top.length === 0 || uploadedFiles.bottom.length === 0 || uploadedFiles.shoes.length === 0) {
+                showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
+                return;
+            }
+
+            const button = document.getElementById('generateBtn');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="loading"></span> La IA está analizando...';
+            button.disabled = true;
+
             try {
-                if (!file.type.startsWith('image/')) {
-                    return false;
+                const formData = new FormData();
+                formData.append('user_email', currentUser.email);
+                formData.append('user_name', currentUser.name || '');
+                
+                // EXACTAMENTE como espera el backend
+                formData.append('top', uploadedFiles.top[0]);
+                formData.append('bottom', uploadedFiles.bottom[0]);
+                uploadedFiles.shoes.forEach((file) => {
+                    formData.append('shoes', file);
+                });
+
+                console.log(`📤 Enviando: 1 superior, 1 inferior, ${uploadedFiles.shoes.length} zapatos`);
+
+                const response = await fetch(`${API_BASE}/recommend`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.log('❌ Error del backend:', errorData);
+                    
+                    const friendlyMessage = getFriendlyErrorMessage(errorData.detail || errorData);
+                    
+                    if (errorData.detail && (errorData.detail.code === 'NOT_IN_WHITELIST' || errorData.detail.field)) {
+                        const fieldName = errorData.detail.field || 'imagen';
+                        showInvalidImagePopup(
+                            'Imagen no válida',
+                            `${friendlyMessage}\n\nProblema detectado en: ${fieldName}`,
+                            false
+                        );
+                    } else {
+                        throw new Error(friendlyMessage);
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                
+                if (!data.results || !Array.isArray(data.results)) {
+                    throw new Error('Respuesta inválida del servidor');
                 }
                 
-                if (file.size > 10 * 1024 * 1024) { // 10MB
-                    return false;
-                }
+                console.log('✅ Recomendaciones recibidas:', data);
+                displayRecommendations(data);
                 
-                return true;
+                const numRecs = data.recommendations_shown || data.results.length;
+                showNotification(`${numRecs} recomendación${numRecs > 1 ? 'es' : ''} generada${numRecs > 1 ? 's' : ''} con IA`, 'success');
                 
             } catch (error) {
-                console.error('Error validating image:', error);
-                return false;
-            }
-        }
-
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // Update active nav pill
-        function updateActiveNav() {
-            const sections = ['inicio', 'Impacto Ambiental', 'funcionamiento', 'equipo'];
-            const navPills = document.querySelectorAll('.nav-pill');
-            
-            sections.forEach((section, index) => {
-                const element = document.getElementById(section);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= 100 && rect.bottom >= 100) {
-                        navPills.forEach(pill => pill.classList.remove('active'));
-                        if (navPills[index]) {
-                            navPills[index].classList.add('active');
-                        }
-                    }
-                }
-            });
-        }
-
-        window.addEventListener('scroll', updateActiveNav);
-
-        // Scroll animations
-        function animateOnScroll() {
-            const elements = document.querySelectorAll('.animate-on-scroll');
-            elements.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
+                console.error('❌ Error:', error);
+                showNotification(error.message, 'error');
                 
-                if (elementTop < window.innerHeight - elementVisible) {
-                    element.classList.add('animated');
+                if (error.name === 'TypeError' || error.message.includes('fetch')) {
+                    const fallbackResponse = getFallbackRecommendations();
+                    displayRecommendations(fallbackResponse);
+                    showNotification('Modo offline - datos de demostración', 'info');
                 }
-            });
+                
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
         }
 
-        window.addEventListener('scroll', animateOnScroll);
-        window.addEventListener('load', animateOnScroll);
-
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(102, 126, 234, 0.3)';
-            } else {
-                header.style.background = 'rgba(102, 126, 234, 0.1)';
+        // ✅ MOSTRAR RECOMENDACIONES SINCRONIZADO
+        function displayRecommendations(data) {
+            const resultDiv = document.getElementById('result');
+            const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
+            
+            let html = '';
+            
+            if (data.is_fallback) {
+                html += `
+                    <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                        <h4 style="color: #ffc107; margin-bottom: 0.5rem;">⚡ Modo Demo</h4>
+                        <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">No se pudo conectar con el servidor. Mostrando simulación</p>
+                    </div>
+                `;
+            } else if (data.total_shoes_analyzed) {
+                html += `
+                    <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                        <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">🎯 IA Completó el Análisis</h4>
+                        <p style="margin: 0;">Se analizaron ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''} y se generaron ${data.recommendations_shown} recomendación${data.recommendations_shown > 1 ? 'es' : ''}</p>
+                    </div>
+                `;
             }
-        });
+            
+            sortedResults.forEach((result, displayIndex) => {
+                const isBest = displayIndex === 0;
+                const percentage = (result.score * 100).toFixed(1);
+                
+                const topFile = uploadedFiles.top[0];
+                const bottomFile = uploadedFiles.bottom[0];
+                const shoesFile = uploadedFiles.shoes[result.index] || uploadedFiles.shoes[0];
+                
+                const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
+                const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
+                const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
+                
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); position: relative;">
+                        ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">⭐ Mejor compatibilidad</div>' : ''}
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
+                                ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
+                            </h3>
+                            <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">${percentage}%</div>
+                        </div>
 
-        // Initialize Google OAuth mejorado
+                        <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
+                            <div style="text-align: center;">
+                                <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Superior">
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Superior</p>
+                            </div>
+                            
+                            <div style="font-size: 2rem; color: var(--accent);">+</div>
+                            
+                            <div style="text-align: center;">
+                                <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Inferior">
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Inferior</p>
+                            </div>
+                            
+                            <div style="font-size: 2rem; color: var(--accent);">+</div>
+                            
+                            <div style="text-align: center;">
+                                <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Calzado">
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Zapato ${(result.index || displayIndex) + 1}</p>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; line-height: 1.8;">
+                            <p><strong>🎯 Compatibilidad:</strong> ${percentage}% según análisis de IA</p>
+                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
+                            <p><strong>💬 Análisis:</strong> ${isBest ? 'Esta combinación tiene la máxima compatibilidad de colores y estilos.' : 'Excelente alternativa con muy buena armonía visual.'}</p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                            <button onclick="acceptCombination('${result.combination || displayIndex}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                                ❤️ Me gusta
+                            </button>
+                            <button onclick="rejectCombination('${result.combination || displayIndex}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                                👎 No me convence
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+            setTimeout(() => resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        function getFallbackRecommendations() {
+            const numShoes = uploadedFiles.shoes.length;
+            const numRecommendations = Math.min(numShoes, 3);
+            
+            const results = [];
+            for (let i = 0; i < numRecommendations; i++) {
+                results.push({
+                    index: i,
+                    combination: `D${i + 1}`,
+                    score: 0.95 - (i * 0.08) + (Math.random() - 0.5) * 0.08,
+                    formality: Math.random() > 0.5 ? "casual" : "formal"
+                });
+            }
+            
+            return {
+                results: results,
+                total_shoes_analyzed: numShoes,
+                recommendations_shown: numRecommendations,
+                is_fallback: true
+            };
+        }
+
+        // ✅ FEEDBACK FUNCTIONS
+        function acceptCombination(combinationId) {
+            sendFeedbackToBackend(combinationId, 'si', null);
+            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
+        }
+
+        function rejectCombination(combinationId) {
+            showNotification('Funcionalidad de feedback en desarrollo', 'info');
+        }
+
+        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
+            if (!currentUser || !currentUser.email) return;
+        
+            try {
+                const formData = new FormData();
+                formData.append('user_email', currentUser.email);
+                formData.append('combination_id', combinationId);
+                formData.append('accepted', accepted);
+                if (rejectionReason) {
+                    formData.append('rejection_reason', rejectionReason);
+                }
+        
+                const response = await fetch(`${API_BASE}/api/feedback`, {
+                    method: 'POST',
+                    body: formData
+                });
+        
+                if (response.ok) {
+                    console.log('✅ Feedback enviado exitosamente');
+                }
+            } catch (error) {
+                console.error('❌ Error enviando feedback:', error);
+            }
+        }
+
+        // ✅ GOOGLE AUTH
         function initializeGoogleAuth() {
             if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
-                console.error('Google Identity Services no está disponible');
-                showNotification('Error: Servicios de Google no disponibles', 'error');
+                console.error('Google Identity Services no disponible');
                 return;
             }
 
@@ -1603,22 +1109,15 @@
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleSignIn,
                     auto_select: false,
-                    cancel_on_tap_outside: true,
-                    use_fedcm_for_prompt: false
+                    cancel_on_tap_outside: true
                 });
-
-                console.log('Google OAuth inicializado correctamente');
             } catch (error) {
                 console.error('Error inicializando Google OAuth:', error);
-                showNotification('Error inicializando autenticación: ' + error.message, 'error');
             }
         }
 
-        // Handle Google Sign-In response mejorado
         function handleGoogleSignIn(response) {
             try {
-                console.log('Respuesta de Google recibida:', response);
-                
                 if (!response.credential) {
                     throw new Error('No se recibió credential de Google');
                 }
@@ -1626,30 +1125,25 @@
                 const token = response.credential;
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 
-                console.log('Payload decodificado:', payload);
-                
                 currentUser = {
                     name: payload.name,
                     email: payload.email,
                     picture: payload.picture,
                     given_name: payload.given_name,
-                    family_name: payload.family_name,
                     token: token
                 };
                 
                 isLoggedIn = true;
                 updateAuthUI();
                 showUploadSection();
-                
                 showNotification(`Bienvenido ${currentUser.given_name || currentUser.name}`, 'success');
                 
             } catch (error) {
-                console.error('Error procesando login de Google:', error);
+                console.error('Error procesando login:', error);
                 showNotification('Error procesando login: ' + error.message, 'error');
             }
         }
 
-        // Main login function mejorado
         async function loginWithGoogle() {
             const button = document.getElementById('loginBtn');
             if (!button) return;
@@ -1659,21 +1153,12 @@
             button.disabled = true;
             
             try {
-                if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
-                    throw new Error('Servicios de Google no disponibles. Verifica la configuración.');
+                if (typeof google === 'undefined') {
+                    throw new Error('Servicios de Google no disponibles');
                 }
 
-                google.accounts.id.prompt((notification) => {
-                    console.log('Notificación de prompt:', notification);
-                    
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.log('Prompt no mostrado. Razón:', notification.getNotDisplayedReason());
-                        showNotification('No se pudo mostrar el login de Google. Verifica la configuración.', 'error');
-                    }
-                });
-
+                google.accounts.id.prompt();
             } catch (error) {
-                console.error('Error en loginWithGoogle:', error);
                 showNotification('Error: ' + error.message, 'error');
             } finally {
                 setTimeout(() => {
@@ -1685,14 +1170,13 @@
             }
         }
 
-        // Logout mejorado
         function logout() {
             try {
                 if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
                     google.accounts.id.disableAutoSelect();
                 }
             } catch (error) {
-                console.error('Error en logout de Google:', error);
+                console.error('Error en logout:', error);
             }
             
             isLoggedIn = false;
@@ -1743,7 +1227,7 @@
             }
         }
 
-        // Función para mostrar popup de imagen inválida
+        // ✅ POPUP FUNCTIONS
         function showInvalidImagePopup(title, message, redirectToLogin = false) {
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
@@ -1752,7 +1236,7 @@
                 <div class="popup-content">
                     <span class="popup-icon">⚠️</span>
                     <h3 class="popup-title">${title}</h3>
-                    <p class="popup-message">${message}</p>
+                    <p class="popup-message" style="white-space: pre-line;">${message}</p>
                     <div class="popup-buttons">
                         ${redirectToLogin ? 
                             `<button class="popup-btn popup-btn-primary" onclick="redirectToGmailLogin()">
@@ -1770,553 +1254,57 @@
             `;
             
             document.body.appendChild(overlay);
-            
-            // Cerrar popup si se hace clic fuera de él
             overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    closeInvalidImagePopup();
-                }
+                if (e.target === overlay) closeInvalidImagePopup();
             });
         }
 
-        // Función para cerrar popup
         function closeInvalidImagePopup() {
             const popup = document.querySelector('.popup-overlay');
-            if (popup) {
-                popup.remove();
-            }
+            if (popup) popup.remove();
         }
 
-        // Función para redirigir al login de Gmail
         function redirectToGmailLogin() {
             closeInvalidImagePopup();
-            
-            // Hacer scroll hacia el header donde está el botón de login
             const header = document.querySelector('header');
             if (header) {
                 header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                // Animar el botón de login para llamar la atención
                 setTimeout(() => {
                     const loginBtn = document.getElementById('loginBtn');
                     if (loginBtn) {
                         loginBtn.style.animation = 'pulse 1s ease-in-out 3';
-                        loginBtn.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.6)';
-                        
-                        setTimeout(() => {
-                            loginBtn.style.animation = '';
-                            loginBtn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-                        }, 3000);
+                        setTimeout(() => loginBtn.style.animation = '', 3000);
                     }
                 }, 500);
             }
         }
-        // File upload handling con validación mejorada        
-        async function handleFileUpload(type, input) {
-            // Verificar si el usuario está logueado PRIMERO
+
+        // ✅ PRICING FUNCTIONS
+        function startFreePlan() {
             if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
-                input.value = ''; // Limpiar el input
-                return;
-            }
-        
-            const files = Array.from(input.files);
-            const preview = document.getElementById(`${type}-preview`);
-            const currentCount = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            const availableSlots = maxFiles - currentCount;
-            if (files.length > availableSlots) {
-                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${type}. Máximo: ${maxFiles}`, 'error');
+                showInvalidImagePopup('Inicia sesión para comenzar', 'Accede con Google para empezar tu plan gratuito de 30 días', true);
                 return;
             }
             
-            for (let file of files) {
-                try {
-                    // Validaciones básicas
-                    if (!file.type.startsWith('image/')) {
-                        showNotification('Solo se permiten archivos de imagen', 'error');
-                        continue;
-                    }
-                    
-                    if (file.size > 10 * 1024 * 1024) {
-                        showNotification('La imagen es muy grande. Máximo 10MB', 'error');
-                        continue;
-                    }
-        
-                    // Validar que la imagen sea válida para outfit (FUNCIÓN CORREGIDA)
-                    const isValidImage = await validateClothingImage(file);
-                    if (!isValidImage) {
-                        showNotification(`No pudimos identificar ropa clara en esta foto. Intenta con una imagen más nítida de la prenda sobre un fondo claro.`, 'error');
-                        continue;
-                    }
-                    
-                    // Procesar la imagen
-                    await processImageFile(file, type, preview);
-                    uploadedFiles[type].push(file);
-                    
-                } catch (error) {
-                    console.error('Error procesando archivo:', error);
-                    showNotification(`Error procesando ${file.name}: ${error.message}`, 'error');
-                }
-            }
-            
-            updateUploadLabel(type);
-            input.value = '';
-        }
-        function processImageFile(file, type, preview) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const imageContainer = document.createElement('div');
-                        imageContainer.style.position = 'relative';
-                        imageContainer.style.display = 'inline-block';
-                        imageContainer.style.margin = '0.25rem';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'preview-image';
-                        img.title = `${type} - ${file.name}`;
-                        
-                        // Manejar error de carga de imagen
-                        img.onerror = function() {
-                            reject(new Error('No se pudo cargar la imagen'));
-                        };
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-image';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.title = 'Eliminar imagen';
-                        removeBtn.onclick = () => {
-                            imageContainer.remove();
-                            const fileIndex = uploadedFiles[type].indexOf(file);
-                            if (fileIndex > -1) {
-                                uploadedFiles[type].splice(fileIndex, 1);
-                            }
-                            updateUploadLabel(type);
-                        };
-                        
-                        imageContainer.appendChild(img);
-                        imageContainer.appendChild(removeBtn);
-                        preview.appendChild(imageContainer);
-                        
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                
-                reader.onerror = function() {
-                    reject(new Error('Error leyendo el archivo'));
-                };
-                
-                reader.readAsDataURL(file);
-            });
-        }
-        function updateUploadLabel(type) {
-            const label = document.querySelector(`label[for="${type}-upload"]`);
-            const count = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            if (count > 0) {
-                const remaining = maxFiles - count;
-                label.innerHTML = `✅ ${count}/${maxFiles} foto${count > 1 ? 's' : ''} cargada${count > 1 ? 's' : ''}`;
-                
-                if (remaining === 0) {
-                    label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
-                }
-            } else {
-                const typeText = type === 'top' ? 'Superiores' : 
-                                type === 'bottom' ? 'Inferiores' : 'Zapatos';
-                label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
-            }
+            showNotification('¡Plan gratuito activado! Comienza a subir tus fotos', 'success');
+            document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Get AI recommendation con verificación de login
-        async function getRecommendation() {
-            // Verificar si el usuario está logueado
+        function upgradeToPremium() {
             if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
+                showInvalidImagePopup('Inicia sesión para actualizar', 'Accede con Google para actualizar a Premium', true);
                 return;
             }
-        
-            if (uploadedFiles.top.length === 0 || uploadedFiles.bottom.length === 0 || uploadedFiles.shoes.length === 0) {
-                showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
-                return;
-            }
-        
-            const button = document.getElementById('generateBtn');
-            const originalText = button.innerHTML;
             
-            button.innerHTML = '<span class="loading"></span> La IA está analizando...';
-            button.disabled = true;
-        
-            try {
-                // Crear FormData para enviar al backend REAL
-                const formData = new FormData();
-                
-                // Agregar datos del usuario
-                formData.append('user_email', currentUser.email);
-                formData.append('user_name', currentUser.name || '');
-                
-                // Agregar SOLO la primera imagen de cada categoría para evitar confusión
-                formData.append('top', uploadedFiles.top[0]);
-                formData.append('bottom', uploadedFiles.bottom[0]);
-                
-                // Agregar TODOS los zapatos (aquí está la clave para múltiples recomendaciones)
-                uploadedFiles.shoes.forEach((file) => {
-                    formData.append('shoes', file);
-                });
-        
-                console.log(`📤 Enviando al backend: 1 superior, 1 inferior, ${uploadedFiles.shoes.length} zapatos`);
-        
-                // Llamada REAL al backend corregido
-                const response = await fetch(`${API_BASE}/recommend`, {
-                    method: 'POST',
-                    body: formData
-                });
-        
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    const backendMessage = errorData.detail?.message || `Error ${response.status}: ${response.statusText}`;
-                    
-                    // AQUÍ ESTÁ EL CAMBIO: convertir mensaje técnico a mensaje amigable
-                    const friendlyMessage = getFriendlyErrorMessage(backendMessage);
-                    throw new Error(friendlyMessage);
-                }
-        
-                const data = await response.json();
-                
-                // Verificar que la respuesta tenga el formato esperado
-                if (!data.results || !Array.isArray(data.results)) {
-                    throw new Error('Respuesta inválida del servidor - formato incorrecto');
-                }
-                
-                // Verificar lógica: no deberían haber más recomendaciones que zapatos
-                if (data.results.length > uploadedFiles.shoes.length) {
-                    console.warn(`⚠️ Se recibieron ${data.results.length} recomendaciones para ${uploadedFiles.shoes.length} zapatos`);
-                }
-                
-                console.log('✅ Recomendaciones recibidas del backend:', data);
-                displayRecommendations(data);
-                
-                const numRecs = data.recommendations_shown || data.results.length;
-                showNotification(`${numRecs} recomendación${numRecs > 1 ? 'es' : ''} generada${numRecs > 1 ? 's' : ''} con IA`, 'success');
-                
-            } catch (error) {
-                console.error('❌ Error conectando con backend:', error);
-                showNotification(`Error: ${error.message}`, 'error');
-                
-                // Fallback solo para errores de conexión
-                if (error.message.includes('fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
-                    console.log('🔄 Usando datos de respaldo por error de conexión...');
-                    const fallbackResponse = getFallbackRecommendations();
-                    displayRecommendations(fallbackResponse);
-                    showNotification('Modo offline - datos de demostración', 'info');
-                }
-                
-            } finally {
-                button.innerHTML = originalText;
-                button.disabled = false;
-            }
+            showNotification('Funcionalidad de pago en desarrollo', 'info');
         }
 
-        // Función de respaldo MEJORADA (solo para emergencias)
-        function getFallbackRecommendations() {
-            // Generar combinaciones basadas en el número REAL de zapatos subidos
-            const numShoes = uploadedFiles.shoes.length;
-            const numRecommendations = Math.min(numShoes, 3); // No más recomendaciones que zapatos
-            
-            console.log(`🎭 Modo fallback: ${numShoes} zapatos → ${numRecommendations} recomendaciones`);
-            
-            const generateRealisticScore = (rank) => {
-                // Scores más realistas y variables (no siempre los mismos)
-                const baseScore = 0.95 - (rank * 0.08) + (Math.random() - 0.5) * 0.08;
-                return Math.max(0.60, Math.min(0.98, baseScore));
-            };
-            
-            const results = [];
-            for (let i = 0; i < numRecommendations; i++) {
-                results.push({
-                    index: i,
-                    combination: `D${i + 1}`, // D = Demo
-                    score: generateRealisticScore(i),
-                    formality: Math.random() > 0.5 ? "casual" : "formal",
-                    selection: {
-                        topIndex: 0, // Siempre la primera
-                        bottomIndex: 0, // Siempre la primera
-                        shoesIndex: i // Zapato específico
-                    }
-                });
-            }
-            
-            return {
-                results: results,
-                best_index: 0,
-                total_shoes_analyzed: numShoes,
-                recommendations_shown: numRecommendations,
-                is_fallback: true,
-                algorithm_version: "demo_fallback"
-            };
-        }
-        function displayRecommendations(data) {
-        const resultDiv = document.getElementById('result');
-        const bestIndex = data.best_index;
-        
-        // Ordenar por score real (no por índices arbitrarios)
-        const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
-        
-        let html = '';
-        
-        // Mensaje si es modo fallback
-        if (data.is_fallback) {
-            html += `
-                <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
-                    <h4 style="color: #ffc107; margin-bottom: 0.5rem;">⚡ Modo Demo</h4>
-                    <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">No se pudo conectar con el servidor. Mostrando simulación con tus ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''}</p>
-                </div>
-            `;
-        } else if (data.total_shoes_analyzed) {
-            html += `
-                <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
-                    <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">🎯 Análisis Completado</h4>
-                    <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">IA analizó ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''} y generó ${data.recommendations_shown} recomendación${data.recommendations_shown > 1 ? 'es' : ''}</p>
-                </div>
-            `;
-        }
-        
-        sortedResults.forEach((result, displayIndex) => {
-            const isBest = result.index === bestIndex || displayIndex === 0;
-            const percentage = (result.score * 100).toFixed(1);
-            
-            // Usar los índices correctos para las imágenes
-            const topFile = uploadedFiles.top[0]; // Siempre la primera superior
-            const bottomFile = uploadedFiles.bottom[0]; // Siempre la primera inferior
-            
-            // CORRECCIÓN CRÍTICA: usar el índice correcto del zapato
-            let shoesFile;
-            if (result.selection && typeof result.selection.shoesIndex !== 'undefined') {
-                // Formato del fallback
-                shoesFile = uploadedFiles.shoes[result.selection.shoesIndex];
-            } else {
-                // Formato del backend real
-                shoesFile = uploadedFiles.shoes[result.index] || uploadedFiles.shoes[0];
-            }
-            
-            const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
-            const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
-            const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
-            
-            html += `
-                <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;">
-                    ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-size: 1rem; font-weight: bold;">⭐ Mejor compatibilidad</div>' : ''}
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
-                            ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
-                        </h3>
-                        <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 1.1rem;">${percentage}%</div>
-                    </div>
-    
-                    <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
-                        <div style="text-align: center;">
-                            <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Superior">
-                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Superior</p>
-                        </div>
-                        
-                        <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                        
-                        <div style="text-align: center;">
-                            <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Inferior">
-                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Inferior</p>
-                        </div>
-                        
-                        <div style="font-size: 2rem; color: var(--accent); margin: 0 1rem;">+</div>
-                        
-                        <div style="text-align: center;">
-                            <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);" alt="Calzado">
-                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--accent); font-weight: 600;">Zapato ${(result.index || displayIndex) + 1}</p>
-                        </div>
-                    </div>
-    
-                    <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; text-align: left; line-height: 1.8;">
-                        <p><strong>🎯 Compatibilidad:</strong> ${percentage}% según análisis de IA</p>
-                        <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
-                        <p><strong>💬 Análisis:</strong> ${isBest ? 'Esta combinación tiene la máxima compatibilidad de colores y estilos.' : 'Excelente alternativa con muy buena armonía visual.'}</p>
-                        ${data.algorithm_version ? `<p><strong>🔬 Algoritmo:</strong> ${data.algorithm_version}</p>` : ''}
-                    </div>
-                    
-                    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                        <button onclick="acceptCombination('${result.combination || displayIndex}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                            ❤️ Me gusta
-                        </button>
-                        <button onclick="rejectCombination('${result.combination || displayIndex}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                            👎 No me convence
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
-        
-        resultDiv.innerHTML = html;
-        resultDiv.style.display = 'block';
-        
-        setTimeout(() => {
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
-        // Funciones para manejar feedback de combinaciones
-        function acceptCombination(combinationId) {
-            sendFeedbackToBackend(combinationId, 'si', null);
-            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
-        }
-
-        function rejectCombination(combinationId) {
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            let optionsHtml = reasons.map((reason, index) => 
-                `<option value="${index}">${reason}</option>`
-            ).join('');
-
-            const rejectHtml = `
-                <div style="background: rgba(255, 193, 7, 0.15); border: 2px solid #ffc107; border-radius: 15px; padding: 2rem; margin-top: 1rem;">
-                    <h4 style="color: #ffc107; margin-bottom: 1rem;">¿Por qué no te gusta esta combinación?</h4>
-                    <select id="reject-reason-${combinationId}" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #ffc107; background: white; color: #333; font-size: 1rem;">
-                        <option value="">Selecciona una razón...</option>
-                        ${optionsHtml}
-                    </select>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center;">
-                        <button onclick="submitRejection('${combinationId}')" style="background: #ffc107; color: #333; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Enviar feedback
-                        </button>
-                        <button onclick="cancelRejection('${combinationId}')" style="background: transparent; color: #ffc107; border: 2px solid #ffc107; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const buttons = document.querySelectorAll(`button[onclick="rejectCombination('${combinationId}')"]`);
-            if (buttons.length > 0) {
-                const button = buttons[0];
-                const parentDiv = button.closest('div[style*="background: rgba(255, 255, 255, 0.1)"]');
-                if (parentDiv && !parentDiv.querySelector('.rejection-form')) {
-                    const rejectDiv = document.createElement('div');
-                    rejectDiv.className = 'rejection-form';
-                    rejectDiv.innerHTML = rejectHtml;
-                    parentDiv.appendChild(rejectDiv);
-                    
-                    setTimeout(() => {
-                        rejectDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
-            }
-        }
-
-        function submitRejection(combinationId) {
-            const selectElement = document.getElementById(`reject-reason-${combinationId}`);
-            if (!selectElement || selectElement.value === '') {
-                showNotification('Por favor selecciona una razón', 'error');
-                return;
-            }
-
-            const reasons = [
-                "Los colores no combinan bien",
-                "El estilo es muy formal para mi gusto",
-                "El estilo es muy casual para mi gusto", 
-                "Esta combinación no refleja mi personalidad",
-                "No me siento cómodo/a con este outfit"
-            ];
-
-            const selectedReason = reasons[selectElement.value];
-            
-            sendFeedbackToBackend(combinationId, 'no', selectedReason);
-            
-            showNotification('Gracias por tu feedback. La IA aprenderá de tus preferencias', 'success');
-            
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        function cancelRejection(combinationId) {
-            const rejectForm = document.querySelector('.rejection-form');
-            if (rejectForm) {
-                rejectForm.remove();
-            }
-        }
-
-        // Función para enviar feedback al backend
-        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
-            if (!currentUser || !currentUser.email) {
-                console.error('Usuario no loggeado');
-                return;
-            }
-        
-            try {
-                const formData = new FormData();
-                formData.append('user_email', currentUser.email);
-                formData.append('combination_id', combinationId);
-                formData.append('accepted', accepted);
-                if (rejectionReason) {
-                    formData.append('rejection_reason', rejectionReason);
-                }
-        
-                const response = await fetch(`${API_BASE}/api/feedback`, {
-                    method: 'POST',
-                    body: formData
-                });
-        
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-        
-                const result = await response.json();
-                console.log('✅ Feedback enviado exitosamente:', result);
-                
-            } catch (error) {
-                console.error('❌ Error enviando feedback:', error);
-                showNotification('Error enviando feedback - se guardará localmente', 'error');
-                
-                // Guardar feedback localmente como respaldo
-                const localFeedback = {
-                    combinationId,
-                    accepted,
-                    rejectionReason,
-                    timestamp: new Date().toISOString(),
-                    userEmail: currentUser.email
-                };
-                
-                try {
-                    const savedFeedback = localStorage.getItem('pendingFeedback') || '[]';
-                    const feedbackArray = JSON.parse(savedFeedback);
-                    feedbackArray.push(localFeedback);
-                    localStorage.setItem('pendingFeedback', JSON.stringify(feedbackArray));
-                    console.log('💾 Feedback guardado localmente para envío posterior');
-                } catch (localError) {
-                    console.error('Error guardando feedback localmente:', localError);
-                }
-            }
-        }
-        // Show notification mejorado
+        // ✅ UTILITY FUNCTIONS
         function showNotification(message, type = 'info') {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
-            
             document.body.appendChild(notification);
-            
             setTimeout(() => {
                 if (document.body.contains(notification)) {
                     document.body.removeChild(notification);
@@ -2324,10 +1312,50 @@
             }, 4000);
         }
 
-        // Initialize mejorado
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, inicializando aplicación...');
+        // ✅ SMOOTH SCROLLING
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // ✅ NAV PILLS ACTIVE
+        function updateActiveNav() {
+            const sections = ['inicio', 'impacto', 'precios', 'funcionamiento', 'equipo'];
+            const navPills = document.querySelectorAll('.nav-pill');
             
+            sections.forEach((section, index) => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        navPills.forEach(pill => pill.classList.remove('active'));
+                        if (navPills[index]) {
+                            navPills[index].classList.add('active');
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveNav);
+
+        // ✅ HEADER SCROLL EFFECT
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(102, 126, 234, 0.3)';
+            } else {
+                header.style.background = 'rgba(102, 126, 234, 0.1)';
+            }
+        });
+
+        // ✅ INITIALIZE
+        document.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
             
             Object.keys(FILE_LIMITS).forEach(type => {
@@ -2338,7 +1366,6 @@
                 if (typeof google !== 'undefined' && google.accounts) {
                     initializeGoogleAuth();
                 } else {
-                    console.log('Esperando que Google se cargue...');
                     setTimeout(checkGoogleLoaded, 500);
                 }
             };
