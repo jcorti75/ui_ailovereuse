@@ -52,6 +52,7 @@
 
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
+        /* Menú Desktop */
         .nav-pills {
             display: flex; background: rgba(255, 255, 255, 0.1); padding: 0.5rem;
             border-radius: 50px; backdrop-filter: blur(10px); gap: 0.5rem; margin-right: 2rem;
@@ -64,6 +65,78 @@
 
         .nav-pill:hover, .nav-pill.active {
             background: rgba(255, 255, 255, 0.2); transform: translateY(-2px);
+        }
+
+        /* Botón Hamburguesa */
+        .hamburger {
+            display: none; flex-direction: column; cursor: pointer; padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1); border-radius: 8px; margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .hamburger-line {
+            width: 25px; height: 3px; background-color: white; margin: 3px 0;
+            transition: all 0.3s ease; border-radius: 2px;
+        }
+
+        .hamburger.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* Menú Mobile - Overlay */
+        .mobile-menu {
+            position: fixed; top: 0; left: -100%; width: 80%; max-width: 350px; height: 100vh;
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(118, 75, 162, 0.95));
+            backdrop-filter: blur(20px); z-index: 999; padding: 6rem 2rem 2rem;
+            transition: left 0.3s ease; overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-menu.active {
+            left: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); z-index: 998; opacity: 0;
+            visibility: hidden; transition: all 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+
+        .mobile-nav-pill {
+            display: block; padding: 1.2rem 1.5rem; margin-bottom: 0.5rem;
+            color: white; text-decoration: none; font-weight: 500; font-size: 1.1rem;
+            border-radius: 15px; transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .mobile-nav-pill:hover, .mobile-nav-pill.active {
+            background: rgba(0, 188, 212, 0.2); border-color: var(--accent);
+            transform: translateX(10px);
+        }
+
+        .mobile-menu-header {
+            margin-bottom: 2rem; padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mobile-menu-header h3 {
+            color: var(--accent); font-size: 1.5rem; font-weight: 700;
         }
 
         .google-login-btn {
@@ -392,9 +465,33 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Responsive */
+        /* NEW: Occasion badges */
+        .occasion-badge {
+            display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;
+            font-weight: 600; text-transform: capitalize; margin: 0.25rem;
+        }
+
+        .occasion-formal { background: #6c757d; color: white; }
+        .occasion-semiformal { background: #17a2b8; color: white; }
+        .occasion-casual { background: #28a745; color: white; }
+        .occasion-party { background: #e83e8c; color: white; }
+        .occasion-athletic { background: #fd7e14; color: white; }
+
+        /* NEW: Color palette display */
+        .color-palette {
+            display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0;
+        }
+
+        .color-swatch {
+            width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3);
+            display: inline-block;
+        }
+
+        /* Responsive - MODIFICADO PARA HAMBURGUESA */
         @media (max-width: 768px) {
-            .nav-pills { flex-direction: column; gap: 0.5rem; margin-right: 1rem; }
+            .nav-pills { display: none; }
+            .hamburger { display: flex; }
+            
             .hero h1 { font-size: 2rem; }
             section { padding: 4rem 3%; }
             .pricing-cards, .features-grid { grid-template-columns: 1fr; }
@@ -406,6 +503,8 @@
             .hero { padding: 4rem 1rem 2rem; }
             .hero h1 { font-size: 1.8rem; }
             .popup-content { padding: 2rem; margin: 1rem; }
+            
+            .mobile-menu { width: 90%; max-width: none; }
         }
     </style>
 </head>
@@ -417,6 +516,7 @@
                 AI love reuse
             </div>
             <div style="display: flex; align-items: center;">
+                <!-- Menú Desktop -->
                 <div class="nav-pills">
                     <a href="#inicio" class="nav-pill active">🏠 Inicio</a>
                     <a href="#impacto" class="nav-pill">🌍 Impacto Ambiental</a>
@@ -424,6 +524,14 @@
                     <a href="#funcionamiento" class="nav-pill">⚙️ Cómo funciona</a>
                     <a href="#equipo" class="nav-pill">👥 Equipo</a>
                 </div>
+                
+                <!-- Botón Hamburguesa -->
+                <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                    <div class="hamburger-line"></div>
+                    <div class="hamburger-line"></div>
+                    <div class="hamburger-line"></div>
+                </div>
+                
                 <div class="auth-container">
                     <button class="google-login-btn" onclick="loginWithGoogle()" id="loginBtn">
                         <svg width="18" height="18" viewBox="0 0 18 18">
@@ -444,6 +552,48 @@
             </div>
         </nav>
     </header>
+
+    <!-- Menú Mobile Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+    
+    <!-- Menú Mobile -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <h3>AI love reuse</h3>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">Reutiliza tu ropa con IA</p>
+        </div>
+        
+        <a href="#inicio" class="mobile-nav-pill active" onclick="closeMobileMenu()">
+            <i class="fas fa-home" style="margin-right: 1rem;"></i>
+            Inicio
+        </a>
+        <a href="#impacto" class="mobile-nav-pill" onclick="closeMobileMenu()">
+            <i class="fas fa-globe" style="margin-right: 1rem;"></i>
+            Impacto Ambiental
+        </a>
+        <a href="#precios" class="mobile-nav-pill" onclick="closeMobileMenu()">
+            <i class="fas fa-credit-card" style="margin-right: 1rem;"></i>
+            Precios
+        </a>
+        <a href="#funcionamiento" class="mobile-nav-pill" onclick="closeMobileMenu()">
+            <i class="fas fa-cog" style="margin-right: 1rem;"></i>
+            Cómo funciona
+        </a>
+        <a href="#equipo" class="mobile-nav-pill" onclick="closeMobileMenu()">
+            <i class="fas fa-users" style="margin-right: 1rem;"></i>
+            Equipo
+        </a>
+        <a href="#upload" class="mobile-nav-pill" onclick="closeMobileMenu()">
+            <i class="fas fa-upload" style="margin-right: 1rem;"></i>
+            Subir Fotos
+        </a>
+        
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+            <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; text-align: center; margin-bottom: 1rem;">
+                ♻️ Maximiza tu ropa, minimiza tu impacto ambiental
+            </p>
+        </div>
+    </div>
 
     <section id="inicio" class="hero">
         <div style="max-width: 900px; animation: fadeInUp 1s ease;">
@@ -609,18 +759,18 @@
                         <i class="fas fa-tshirt" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
                         <h4>Parte Superior</h4>
                         <p>Camisas, blusas, suéteres</p>
-                        <label for="top-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
-                        <input type="file" id="top-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('top', this)">
-                        <div id="top-preview" class="preview-area"></div>
+                        <label for="tops-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
+                        <input type="file" id="tops-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('tops', this)">
+                        <div id="tops-preview" class="preview-area"></div>
                     </div>
                     
                     <div class="upload-item">
                         <i class="fas fa-user-tie" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
                         <h4>Parte Inferior</h4>
                         <p>Pantalones, faldas, shorts</p>
-                        <label for="bottom-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
-                        <input type="file" id="bottom-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottom', this)">
-                        <div id="bottom-preview" class="preview-area"></div>
+                        <label for="bottoms-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
+                        <input type="file" id="bottoms-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottoms', this)">
+                        <div id="bottoms-preview" class="preview-area"></div>
                     </div>
                     
                     <div class="upload-item">
@@ -721,27 +871,63 @@
     </footer>
 
     <script>
-        // ✅ CONFIGURACIÓN SINCRONIZADA CON BACKEND
+        // ✅ CONFIGURACIÓN V7.0 - SINCRONIZADA CON BACKEND COMPLETO
         const GOOGLE_CLIENT_ID = '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
-        const API_BASE = "https://outfit-recommender.fly.dev"; // Tu URL backend
+        const API_BASE = "https://outfit-recommender.fly.dev";
 
-        // ✅ ESTADO GLOBAL
+        // ✅ ESTADO GLOBAL V7.0
         let isLoggedIn = false;
         let currentUser = null;
-        let uploadedFiles = { top: [], bottom: [], shoes: [] };
-        const FILE_LIMITS = { top: 3, bottom: 3, shoes: 5 };
+        let uploadedFiles = { tops: [], bottoms: [], shoes: [] };  // ✅ CAMBIO: tops/bottoms en plural
+        const FILE_LIMITS = { tops: 3, bottoms: 3, shoes: 5 };    // ✅ CAMBIO: tops/bottoms en plural
 
-        // ✅ FUNCIÓN SINCRONIZADA - Maneja EXACTAMENTE los códigos del backend
+        // ✅ FUNCIONES DEL MENÚ HAMBURGUESA
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            
+            const isActive = mobileMenu.classList.contains('active');
+            
+            if (isActive) {
+                closeMobileMenu();
+            } else {
+                mobileMenu.classList.add('active');
+                overlay.classList.add('active');
+                hamburger.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Evita scroll del body
+            }
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            hamburger.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restaura scroll del body
+        }
+
+        // ✅ FUNCIÓN SINCRONIZADA CON BACKEND V7.0
         function getFriendlyErrorMessage(backendError) {
             const errorString = JSON.stringify(backendError).toLowerCase();
             
-            // CÓDIGOS EXACTOS DEL BACKEND
+            // CÓDIGOS EXACTOS DEL BACKEND V7.0
+            if (errorString.includes('too_many_items')) {
+                if (backendError.message) {
+                    return backendError.message;
+                }
+                return 'Límite de fotos excedido para este tipo de prenda';
+            }
+            
             if (errorString.includes('not_in_whitelist')) {
-                return 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
+                return backendError.message || 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
             }
             
             if (errorString.includes('not_footwear')) {
-                return 'Esta imagen no parece ser calzado válido. Sube una foto clara de zapatos, botas o sandalias.';
+                return backendError.message || 'Esta imagen no parece ser calzado válido. Sube una foto clara de zapatos, botas o sandalias.';
             }
             
             if (errorString.includes('tipo de archivo no permitido')) {
@@ -757,11 +943,10 @@
                 return backendError.message;
             }
             
-            // Mensaje por defecto IDÉNTICO al backend
-            return 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
+            return 'Error procesando la imagen. Intenta con otra foto.';
         }
 
-        // ✅ VALIDACIÓN SIMPLIFICADA - Solo técnica, backend hace semántica
+        // ✅ VALIDACIÓN TÉCNICA BÁSICA
         async function validateClothingImage(file) {
             if (!file.type.startsWith('image/')) {
                 throw new Error('Solo se permiten archivos de imagen');
@@ -774,7 +959,7 @@
             return true;
         }
 
-        // ✅ SUBIDA DE ARCHIVOS SINCRONIZADA
+        // ✅ SUBIDA DE ARCHIVOS V7.0 - ACTUALIZADA PARA MÚLTIPLES
         async function handleFileUpload(type, input) {
             if (!isLoggedIn) {
                 showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
@@ -789,7 +974,8 @@
             
             const availableSlots = maxFiles - currentCount;
             if (files.length > availableSlots) {
-                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${type}. Máximo: ${maxFiles}`, 'error');
+                const typeText = type === 'tops' ? 'superiores' : type === 'bottoms' ? 'inferiores' : 'shoes';
+                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${typeText}. Máximo: ${maxFiles}`, 'error');
                 return;
             }
             
@@ -861,19 +1047,19 @@
                     label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
                 }
             } else {
-                const typeText = type === 'top' ? 'Superiores' : type === 'bottom' ? 'Inferiores' : 'Zapatos';
+                const typeText = type === 'tops' ? 'Superiores' : type === 'bottoms' ? 'Inferiores' : 'Zapatos';
                 label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
             }
         }
 
-        // ✅ RECOMENDACIÓN SINCRONIZADA CON BACKEND
+        // ✅ RECOMENDACIÓN V7.0 - COMPLETAMENTE ACTUALIZADA
         async function getRecommendation() {
             if (!isLoggedIn) {
                 showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
                 return;
             }
 
-            if (uploadedFiles.top.length === 0 || uploadedFiles.bottom.length === 0 || uploadedFiles.shoes.length === 0) {
+            if (uploadedFiles.tops.length === 0 || uploadedFiles.bottoms.length === 0 || uploadedFiles.shoes.length === 0) {
                 showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
                 return;
             }
@@ -881,7 +1067,8 @@
             const button = document.getElementById('generateBtn');
             const originalText = button.innerHTML;
             
-            button.innerHTML = '<span class="loading"></span> La IA está analizando...';
+            // Usar mensaje del backend si está disponible
+            button.innerHTML = '<span class="loading"></span> Generando combinaciones personalizadas...';
             button.disabled = true;
 
             try {
@@ -889,14 +1076,19 @@
                 formData.append('user_email', currentUser.email);
                 formData.append('user_name', currentUser.name || '');
                 
-                // EXACTAMENTE como espera el backend
-                formData.append('top', uploadedFiles.top[0]);
-                formData.append('bottom', uploadedFiles.bottom[0]);
+                // ✅ ENVÍO ACTUALIZADO - MÚLTIPLES ARCHIVOS DE CADA TIPO
+                uploadedFiles.tops.forEach((file) => {
+                    formData.append('tops', file);
+                });
+                uploadedFiles.bottoms.forEach((file) => {
+                    formData.append('bottoms', file);
+                });
                 uploadedFiles.shoes.forEach((file) => {
                     formData.append('shoes', file);
                 });
 
-                console.log(`📤 Enviando: 1 superior, 1 inferior, ${uploadedFiles.shoes.length} zapatos`);
+                console.log(`📤 Enviando: ${uploadedFiles.tops.length} superiores, ${uploadedFiles.bottoms.length} inferiores, ${uploadedFiles.shoes.length} zapatos`);
+                console.log(`📊 Combinaciones posibles: ${uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length}`);
 
                 const response = await fetch(`${API_BASE}/recommend`, {
                     method: 'POST',
@@ -909,10 +1101,10 @@
                     
                     const friendlyMessage = getFriendlyErrorMessage(errorData.detail || errorData);
                     
-                    if (errorData.detail && (errorData.detail.code === 'NOT_IN_WHITELIST' || errorData.detail.field)) {
+                    if (errorData.detail && (errorData.detail.code === 'TOO_MANY_ITEMS' || errorData.detail.code === 'NOT_IN_WHITELIST' || errorData.detail.field)) {
                         const fieldName = errorData.detail.field || 'imagen';
                         showInvalidImagePopup(
-                            'Imagen no válida',
+                            'Error con la imagen',
                             `${friendlyMessage}\n\nProblema detectado en: ${fieldName}`,
                             false
                         );
@@ -928,19 +1120,20 @@
                     throw new Error('Respuesta inválida del servidor');
                 }
                 
-                console.log('✅ Recomendaciones recibidas:', data);
-                displayRecommendations(data);
+                console.log('✅ Recomendaciones V7.0 recibidas:', data);
+                displayRecommendationsV7(data);
                 
-                const numRecs = data.recommendations_shown || data.results.length;
-                showNotification(`${numRecs} recomendación${numRecs > 1 ? 'es' : ''} generada${numRecs > 1 ? 's' : ''} con IA`, 'success');
+                // ✅ USAR MENSAJE DEL BACKEND
+                const message = data.ui_messages?.result || `${data.recommendations_count} recomendaciones personalizadas para ti`;
+                showNotification(message, 'success');
                 
             } catch (error) {
                 console.error('❌ Error:', error);
                 showNotification(error.message, 'error');
                 
                 if (error.name === 'TypeError' || error.message.includes('fetch')) {
-                    const fallbackResponse = getFallbackRecommendations();
-                    displayRecommendations(fallbackResponse);
+                    const fallbackResponse = getFallbackRecommendationsV7();
+                    displayRecommendationsV7(fallbackResponse);
                     showNotification('Modo offline - datos de demostración', 'info');
                 }
                 
@@ -950,13 +1143,14 @@
             }
         }
 
-        // ✅ MOSTRAR RECOMENDACIONES SINCRONIZADO
-        function displayRecommendations(data) {
+        // ✅ MOSTRAR RECOMENDACIONES V7.0 - COMPLETAMENTE NUEVA
+        function displayRecommendationsV7(data) {
             const resultDiv = document.getElementById('result');
             const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
             
             let html = '';
             
+            // Header con información del análisis
             if (data.is_fallback) {
                 html += `
                     <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
@@ -964,11 +1158,12 @@
                         <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">No se pudo conectar con el servidor. Mostrando simulación</p>
                     </div>
                 `;
-            } else if (data.total_shoes_analyzed) {
+            } else if (data.input_summary) {
                 html += `
                     <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
                         <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">🎯 IA Completó el Análisis</h4>
-                        <p style="margin: 0;">Se analizaron ${data.total_shoes_analyzed} zapato${data.total_shoes_analyzed > 1 ? 's' : ''} y se generaron ${data.recommendations_shown} recomendación${data.recommendations_shown > 1 ? 'es' : ''}</p>
+                        <p style="margin: 0;">${data.input_summary.message_for_user || `Se evaluaron ${data.input_summary.total_combinations_evaluated} combinaciones`}</p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.8;">${data.input_summary.tops_received} superiores × ${data.input_summary.bottoms_received} inferiores × ${data.input_summary.shoes_received} zapatos</p>
                     </div>
                 `;
             }
@@ -977,57 +1172,88 @@
                 const isBest = displayIndex === 0;
                 const percentage = (result.score * 100).toFixed(1);
                 
-                const topFile = uploadedFiles.top[0];
-                const bottomFile = uploadedFiles.bottom[0];
-                const shoesFile = uploadedFiles.shoes[result.index] || uploadedFiles.shoes[0];
+                // ✅ USAR ÍNDICES CORRECTOS PARA CADA PRENDA
+                const topFile = uploadedFiles.tops[result.top_index] || uploadedFiles.tops[0];
+                const bottomFile = uploadedFiles.bottoms[result.bottom_index] || uploadedFiles.bottoms[0];
+                const shoesFile = uploadedFiles.shoes[result.shoe_index] || uploadedFiles.shoes[0];
                 
                 const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
                 const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
                 const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
                 
+                // ✅ OCASIÓN Y COLORES
+                const occasionBadge = result.predicted_occasion ? 
+                    `<span class="occasion-badge occasion-${result.predicted_occasion}">${result.predicted_occasion}</span>` : '';
+                    
+                const colorPalette = result.color_palette ? `
+                    <div class="color-palette">
+                        <span style="font-size: 0.8rem; margin-right: 0.5rem;">Colores:</span>
+                        ${result.color_palette.top_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.top_colors[0].join(',')})"></span>` : ''}
+                        ${result.color_palette.bottom_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.bottom_colors[0].join(',')})"></span>` : ''}
+                        ${result.color_palette.shoe_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.shoe_colors[0].join(',')})"></span>` : ''}
+                    </div>
+                ` : '';
+                
                 html += `
                     <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); position: relative;">
                         ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">⭐ Mejor compatibilidad</div>' : ''}
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700;">
-                                ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
-                            </h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                            <div>
+                                <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
+                                    ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
+                                </h3>
+                                ${occasionBadge}
+                                ${colorPalette}
+                            </div>
                             <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">${percentage}%</div>
                         </div>
 
                         <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
                             <div style="text-align: center;">
                                 <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Superior">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Superior</p>
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_top || 'Superior'}</p>
+                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.top_index + 1}</p>
                             </div>
                             
                             <div style="font-size: 2rem; color: var(--accent);">+</div>
                             
                             <div style="text-align: center;">
                                 <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Inferior">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Inferior</p>
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_bottom || 'Inferior'}</p>
+                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.bottom_index + 1}</p>
                             </div>
                             
                             <div style="font-size: 2rem; color: var(--accent);">+</div>
                             
                             <div style="text-align: center;">
                                 <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Calzado">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">Zapato ${(result.index || displayIndex) + 1}</p>
+                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_shoe || 'Zapato'}</p>
+                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.shoe_index + 1}</p>
                             </div>
                         </div>
 
                         <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; line-height: 1.8;">
                             <p><strong>🎯 Compatibilidad:</strong> ${percentage}% según análisis de IA</p>
-                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}</p>
+                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}${result.predicted_occasion ? ` • ${result.predicted_occasion}` : ''}</p>
+                            
+                            ${result.scoring_breakdown ? `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin: 1rem 0; font-size: 0.9rem;">
+                                    <div><strong>CLIP:</strong> ${(result.scoring_breakdown.clip_score * 100).toFixed(0)}%</div>
+                                    <div><strong>Colores:</strong> ${result.scoring_breakdown.color_bonus > 0 ? '+' : ''}${(result.scoring_breakdown.color_bonus * 100).toFixed(0)}%</div>
+                                    <div><strong>Formalidad:</strong> ${(result.scoring_breakdown.formality_bonus * 100).toFixed(0)}%</div>
+                                    ${result.occasion_confidence ? `<div><strong>Ocasión:</strong> ${(result.occasion_confidence * 100).toFixed(0)}%</div>` : ''}
+                                </div>
+                            ` : ''}
+                            
                             <p><strong>💬 Análisis:</strong> ${isBest ? 'Esta combinación tiene la máxima compatibilidad de colores y estilos.' : 'Excelente alternativa con muy buena armonía visual.'}</p>
                         </div>
                         
                         <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button onclick="acceptCombination('${result.combination || displayIndex}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                            <button onclick="acceptCombination('${result.combination || result.index}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
                                 ❤️ Me gusta
                             </button>
-                            <button onclick="rejectCombination('${result.combination || displayIndex}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
+                            <button onclick="rejectCombination('${result.combination || result.index}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
                                 👎 No me convence
                             </button>
                         </div>
@@ -1035,14 +1261,31 @@
                 `;
             });
             
+            // Footer con información adicional
+            if (data.occasion_analysis?.top_occasions_found?.length > 0) {
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
+                        <h4 style="color: var(--accent); margin-bottom: 1rem;">🏷️ Ocasiones Detectadas</h4>
+                        <div>
+                            ${data.occasion_analysis.top_occasions_found.map(occasion => 
+                                `<span class="occasion-badge occasion-${occasion}">${occasion}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
             resultDiv.innerHTML = html;
             resultDiv.style.display = 'block';
             setTimeout(() => resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
 
-        function getFallbackRecommendations() {
+        function getFallbackRecommendationsV7() {
+            const numTops = uploadedFiles.tops.length;
+            const numBottoms = uploadedFiles.bottoms.length;
             const numShoes = uploadedFiles.shoes.length;
-            const numRecommendations = Math.min(numShoes, 3);
+            const totalCombinations = numTops * numBottoms * numShoes;
+            const numRecommendations = Math.min(totalCombinations, 3);
             
             const results = [];
             for (let i = 0; i < numRecommendations; i++) {
@@ -1050,14 +1293,28 @@
                     index: i,
                     combination: `D${i + 1}`,
                     score: 0.95 - (i * 0.08) + (Math.random() - 0.5) * 0.08,
-                    formality: Math.random() > 0.5 ? "casual" : "formal"
+                    formality: Math.random() > 0.5 ? "casual" : "formal",
+                    top_index: i % numTops,
+                    bottom_index: i % numBottoms,
+                    shoe_index: i % numShoes,
+                    detected_top: "Prenda superior",
+                    detected_bottom: "Prenda inferior",
+                    detected_shoe: "Zapato",
+                    predicted_occasion: ["casual", "formal", "semiformal"][i % 3],
+                    occasion_confidence: 0.7 + (Math.random() * 0.2)
                 });
             }
             
             return {
                 results: results,
-                total_shoes_analyzed: numShoes,
-                recommendations_shown: numRecommendations,
+                recommendations_count: numRecommendations,
+                input_summary: {
+                    tops_received: numTops,
+                    bottoms_received: numBottoms,
+                    shoes_received: numShoes,
+                    total_combinations_evaluated: totalCombinations,
+                    message_for_user: `Se evaluaron ${totalCombinations} combinaciones de tus prendas`
+                },
                 is_fallback: true
             };
         }
@@ -1097,7 +1354,7 @@
             }
         }
 
-        // ✅ GOOGLE AUTH
+        // ✅ GOOGLE AUTH (SIN CAMBIOS)
         function initializeGoogleAuth() {
             if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
                 console.error('Google Identity Services no disponible');
@@ -1181,9 +1438,9 @@
             
             isLoggedIn = false;
             currentUser = null;
-            uploadedFiles = { top: [], bottom: [], shoes: [] };
+            uploadedFiles = { tops: [], bottoms: [], shoes: [] };  // ✅ CAMBIO: tops/bottoms en plural
             
-            ['top', 'bottom', 'shoes'].forEach(type => {
+            ['tops', 'bottoms', 'shoes'].forEach(type => {  // ✅ CAMBIO: tops/bottoms en plural
                 const preview = document.getElementById(`${type}-preview`);
                 if (preview) preview.innerHTML = '';
                 updateUploadLabel(type);
@@ -1227,7 +1484,7 @@
             }
         }
 
-        // ✅ POPUP FUNCTIONS
+        // ✅ POPUP FUNCTIONS (SIN CAMBIOS)
         function showInvalidImagePopup(title, message, redirectToLogin = false) {
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
@@ -1279,7 +1536,7 @@
             }
         }
 
-        // ✅ PRICING FUNCTIONS
+        // ✅ PRICING FUNCTIONS (SIN CAMBIOS)
         function startFreePlan() {
             if (!isLoggedIn) {
                 showInvalidImagePopup('Inicia sesión para comenzar', 'Accede con Google para empezar tu plan gratuito de 30 días', true);
@@ -1319,23 +1576,32 @@
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth' });
+                    // Cerrar menú móvil si está abierto
+                    closeMobileMenu();
                 }
             });
         });
 
-        // ✅ NAV PILLS ACTIVE
+        // ✅ NAV PILLS ACTIVE - ACTUALIZADO PARA MÓVIL
         function updateActiveNav() {
             const sections = ['inicio', 'impacto', 'precios', 'funcionamiento', 'equipo'];
             const navPills = document.querySelectorAll('.nav-pill');
+            const mobileNavPills = document.querySelectorAll('.mobile-nav-pill');
             
             sections.forEach((section, index) => {
                 const element = document.getElementById(section);
                 if (element) {
                     const rect = element.getBoundingClientRect();
                     if (rect.top <= 100 && rect.bottom >= 100) {
+                        // Desktop
                         navPills.forEach(pill => pill.classList.remove('active'));
                         if (navPills[index]) {
                             navPills[index].classList.add('active');
+                        }
+                        // Mobile
+                        mobileNavPills.forEach(pill => pill.classList.remove('active'));
+                        if (mobileNavPills[index]) {
+                            mobileNavPills[index].classList.add('active');
                         }
                     }
                 }
@@ -1354,7 +1620,14 @@
             }
         });
 
-        // ✅ INITIALIZE
+        // ✅ CERRAR MENÚ AL HACER CLIC FUERA O AL REDIMENSIONAR
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+
+        // ✅ INITIALIZE V7.0
         document.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
             
@@ -1381,7 +1654,7 @@
             }, 2000);
             
             setTimeout(() => {
-                showNotification('Bienvenido a AI love reuse', 'success');
+                showNotification('Bienvenido a AI love reuse v7.0 con menú hamburguesa', 'success');
             }, 2000);
         });
     </script>
