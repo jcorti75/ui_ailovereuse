@@ -163,14 +163,68 @@
     .popup-btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,188,212,.4)}
     .popup-btn-secondary{background:transparent;color:#666;border:2px solid #ddd}
     .popup-btn-secondary:hover{background:#f5f5f5;border-color:#ccc}
-    @keyframes slideInUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    /* Faltaba este keyframe usado en el hero */
+    
+    /* NUEVOS ESTILOS PARA RECOMENDACIONES SINCRONIZADOS CON BACKEND */
+    .recommendations-container{margin-top:3rem;max-width:1200px;margin-left:auto;margin-right:auto}
+    .rec-card{background:rgba(255,255,255,.12);border-radius:20px;padding:2rem;margin-bottom:2rem;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);transition:all .3s ease}
+    .rec-card:hover{transform:translateY(-5px);background:rgba(255,255,255,.18);border-color:var(--accent)}
+    
+    .rec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+    .rec-title{font-size:1.5rem;font-weight:700;color:#fff;margin:0}
+    .rec-score{display:flex;align-items:center;gap:1rem}
+    .score-badge{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;padding:.5rem 1.2rem;border-radius:20px;font-weight:700;font-size:1.1rem;min-width:60px;text-align:center}
+    .rank-badge{background:rgba(255,193,7,.2);color:#ffc107;padding:.3rem .8rem;border-radius:15px;font-weight:600;font-size:.9rem}
+    
+    .rec-photos{display:flex;justify-content:center;gap:1.5rem;margin:1.5rem 0;flex-wrap:wrap;align-items:center}
+    .rec-photo{width:140px;height:140px;border-radius:15px;object-fit:cover;border:3px solid var(--accent);transition:all .3s ease;box-shadow:0 5px 15px rgba(0,0,0,.2)}
+    .rec-photo:hover{transform:scale(1.05);border-color:var(--accent-light);box-shadow:0 8px 25px rgba(0,188,212,.4)}
+    
+    .rec-info{background:rgba(255,255,255,.08);border-radius:15px;padding:1.5rem;margin:1.5rem 0}
+    .rec-meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+    .rec-meta-item{background:rgba(255,255,255,.1);padding:1rem;border-radius:10px;text-align:center}
+    .rec-meta-label{font-size:.8rem;opacity:.8;text-transform:uppercase;font-weight:600;margin-bottom:.3rem}
+    .rec-meta-value{font-size:1rem;font-weight:600;color:var(--accent-light)}
+    
+    .rec-description{font-size:1rem;line-height:1.5;margin:1rem 0;opacity:.9}
+    .rec-reason{background:rgba(0,188,212,.1);border:1px solid rgba(0,188,212,.3);border-radius:12px;padding:1rem;margin:1rem 0;font-size:.95rem;line-height:1.4}
+    
+    .color-palette{margin-top:1rem}
+    .color-palette-title{font-size:.9rem;font-weight:600;margin-bottom:.5rem;opacity:.8}
+    .color-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+    .color-row-label{font-weight:600;min-width:60px;font-size:.8rem}
+    .color-chips{display:flex;gap:.3rem}
+    .color-chip{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.4);transition:transform .2s ease}
+    .color-chip:hover{transform:scale(1.2)}
+    
+    /* Animaciones mejoradas */
     @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .loading{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    @media (max-width:768px){.nav-pills{display:none}.hamburger{display:flex}.hero h1{font-size:2rem}section{padding:4rem 3%}.pricing-cards,.features-grid{grid-template-columns:1fr}.upload-grid{grid-template-columns:1fr}.notification{max-width:280px;font-size:.9rem}}
-    @media (max-width:480px){header{padding:1rem 3%}.hero{padding:4rem 1rem 2rem}.hero h1{font-size:1.8rem}.popup-content{padding:2rem;margin:1rem}.mobile-menu{width:90%}.notification{max-width:250px;padding:.8rem 1.2rem}}
+    
+    /* Responsive mejorado */
+    @media (max-width:768px){
+      .nav-pills{display:none}
+      .hamburger{display:flex}
+      .hero h1{font-size:2rem}
+      section{padding:4rem 3%}
+      .pricing-cards,.features-grid{grid-template-columns:1fr}
+      .upload-grid{grid-template-columns:1fr}
+      .notification{max-width:280px;font-size:.9rem}
+      .rec-photos{gap:1rem}
+      .rec-photo{width:100px;height:100px}
+      .rec-header{flex-direction:column;align-items:flex-start}
+      .rec-meta-grid{grid-template-columns:1fr}
+    }
+    @media (max-width:480px){
+      header{padding:1rem 3%}
+      .hero{padding:4rem 1rem 2rem}
+      .hero h1{font-size:1.8rem}
+      .popup-content{padding:2rem;margin:1rem}
+      .mobile-menu{width:90%}
+      .notification{max-width:250px;padding:.8rem 1.2rem}
+      .rec-photo{width:80px;height:80px}
+    }
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
     .google-login-btn:focus,.file-label:focus,.pricing-btn:focus,.hero-button:focus{outline:2px solid var(--accent);outline-offset:2px}
   </style>
@@ -445,6 +499,7 @@
     const GOOGLE_CLIENT_ID='326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
     const API_BASE="https://outfit-recommender.fly.dev";
     const fileUrlMap = new WeakMap();
+    
     function getFileUrl(file){
       if(!file) return '';
       if(!fileUrlMap.has(file)){
@@ -452,6 +507,7 @@
       }
       return fileUrlMap.get(file);
     }
+    
     let isLoggedIn=false,currentUser=null,uploadedFiles={tops:[],bottoms:[],shoes:[]};
     const FILE_LIMITS={tops:3,bottoms:3,shoes:5};
     let loginOverlayRef=null;
@@ -628,118 +684,234 @@
     async function getRecommendation(){
       if(!isLoggedIn){showNotification('Necesitas iniciar sesión primero','error');return}
       if(uploadedFiles.tops.length===0||uploadedFiles.bottoms.length===0||uploadedFiles.shoes.length===0){showNotification('Necesitas subir al menos una foto de cada categoría','error');return}
-      const btn=document.getElementById('generateBtn'),backup=btn.innerHTML;btn.innerHTML='<span class="loading"></span> Generando combinaciones...';btn.disabled=true;
+      
+      const btn=document.getElementById('generateBtn'),backup=btn.innerHTML;
+      btn.innerHTML='<span class="loading"></span> Generando combinaciones...';
+      btn.disabled=true;
+      
       try{
-        const fd=new FormData();fd.append('user_email',currentUser.email);
-        uploadedFiles.tops.forEach(f=>fd.append('tops',f));uploadedFiles.bottoms.forEach(f=>fd.append('bottoms',f));uploadedFiles.shoes.forEach(f=>fd.append('shoes',f));
+        const fd=new FormData();
+        fd.append('user_email',currentUser.email);
+        uploadedFiles.tops.forEach(f=>fd.append('tops',f));
+        uploadedFiles.bottoms.forEach(f=>fd.append('bottoms',f));
+        uploadedFiles.shoes.forEach(f=>fd.append('shoes',f));
+        
         const resp=await fetch(`${API_BASE}/recommend`,{method:'POST',body:fd});
-        let data=null;try{data=await resp.json()}catch{data=null}
-        if(!resp.ok){const msg=(data&&(data.detail||data.message))||`Error del servidor (HTTP ${resp.status})`;throw new Error(msg)}
+        let data=null;
+        
+        try{data=await resp.json()}catch{data=null}
+        if(!resp.ok){
+          const msg=(data&&(data.detail||data.message))||`Error del servidor (HTTP ${resp.status})`;
+          throw new Error(msg)
+        }
+        
         renderRecommendations(data);
         showNotification('¡Recomendaciones generadas exitosamente!','success');
-      }catch(e){showNotification('Error generando recomendaciones: '+(e.message||e),'error')}
-      finally{btn.innerHTML=backup;btn.disabled=false}
-    }
-
-    function rgbBox(rgb){
-      if(!rgb||!Array.isArray(rgb)||rgb.length<3) return '';
-      const [r,g,b]=rgb; const c=`rgb(${r},${g},${b})`;
-      return `<span title="${c}" style="display:inline-block;width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.2);margin-right:4px;background:${c}"></span>`;
-    }
-
-    function renderColorPalette(palette){
-      try{
-        const t=(palette?.top_colors||[]).slice(0,3).map(rgbBox).join('');
-        const b=(palette?.bottom_colors||[]).slice(0,3).map(rgbBox).join('');
-        const s=(palette?.shoe_colors||[]).slice(0,3).map(rgbBox).join('');
-        if(!t && !b && !s) return '';
-        return `<div style="margin-top:.5rem">
-          <div><strong>Top:</strong> ${t}</div>
-          <div><strong>Bottom:</strong> ${b}</div>
-          <div><strong>Shoes:</strong> ${s}</div>
-        </div>`;
-      }catch{return '';}
-    }
-
-    function renderRecommendations(data){
-      const r=document.getElementById('result');
-      const items = data?.results || data?.recommendations || [];
-      if(!items.length){
-        r.innerHTML="<p>No hubo recomendaciones.</p>";
-        r.style.display="block";return;
+      }catch(e){
+        showNotification('Error generando recomendaciones: '+(e.message||e),'error')
+      }finally{
+        btn.innerHTML=backup;
+        btn.disabled=false
       }
-    
-      const cards = items.map((item, idx) => {
-        // fotos usando los índices que manda el backend
-        const topFile    = uploadedFiles.tops[item.top_index] || uploadedFiles.tops[0];
-        const bottomFile = uploadedFiles.bottoms[item.bottom_index] || uploadedFiles.bottoms[0];
-        const shoeFile   = uploadedFiles.shoes[item.shoe_index] || uploadedFiles.shoes[0];
-    
-        const topURL    = getFileUrl(topFile);
+    }
+
+    // FUNCIÓN COMPLETAMENTE SINCRONIZADA CON EL BACKEND
+    function renderRecommendations(data){
+      const result = document.getElementById('result');
+      
+      // Verificar estructura de respuesta del backend
+      if (!data || !data.success) {
+        result.innerHTML = '<p>Error: Respuesta inválida del servidor</p>';
+        result.style.display = 'block';
+        return;
+      }
+      
+      const results = data.results || [];
+      if (!results.length) {
+        result.innerHTML = '<p>No se generaron recomendaciones</p>';
+        result.style.display = 'block';
+        return;
+      }
+      
+      let html = `
+        <div class="section-title">
+          <h2>🪄 Tus Mejores Combinaciones</h2>
+          <p>Generadas con IA - Algoritmo ${data.algorithm_version || 'N/A'}</p>
+        </div>
+        <div class="recommendations-container">
+      `;
+      
+      // Renderizar cada combinación usando EXACTAMENTE los campos del backend
+      results.forEach((item, idx) => {
+        // Obtener fotos usando los índices EXACTOS del backend
+        const topFile = uploadedFiles.tops[item.top_index] || uploadedFiles.tops[0];
+        const bottomFile = uploadedFiles.bottoms[item.bottom_index] || uploadedFiles.bottoms[0];  
+        const shoeFile = uploadedFiles.shoes[item.shoe_index] || uploadedFiles.shoes[0];
+        
+        const topURL = getFileUrl(topFile);
         const bottomURL = getFileUrl(bottomFile);
-        const shoeURL   = getFileUrl(shoeFile);
-    
-        // porcentajes
-        const scorePct = (typeof item.score === 'number')
-          ? (item.score*100).toFixed(1) + '%'
-          : (item.score || '');
-        const occPct = (typeof item.occasion_confidence === 'number')
-          ? (item.occasion_confidence*100).toFixed(1) + '%'
-          : null;
-    
-        // paleta
-        const paletteHTML = renderColorPalette(item.color_palette);
-    
-        return `
-          <div class="feature-card rec-card" style="text-align:left">
-            <div class="rec-meta">
-              <h3 style="margin:0">Combinación ${item.combination || ('C'+(idx+1))} · Rank ${item.rank ?? (idx+1)}</h3>
-              <span class="badge">${scorePct}</span>
+        const shoeURL = getFileUrl(shoeFile);
+        
+        // Usar score_pct del backend (no score)
+        const scoreDisplay = item.score_pct ? `${item.score_pct}%` : 'N/A';
+        const occasionConf = item.occasion_confidence ? `${Math.round(item.occasion_confidence * 100)}%` : '';
+        
+        html += `
+          <div class="rec-card">
+            <div class="rec-header">
+              <h3 class="rec-title">${item.combination || 'C' + (idx + 1)}</h3>
+              <div class="rec-score">
+                <span class="rank-badge">Rank ${item.rank || (idx + 1)}</span>
+                <span class="score-badge">${scoreDisplay}</span>
+              </div>
             </div>
-    
+            
             <div class="rec-photos">
-              ${topURL    ? `<img src="${topURL}" alt="top">`    : ''}
-              ${bottomURL ? `<img src="${bottomURL}" alt="bottom">` : ''}
-              ${shoeURL   ? `<img src="${shoeURL}" alt="shoe">`   : ''}
+              ${topURL ? `<img src="${topURL}" alt="Top" class="rec-photo">` : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="Bottom" class="rec-photo">` : ''}
+              ${shoeURL ? `<img src="${shoeURL}" alt="Shoe" class="rec-photo">` : ''}
             </div>
-    
-            <p style="margin:.1rem 0">Ocasión: <strong>${item.predicted_occasion||'-'}</strong>${occPct?` · Conf.: <strong>${occPct}</strong>`:''} · Formalidad: <strong>${item.formality||'-'}</strong></p>
-            ${item.style_analysis?`<p style="margin:.35rem 0">${item.style_analysis}</p>`:''}
-    
-            <div class="features-grid" style="margin-top:.5rem">
-              <div class="helper-card"><div class="helper-icon">👕</div><div><strong>Top</strong><br>${item.detected_top||'-'} ${item.top_formality?`(${item.top_formality})`:''}</div></div>
-              <div class="helper-card"><div class="helper-icon">👖</div><div><strong>Bottom</strong><br>${item.detected_bottom||'-'} ${item.bottom_formality?`(${item.bottom_formality})`:''}</div></div>
-              <div class="helper-card"><div class="helper-icon">👟</div><div><strong>Shoe</strong><br>${item.detected_shoe||'-'} ${item.shoe_formality?`(${item.shoe_formality})`:''}</div></div>
+            
+            <div class="rec-info">
+              <div class="rec-meta-grid">
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Ocasión</div>
+                  <div class="rec-meta-value">${item.predicted_occasion || 'N/A'}</div>
+                  ${occasionConf ? `<small>Conf: ${occasionConf}</small>` : ''}
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Formalidad</div>
+                  <div class="rec-meta-value">${item.formality || 'N/A'}</div>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Consistencia</div>
+                  <div class="rec-meta-value">${item.formality_consistency || 0}/3</div>
+                </div>
+                ${item.diversity_score ? `
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Diversidad</div>
+                  <div class="rec-meta-value">+${Math.round(item.diversity_score * 100)}%</div>
+                </div>` : ''}
+              </div>
+              
+              ${item.style_analysis ? `
+              <div class="rec-description">${item.style_analysis}</div>
+              ` : ''}
+              
+              ${item.recommendation_reason ? `
+              <div class="rec-reason">
+                💡 ${item.recommendation_reason}
+              </div>
+              ` : ''}
+              
+              <div class="rec-meta-grid" style="margin-top:1rem">
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👕 Top</div>
+                  <div class="rec-meta-value">${item.detected_top || 'N/A'}</div>
+                  <small>${item.top_formality || 'N/A'}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👖 Bottom</div>
+                  <div class="rec-meta-value">${item.detected_bottom || 'N/A'}</div>
+                  <small>${item.bottom_formality || 'N/A'}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👟 Shoe</div>
+                  <div class="rec-meta-value">${item.detected_shoe || 'N/A'}</div>
+                  <small>${item.shoe_formality || 'N/A'}</small>
+                </div>
+              </div>
+              
+              ${renderColorPalette(item.color_palette)}
             </div>
-    
-            ${paletteHTML}
-          </div>`;
-      }).join('');
-    
-      r.innerHTML = `
-        <div class="section-title"><h2>🪄 Tus Mejores Combinaciones</h2></div>
-        <div class="recs-row">${cards}</div>`;
-      r.style.display="block";
-      r.scrollIntoView({behavior:'smooth',block:'start'});
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      
+      // Agregar estadísticas del backend si están disponibles
+      if (data.differentiation_stats) {
+        const stats = data.differentiation_stats;
+        html += `
+          <div class="helper-card" style="margin-top:2rem">
+            <div class="helper-icon">📊</div>
+            <div>
+              <h5>Estadísticas de Diferenciación</h5>
+              <p>
+                Diversidad promedio: ${Math.round(stats.avg_diversity_bonus * 100)}% • 
+                Máxima diversidad: ${Math.round(stats.max_diversity_bonus * 100)}% • 
+                Método: ${stats.method || 'N/A'}
+              </p>
+              ${stats.percentage_gaps ? `<p>Diferencias entre scores: ${stats.percentage_gaps.join(', ')} puntos</p>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      result.innerHTML = html;
+      result.style.display = 'block';
+      result.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
     
-    
-        function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
-        function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
-    
-        function showNotification(msg,type='info',ms=4000){const n=document.createElement('div');n.className=`notification ${type}`;n.textContent=msg;document.body.appendChild(n);setTimeout(()=>{if(document.body.contains(n))document.body.removeChild(n)},ms)}
-    
-        document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){if(this.getAttribute('onclick'))return;e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'});closeMobileMenu()}})});
-        window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileMenu()});
-    
-        document.addEventListener('DOMContentLoaded',()=>{
-          updateAuthUI();
-          const checkGoogleLoaded=()=>{if(typeof google!=='undefined'&&google.accounts){initializeGoogleAuth()}else{setTimeout(checkGoogleLoaded,500)}};
-          setTimeout(checkGoogleLoaded,800);
-          setTimeout(()=>{document.querySelectorAll('.impact-fill').forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-width')+'%'},i*200)})},1500);
-          if(!isLoggedIn){document.getElementById('loginRequired').style.display='block'}
-          updateGenerateButton();
+    // Función mejorada para paleta de colores
+    function renderColorPalette(palette) {
+      if (!palette) return '';
+      
+      try {
+        let html = '<div class="color-palette"><div class="color-palette-title">Paleta de Colores:</div>';
+        
+        const items = [
+          {label: 'Top', colors: palette.top_colors || []},
+          {label: 'Bottom', colors: palette.bottom_colors || []},
+          {label: 'Shoe', colors: palette.shoe_colors || []}
+        ];
+        
+        items.forEach(item => {
+          if (item.colors.length > 0) {
+            html += `
+              <div class="color-row">
+                <span class="color-row-label">${item.label}:</span>
+                <div class="color-chips">
+            `;
+            
+            item.colors.slice(0, 3).forEach(color => {
+              if (Array.isArray(color) && color.length >= 3) {
+                const [r, g, b] = color;
+                const colorStr = `rgb(${r},${g},${b})`;
+                html += `<div class="color-chip" style="background:${colorStr}" title="${colorStr}"></div>`;
+              }
+            });
+            
+            html += '</div></div>';
+          }
         });
-      </script>
-    </body>
-    </html>
+        
+        html += '</div>';
+        return html;
+      } catch (e) {
+        console.error('Error rendering color palette:', e);
+        return '';
+      }
+    }
+
+    function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
+    function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
+
+    function showNotification(msg,type='info',ms=4000){const n=document.createElement('div');n.className=`notification ${type}`;n.textContent=msg;document.body.appendChild(n);setTimeout(()=>{if(document.body.contains(n))document.body.removeChild(n)},ms)}
+
+    // Event listeners
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){if(this.getAttribute('onclick'))return;e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'});closeMobileMenu()}})});
+    window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileMenu()});
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      updateAuthUI();
+      const checkGoogleLoaded=()=>{if(typeof google!=='undefined'&&google.accounts){initializeGoogleAuth()}else{setTimeout(checkGoogleLoaded,500)}};
+      setTimeout(checkGoogleLoaded,800);
+      setTimeout(()=>{document.querySelectorAll('.impact-fill').forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-width')+'%'},i*200)})},1500);
+      if(!isLoggedIn){document.getElementById('loginRequired').style.display='block'}
+      updateGenerateButton();
+    });
+  </script>
+</body>
+</html>
