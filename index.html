@@ -660,45 +660,78 @@
         r.innerHTML="<p>No hubo recomendaciones.</p>";
         r.style.display="block";return;
       }
-      const cards=items.map((item,idx)=>{
-        const score = typeof item.score==='number'? (item.score*100).toFixed(1)+'%' : (item.score||'');
-        return `<div class="feature-card" style="text-align:left">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
-            <h3 style="margin:0">Combinación ${item.combination||idx+1} · Rank ${item.rank??(idx+1)}</h3>
-            <span style="font-weight:800">${score}</span>
-          </div>
-          <p style="margin:.5rem 0">Ocasión: <strong>${item.predicted_occasion||'-'}</strong> · Formalidad: <strong>${item.formality||'-'}</strong></p>
-          ${item.style_analysis?`<p style="margin:.5rem 0">${item.style_analysis}</p>`:''}
-          <div class="features-grid" style="margin-top:.75rem">
-            <div class="helper-card"><div class="helper-icon">👕</div><div><strong>Top</strong><br>${item.detected_top||'-'} ${item.top_formality?`(${item.top_formality})`:''}</div></div>
-            <div class="helper-card"><div class="helper-icon">👖</div><div><strong>Bottom</strong><br>${item.detected_bottom||'-'} ${item.bottom_formality?`(${item.bottom_formality})`:''}</div></div>
-            <div class="helper-card"><div class="helper-icon">👟</div><div><strong>Shoe</strong><br>${item.detected_shoe||'-'} ${item.shoe_formality?`(${item.shoe_formality})`:''}</div></div>
-          </div>
-          ${renderColorPalette(item.color_palette)}
-        </div>`;
+    
+      const cards = items.map((item, idx) => {
+        // fotos usando los índices que manda el backend
+        const topFile    = uploadedFiles.tops[item.top_index] || uploadedFiles.tops[0];
+        const bottomFile = uploadedFiles.bottoms[item.bottom_index] || uploadedFiles.bottoms[0];
+        const shoeFile   = uploadedFiles.shoes[item.shoe_index] || uploadedFiles.shoes[0];
+    
+        const topURL    = getFileUrl(topFile);
+        const bottomURL = getFileUrl(bottomFile);
+        const shoeURL   = getFileUrl(shoeFile);
+    
+        // porcentajes
+        const scorePct = (typeof item.score === 'number')
+          ? (item.score*100).toFixed(1) + '%'
+          : (item.score || '');
+        const occPct = (typeof item.occasion_confidence === 'number')
+          ? (item.occasion_confidence*100).toFixed(1) + '%'
+          : null;
+    
+        // paleta
+        const paletteHTML = renderColorPalette(item.color_palette);
+    
+        return `
+          <div class="feature-card rec-card" style="text-align:left">
+            <div class="rec-meta">
+              <h3 style="margin:0">Combinación ${item.combination || ('C'+(idx+1))} · Rank ${item.rank ?? (idx+1)}</h3>
+              <span class="badge">${scorePct}</span>
+            </div>
+    
+            <div class="rec-photos">
+              ${topURL    ? `<img src="${topURL}" alt="top">`    : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="bottom">` : ''}
+              ${shoeURL   ? `<img src="${shoeURL}" alt="shoe">`   : ''}
+            </div>
+    
+            <p style="margin:.1rem 0">Ocasión: <strong>${item.predicted_occasion||'-'}</strong>${occPct?` · Conf.: <strong>${occPct}</strong>`:''} · Formalidad: <strong>${item.formality||'-'}</strong></p>
+            ${item.style_analysis?`<p style="margin:.35rem 0">${item.style_analysis}</p>`:''}
+    
+            <div class="features-grid" style="margin-top:.5rem">
+              <div class="helper-card"><div class="helper-icon">👕</div><div><strong>Top</strong><br>${item.detected_top||'-'} ${item.top_formality?`(${item.top_formality})`:''}</div></div>
+              <div class="helper-card"><div class="helper-icon">👖</div><div><strong>Bottom</strong><br>${item.detected_bottom||'-'} ${item.bottom_formality?`(${item.bottom_formality})`:''}</div></div>
+              <div class="helper-card"><div class="helper-icon">👟</div><div><strong>Shoe</strong><br>${item.detected_shoe||'-'} ${item.shoe_formality?`(${item.shoe_formality})`:''}</div></div>
+            </div>
+    
+            ${paletteHTML}
+          </div>`;
       }).join('');
-      r.innerHTML=`<div class="section-title"><h2>🪄 Tus Mejores Combinaciones</h2></div><div class="features-grid">${cards}</div>`;
+    
+      r.innerHTML = `
+        <div class="section-title"><h2>🪄 Tus Mejores Combinaciones</h2></div>
+        <div class="recs-row">${cards}</div>`;
       r.style.display="block";
-      // scroll suave al resultado
       r.scrollIntoView({behavior:'smooth',block:'start'});
     }
-
-    function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
-    function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
-
-    function showNotification(msg,type='info',ms=4000){const n=document.createElement('div');n.className=`notification ${type}`;n.textContent=msg;document.body.appendChild(n);setTimeout(()=>{if(document.body.contains(n))document.body.removeChild(n)},ms)}
-
-    document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){if(this.getAttribute('onclick'))return;e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'});closeMobileMenu()}})});
-    window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileMenu()});
-
-    document.addEventListener('DOMContentLoaded',()=>{
-      updateAuthUI();
-      const checkGoogleLoaded=()=>{if(typeof google!=='undefined'&&google.accounts){initializeGoogleAuth()}else{setTimeout(checkGoogleLoaded,500)}};
-      setTimeout(checkGoogleLoaded,800);
-      setTimeout(()=>{document.querySelectorAll('.impact-fill').forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-width')+'%'},i*200)})},1500);
-      if(!isLoggedIn){document.getElementById('loginRequired').style.display='block'}
-      updateGenerateButton();
-    });
-  </script>
-</body>
-</html>
+    
+    
+        function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
+        function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
+    
+        function showNotification(msg,type='info',ms=4000){const n=document.createElement('div');n.className=`notification ${type}`;n.textContent=msg;document.body.appendChild(n);setTimeout(()=>{if(document.body.contains(n))document.body.removeChild(n)},ms)}
+    
+        document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){if(this.getAttribute('onclick'))return;e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'});closeMobileMenu()}})});
+        window.addEventListener('resize',()=>{if(window.innerWidth>768)closeMobileMenu()});
+    
+        document.addEventListener('DOMContentLoaded',()=>{
+          updateAuthUI();
+          const checkGoogleLoaded=()=>{if(typeof google!=='undefined'&&google.accounts){initializeGoogleAuth()}else{setTimeout(checkGoogleLoaded,500)}};
+          setTimeout(checkGoogleLoaded,800);
+          setTimeout(()=>{document.querySelectorAll('.impact-fill').forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-width')+'%'},i*200)})},1500);
+          if(!isLoggedIn){document.getElementById('loginRequired').style.display='block'}
+          updateGenerateButton();
+        });
+      </script>
+    </body>
+    </html>
