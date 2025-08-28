@@ -98,7 +98,7 @@
     .file-input{display:none}
     .file-label{display:block;padding:1rem 2rem;background:linear-gradient(135deg,var(--accent),var(--accent-light));border-radius:25px;color:#fff;font-weight:600;cursor:pointer;transition:all .3s ease;margin-top:1rem}
     .file-label:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,188,212,.3)}
-    .preview-area{margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-height:200px;overflow-y:auto;padding:.5rem;border-radius:10px}
+    .preview-area{margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-height:220px;overflow-y:auto;padding:.5rem;border-radius:10px}
     .preview-image{width:120px;height:120px;object-fit:cover;border-radius:15px;border:2px solid var(--accent);transition:all .3s ease}
     .preview-image:hover{transform:scale(1.05);border-color:var(--accent-light)}
     .remove-image{position:absolute;top:-8px;right:-8px;background:#ff5252;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
@@ -165,6 +165,8 @@
     .popup-btn-secondary:hover{background:#f5f5f5;border-color:#ccc}
     @keyframes slideInUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    /* Faltaba este keyframe usado en el hero */
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
     .loading{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     @media (max-width:768px){.nav-pills{display:none}.hamburger{display:flex}.hero h1{font-size:2rem}section{padding:4rem 3%}.pricing-cards,.features-grid{grid-template-columns:1fr}.upload-grid{grid-template-columns:1fr}.notification{max-width:280px;font-size:.9rem}}
@@ -378,7 +380,7 @@
 
         <div id="upload-progress" class="helper-card success" style="display:none"><div class="helper-icon">✅</div><div class="helper-content"><h5>Progreso de subida</h5><p id="progress-text">Listo para generar combinaciones</p></div></div>
 
-        <button class="hero-button" onclick="getRecommendation()" style="margin-top:2rem;font-size:1.2rem" id="generateBtn">🪄 Generar Combinaciones Inteligentes</button>
+        <button class="hero-button" onclick="getRecommendation()" style="margin-top:2rem;font-size:1.2rem" id="generateBtn" disabled>🪄 Sube fotos de cada categoría para continuar</button>
         <div id="result" style="display:none;margin-top:3rem"></div>
       </div>
     </div>
@@ -507,17 +509,6 @@
       else{div.className='helper-card warning';const miss=[];if(!t)miss.push('prendas superiores');if(!b)miss.push('prendas inferiores');if(!s)miss.push('calzado');txt.textContent=`Faltan: ${miss.join(', ')}. Total subido: ${total} items`}
     }
 
-    function getFriendlyErrorMessage(backendError){
-      try{
-        const s=JSON.stringify(backendError).toLowerCase();
-        if(s.includes('mixed_categories')||s.includes('wrong_category'))return{title:'Categoría Incorrecta',message:backendError.message||'Has subido una prenda en la categoría equivocada',suggestions:[{type:'error',title:'Zapatos en Pantalones',message:'Súbelos en la sección correcta.'}]};
-        if(s.includes('too_many_items'))return{title:'Límite Excedido',message:backendError.message||'Has superado el límite de fotos para esta categoría',suggestions:[{type:'warning',title:'Demasiadas Fotos',message:'Límites: 3 superiores, 3 inferiores, 5 zapatos.'}]};
-        if(s.includes('not_in_whitelist'))return{title:'Prenda No Reconocida',message:'No pudimos identificar una prenda válida en esta imagen',suggestions:[{type:'info',title:'Mejora la Foto',message:'Fondo neutro e iluminación uniforme.'}]};
-        if(s.includes('low_confidence'))return{title:'Imagen Poco Clara',message:'La imagen no es lo suficientemente clara para el análisis',suggestions:[{type:'warning',title:'Calidad de Imagen',message:'Prueba otro ángulo o mejor luz.'}]};
-        return{title:'Error de Procesamiento',message:backendError.message||'Error procesando la imagen',suggestions:[]}
-      }catch{ return{title:'Error Inesperado',message:'Ocurrió un error. Intenta nuevamente.',suggestions:[]}}
-    }
-
     function toggleMobileMenu(){
       const m=document.getElementById('mobileMenu'),ov=document.getElementById('mobileMenuOverlay'),hb=document.getElementById('hamburgerBtn');const on=m.classList.contains('active');
       if(on)closeMobileMenu();else{m.classList.add('active');ov.classList.add('active');hb.classList.add('active');document.body.style.overflow='hidden'}
@@ -571,28 +562,38 @@
       let ok=0,errc=0,errs=[];
       for(let [i,f] of files.entries()){
         try{
-          await validateClothingImage(f);await simulateBackendValidation(f,type);
-          const preview=document.getElementById(`${type}-preview`);await processImageFile(f,type,preview);uploadedFiles[type].push(f);ok++;showLoadingOverlay(type,`Procesando imagen ${i+1} de ${files.length}...`)
-        }catch(e){errc++;const fe=getFriendlyErrorMessage(e);errs.push({type:'error',title:`Error en ${f.name}`,message:fe.message||e.message})}
+          await validateClothingImage(f);
+          const preview=document.getElementById(`${type}-preview`);
+          await processImageFile(f,type,preview);
+          uploadedFiles[type].push(f);
+          ok++;
+          showLoadingOverlay(type,`Procesando imagen ${i+1} de ${files.length}...`);
+        }catch(e){
+          errc++;errs.push({type:'error',title:`Error en ${f.name}`,message:e.message});
+        }
       }
       hideLoadingOverlay(type);
       if(ok>0&&errc===0)updateStatusIndicator(type,'success',`${ok} imagen${ok!==1?'es':''} subida${ok!==1?'s':''} correctamente`);
       else if(ok>0&&errc>0)updateStatusIndicator(type,'warning',`${ok} exitosas, ${errc} con errores`);
       else if(errc>0)updateStatusIndicator(type,'error',`${errc} imagen${errc!==1?'es':''} con errores`);
       updateUploadLabel(type);updateUploadProgress();updateGenerateButton();
-      if(errs.length){const title=errc===files.length?'Errores de Validación':'Algunas Imágenes con Problemas';const msg=errc===files.length?'No se pudo procesar ninguna imagen. Revisa los errores a continuación:':`Se procesaron ${ok} correctamente, pero ${errc} tuvieron problemas:`;showValidationPopup('error',title,msg,errs)}
-      else if(ok>0){const t=type==='tops'?'superiores':type==='bottoms'?'inferiores':'zapatos';showNotification(`${ok} foto${ok!==1?'s':''} de ${t} subida${ok!==1?'s':''} correctamente`,'success',3000)}
+      if(errs.length){
+        const title=errc===files.length?'Errores de Validación':'Algunas Imágenes con Problemas';
+        const msg=errc===files.length?'No se pudo procesar ninguna imagen. Revisa los errores a continuación:':`Se procesaron ${ok} correctamente, pero ${errc} tuvieron problemas:`;
+        showValidationPopup('error',title,msg,errs);
+      } else if(ok>0){
+        const t=type==='tops'?'superiores':type==='bottoms'?'inferiores':'zapatos';
+        showNotification(`${ok} foto${ok!==1?'s':''} de ${t} subida${ok!==1?'s':''} correctamente`,'success',3000);
+      }
       input.value='';
     }
 
-    async function simulateBackendValidation(file,type){
-      return new Promise((resolve,reject)=>{setTimeout(()=>{const r=Math.random();if(r<.1){reject({code:'WRONG_CATEGORY',message:`Esta imagen parece ser ${type==='tops'?'calzado':'una prenda superior'}, no ${type==='tops'?'una prenda superior':'calzado'}. Súbela en la categoría correcta.`,field:type})}else if(r<.15){reject({code:'LOW_CONFIDENCE',message:'La imagen no es lo suficientemente clara para identificar la prenda correctamente.',confidence:.3})}else resolve()},1000+Math.random()*2000)})
-    }
-
     async function validateClothingImage(file){
-      const okTypes=['image/jpeg','image/png','image/webp','image/gif'];if(!okTypes.includes(file.type))throw new Error('Formato no compatible. Usa JPG, PNG, WEBP o GIF.');
+      const okTypes=['image/jpeg','image/png','image/webp','image/gif','image/jpg','image/heic','image/heif','image/bmp','image/svg+xml','image/tiff','image/x-icon'];
+      if(!okTypes.includes(file.type))throw new Error('Formato no compatible. Usa JPG, PNG, WEBP, GIF, HEIC/HEIF, BMP, SVG, TIFF o ICO.');
       if(file.size>20*1024*1024)throw new Error(`Archivo muy grande: ${(file.size/(1024*1024)).toFixed(1)}MB. Máximo: 20MB`);
-      if(file.size<1024)throw new Error('El archivo parece estar corrupto o es muy pequeño.');return true
+      if(file.size<1024)throw new Error('El archivo parece estar corrupto o es muy pequeño.');
+      return true;
     }
 
     function updateUploadLabel(type){
@@ -623,10 +624,63 @@
       try{
         const fd=new FormData();fd.append('user_email',currentUser.email);
         uploadedFiles.tops.forEach(f=>fd.append('tops',f));uploadedFiles.bottoms.forEach(f=>fd.append('bottoms',f));uploadedFiles.shoes.forEach(f=>fd.append('shoes',f));
-        const resp=await fetch(`${API_BASE}/recommend`,{method:'POST',body:fd});if(!resp.ok)throw new Error('Error del servidor');
-        const data=await resp.json();void(data);showNotification('Recomendaciones generadas exitosamente!','success');
-      }catch(e){showNotification('Error generando recomendaciones','error')}
+        const resp=await fetch(`${API_BASE}/recommend`,{method:'POST',body:fd});
+        let data=null;try{data=await resp.json()}catch{data=null}
+        if(!resp.ok){const msg=(data&&(data.detail||data.message))||`Error del servidor (HTTP ${resp.status})`;throw new Error(msg)}
+        renderRecommendations(data);
+        showNotification('¡Recomendaciones generadas exitosamente!','success');
+      }catch(e){showNotification('Error generando recomendaciones: '+(e.message||e),'error')}
       finally{btn.innerHTML=backup;btn.disabled=false}
+    }
+
+    function rgbBox(rgb){
+      if(!rgb||!Array.isArray(rgb)||rgb.length<3) return '';
+      const [r,g,b]=rgb; const c=`rgb(${r},${g},${b})`;
+      return `<span title="${c}" style="display:inline-block;width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,.2);margin-right:4px;background:${c}"></span>`;
+    }
+
+    function renderColorPalette(palette){
+      try{
+        const t=(palette?.top_colors||[]).slice(0,3).map(rgbBox).join('');
+        const b=(palette?.bottom_colors||[]).slice(0,3).map(rgbBox).join('');
+        const s=(palette?.shoe_colors||[]).slice(0,3).map(rgbBox).join('');
+        if(!t && !b && !s) return '';
+        return `<div style="margin-top:.5rem">
+          <div><strong>Top:</strong> ${t}</div>
+          <div><strong>Bottom:</strong> ${b}</div>
+          <div><strong>Shoes:</strong> ${s}</div>
+        </div>`;
+      }catch{return '';}
+    }
+
+    function renderRecommendations(data){
+      const r=document.getElementById('result');
+      const items = data?.results || data?.recommendations || [];
+      if(!items.length){
+        r.innerHTML="<p>No hubo recomendaciones.</p>";
+        r.style.display="block";return;
+      }
+      const cards=items.map((item,idx)=>{
+        const score = typeof item.score==='number'? (item.score*100).toFixed(1)+'%' : (item.score||'');
+        return `<div class="feature-card" style="text-align:left">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+            <h3 style="margin:0">Combinación ${item.combination||idx+1} · Rank ${item.rank??(idx+1)}</h3>
+            <span style="font-weight:800">${score}</span>
+          </div>
+          <p style="margin:.5rem 0">Ocasión: <strong>${item.predicted_occasion||'-'}</strong> · Formalidad: <strong>${item.formality||'-'}</strong></p>
+          ${item.style_analysis?`<p style="margin:.5rem 0">${item.style_analysis}</p>`:''}
+          <div class="features-grid" style="margin-top:.75rem">
+            <div class="helper-card"><div class="helper-icon">👕</div><div><strong>Top</strong><br>${item.detected_top||'-'} ${item.top_formality?`(${item.top_formality})`:''}</div></div>
+            <div class="helper-card"><div class="helper-icon">👖</div><div><strong>Bottom</strong><br>${item.detected_bottom||'-'} ${item.bottom_formality?`(${item.bottom_formality})`:''}</div></div>
+            <div class="helper-card"><div class="helper-icon">👟</div><div><strong>Shoe</strong><br>${item.detected_shoe||'-'} ${item.shoe_formality?`(${item.shoe_formality})`:''}</div></div>
+          </div>
+          ${renderColorPalette(item.color_palette)}
+        </div>`;
+      }).join('');
+      r.innerHTML=`<div class="section-title"><h2>🪄 Tus Mejores Combinaciones</h2></div><div class="features-grid">${cards}</div>`;
+      r.style.display="block";
+      // scroll suave al resultado
+      r.scrollIntoView({behavior:'smooth',block:'start'});
     }
 
     function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
@@ -642,8 +696,8 @@
       const checkGoogleLoaded=()=>{if(typeof google!=='undefined'&&google.accounts){initializeGoogleAuth()}else{setTimeout(checkGoogleLoaded,500)}};
       setTimeout(checkGoogleLoaded,800);
       setTimeout(()=>{document.querySelectorAll('.impact-fill').forEach((bar,i)=>{setTimeout(()=>{bar.style.width=bar.getAttribute('data-width')+'%'},i*200)})},1500);
-      // Si el usuario aún no está logueado, muestra el bloque de login requerido
       if(!isLoggedIn){document.getElementById('loginRequired').style.display='block'}
+      updateGenerateButton();
     });
   </script>
 </body>
