@@ -26,7 +26,6 @@
             0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; }
         }
 
-        /* Header */
         header {
             position: fixed; top: 0; width: 100%; padding: 1rem 5%;
             background: rgba(102, 126, 234, 0.1); backdrop-filter: blur(20px);
@@ -52,7 +51,6 @@
 
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-        /* Menú Desktop */
         .nav-pills {
             display: flex; background: rgba(255, 255, 255, 0.1); padding: 0.5rem;
             border-radius: 50px; backdrop-filter: blur(10px); gap: 0.5rem; margin-right: 2rem;
@@ -67,46 +65,31 @@
             background: rgba(255, 255, 255, 0.2); transform: translateY(-2px);
         }
 
-        /* Botón Hamburguesa */
         .hamburger {
             display: none; flex-direction: column; cursor: pointer; padding: 0.5rem;
             background: rgba(255, 255, 255, 0.1); border-radius: 8px; margin-right: 1rem;
             transition: all 0.3s ease;
         }
 
-        .hamburger:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .hamburger:hover { background: rgba(255, 255, 255, 0.2); }
 
         .hamburger-line {
             width: 25px; height: 3px; background-color: white; margin: 3px 0;
             transition: all 0.3s ease; border-radius: 2px;
         }
 
-        .hamburger.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(8px, 8px);
-        }
+        .hamburger.active .hamburger-line:nth-child(1) { transform: rotate(45deg) translate(8px, 8px); }
+        .hamburger.active .hamburger-line:nth-child(2) { opacity: 0; }
+        .hamburger.active .hamburger-line:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
 
-        .hamburger.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
-
-        /* Menú Mobile - Overlay */
         .mobile-menu {
             position: fixed; top: 0; left: -100%; width: 80%; max-width: 350px; height: 100vh;
             background: linear-gradient(135deg, rgba(26, 26, 46, 0.98), rgba(118, 75, 162, 0.95));
             backdrop-filter: blur(20px); z-index: 999; padding: 6rem 2rem 2rem;
-            transition: left 0.3s ease; overflow-y: auto;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+            transition: left 0.3s ease; overflow-y: auto; box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
         }
 
-        .mobile-menu.active {
-            left: 0;
-        }
+        .mobile-menu.active { left: 0; }
 
         .mobile-menu-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -114,9 +97,7 @@
             visibility: hidden; transition: all 0.3s ease;
         }
 
-        .mobile-menu-overlay.active {
-            opacity: 1; visibility: visible;
-        }
+        .mobile-menu-overlay.active { opacity: 1; visibility: visible; }
 
         .mobile-nav-pill {
             display: block; padding: 1.2rem 1.5rem; margin-bottom: 0.5rem;
@@ -135,28 +116,34 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .mobile-menu-header h3 {
-            color: var(--accent); font-size: 1.5rem; font-weight: 700;
-        }
+        .mobile-menu-header h3 { color: var(--accent); font-size: 1.5rem; font-weight: 700; }
 
         .google-login-btn {
             background: white; color: #333; padding: 0.8rem 2rem; border: none; border-radius: 50px;
             font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex;
             align-items: center; gap: 0.8rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
-        .google-login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); }
+        .google-login-btn:hover { 
+            transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); 
+        }
+
+        .google-login-btn::before,
+        .google-login-btn::after,
+        .google-login-btn:hover::before,
+        .google-login-btn:hover::after {
+            display: none !important; content: none !important;
+        }
 
         .user-info { display: none; align-items: center; gap: 1rem; }
         .user-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid white; }
 
-        /* Sections */
         section { padding: 6rem 5%; position: relative; z-index: 2; }
         .section-container { max-width: 1200px; margin: 0 auto; text-align: center; }
         .section-title h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
         .section-subtitle { font-size: 1.2rem; opacity: 0.8; margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; }
 
-        /* Hero */
         .hero {
             min-height: 100vh; display: flex; flex-direction: column; align-items: center;
             justify-content: center; text-align: center; padding: 6rem 2rem 4rem;
@@ -190,7 +177,6 @@
         .stat-number { font-size: 2.5rem; font-weight: 900; color: var(--accent); margin-bottom: 0.5rem; display: block; }
         .stat-label { font-size: 1rem; opacity: 0.9; font-weight: 500; }
 
-        /* Impact */
         .impact-section { background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); }
         .impact-bars { max-width: 800px; margin: 0 auto; text-align: left; }
 
@@ -208,7 +194,6 @@
         .impact-item:nth-child(3) .impact-fill { background: linear-gradient(90deg, #ffd166, #ffb300); }
         .impact-item:nth-child(4) .impact-fill { background: linear-gradient(90deg, #a8e6cf, #66bb6a); }
 
-        /* Pricing */
         .pricing-section { background: rgba(0, 0, 0, 0.05); backdrop-filter: blur(10px); }
 
         .pricing-cards {
@@ -265,7 +250,6 @@
 
         .pricing-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
 
-        /* Features */
         .features-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;
         }
@@ -281,8 +265,7 @@
         .feature-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
         .feature-card p { opacity: 0.8; line-height: 1.6; }
 
-        /* Upload */
-        .upload-section { display: none; }
+        .upload-section { display: block; }
         .upload-section.active { display: block; }
 
         .login-required {
@@ -341,7 +324,6 @@
             font-size: 12px; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Footer CTA */
         .footer-cta {
             background: linear-gradient(135deg, var(--green), var(--green-dark));
             padding: 4rem 5%; text-align: center; box-shadow: 0 -10px 30px rgba(39, 174, 96, 0.3);
@@ -373,7 +355,6 @@
 
         .btn-primary:hover { transform: translateY(-3px); background-color: #FFD166; color: var(--dark); }
 
-        /* Footer */
         footer {
             background: rgba(0, 0, 0, 0.3); padding: 3rem 5% 2rem; text-align: center;
             backdrop-filter: blur(20px);
@@ -406,11 +387,11 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Notifications */
         .notification {
             position: fixed; top: 20px; right: 20px; padding: 1rem 2rem; border-radius: 15px;
             color: white; font-weight: 600; z-index: 10000; backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2); animation: slideInRight 0.3s ease;
+            max-width: 350px;
         }
 
         .notification.success { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
@@ -419,7 +400,6 @@
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* Popup */
         .popup-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px); z-index: 10000; display: flex; align-items: center;
@@ -428,7 +408,7 @@
 
         .popup-content {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-            border-radius: 25px; padding: 3rem; max-width: 500px; width: 90%; text-align: center;
+            border-radius: 25px; padding: 3rem; max-width: 600px; width: 90%; text-align: center;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.2);
             animation: slideInUp 0.4s ease; color: #333;
         }
@@ -436,6 +416,186 @@
         .popup-icon { font-size: 4rem; margin-bottom: 1.5rem; display: block; }
         .popup-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; color: #d32f2f; }
         .popup-message { font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.6; color: #555; }
+
+        /* NUEVOS ESTILOS PARA VALIDACIÓN MEJORADA */
+        .validation-popup .popup-title.error { color: #d32f2f; }
+        .validation-popup .popup-title.warning { color: #ff9800; }
+        .validation-popup .popup-title.info { color: #2196f3; }
+
+        .validation-details {
+            background: rgba(0, 0, 0, 0.05); border-radius: 15px; padding: 1.5rem;
+            margin: 1.5rem 0; text-align: left; border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .validation-item {
+            display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;
+            padding: 1rem; background: white; border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .validation-item:last-child { margin-bottom: 0; }
+
+        .validation-item.error { border-left-color: #f44336; }
+        .validation-item.warning { border-left-color: #ff9800; }
+        .validation-item.success { border-left-color: #4caf50; }
+
+        .validation-icon {
+            font-size: 1.5rem; margin-top: 0.2rem; flex-shrink: 0;
+        }
+
+        .validation-content h4 {
+            margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 600;
+        }
+
+        .validation-content p {
+            margin: 0; font-size: 0.95rem; color: #666; line-height: 1.4;
+        }
+
+        /* TOOLTIPS MEJORADOS */
+        .tooltip {
+            position: relative; display: inline-block; cursor: help;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9); color: white; padding: 0.8rem 1rem;
+            border-radius: 8px; font-size: 0.9rem; white-space: nowrap;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            z-index: 1000; margin-bottom: 5px; font-weight: 500;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: rgba(0, 0, 0, 0.9);
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip:hover::before,
+        .tooltip:hover::after {
+            opacity: 1; visibility: visible;
+        }
+
+        /* INDICADORES DE ESTADO MEJORADOS */
+        .status-indicator {
+            position: absolute; top: -8px; right: -8px;
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: bold; color: white;
+            border: 2px solid white; z-index: 10;
+        }
+
+        .status-indicator.uploading {
+            background: #2196f3; animation: pulse 1.5s infinite;
+        }
+
+        .status-indicator.validating {
+            background: #ff9800; animation: spin 1s linear infinite;
+        }
+
+        .status-indicator.success {
+            background: #4caf50;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+        }
+
+        .status-indicator.warning {
+            background: #ff9800;
+        }
+
+        /* EJEMPLOS VISUALES MEJORADOS */
+        .upload-examples {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.5rem; margin-top: 1rem; opacity: 0.7;
+        }
+
+        .example-item {
+            text-align: center; padding: 0.5rem; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1); transition: all 0.3s ease;
+        }
+
+        .example-item:hover {
+            opacity: 1; background: rgba(255, 255, 255, 0.2);
+        }
+
+        .example-item i {
+            font-size: 1.5rem; color: var(--accent); margin-bottom: 0.3rem;
+        }
+
+        .example-item span {
+            font-size: 0.7rem; display: block; color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* LOADING STATES ESPECÍFICOS */
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(2px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 20px; z-index: 100;
+        }
+
+        .loading-spinner {
+            width: 40px; height: 40px; border: 3px solid rgba(0, 188, 212, 0.3);
+            border-top: 3px solid var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 1rem;
+        }
+
+        .loading-text {
+            font-size: 0.9rem; color: #666; text-align: center;
+            max-width: 200px; line-height: 1.4;
+        }
+
+        /* PROGRESS BAR */
+        .progress-bar {
+            width: 100%; height: 4px; background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px; overflow: hidden; margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: 2px; transition: width 0.3s ease;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+
+        /* HELPER CARDS */
+        .helper-card {
+            background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 12px; padding: 1rem; margin: 1rem 0;
+            display: flex; align-items: flex-start; gap: 0.8rem;
+        }
+
+        .helper-card.warning {
+            background: rgba(255, 152, 0, 0.1); border-color: rgba(255, 152, 0, 0.3);
+        }
+
+        .helper-card.success {
+            background: rgba(76, 175, 80, 0.1); border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .helper-icon {
+            font-size: 1.2rem; margin-top: 0.1rem; flex-shrink: 0;
+        }
+
+        .helper-content {
+            flex: 1;
+        }
+
+        .helper-content h5 {
+            margin: 0 0 0.3rem 0; font-size: 0.9rem; font-weight: 600;
+        }
+
+        .helper-content p {
+            margin: 0; font-size: 0.8rem; opacity: 0.8; line-height: 1.3;
+        }
 
         .popup-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
@@ -457,6 +617,7 @@
         .popup-btn-secondary:hover { background: #f5f5f5; border-color: #ccc; }
 
         @keyframes slideInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .loading {
             display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3);
@@ -465,37 +626,14 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* NEW: Occasion badges */
-        .occasion-badge {
-            display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;
-            font-weight: 600; text-transform: capitalize; margin: 0.25rem;
-        }
-
-        .occasion-formal { background: #6c757d; color: white; }
-        .occasion-semiformal { background: #17a2b8; color: white; }
-        .occasion-casual { background: #28a745; color: white; }
-        .occasion-party { background: #e83e8c; color: white; }
-        .occasion-athletic { background: #fd7e14; color: white; }
-
-        /* NEW: Color palette display */
-        .color-palette {
-            display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0;
-        }
-
-        .color-swatch {
-            width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3);
-            display: inline-block;
-        }
-
-        /* Responsive - MODIFICADO PARA HAMBURGUESA */
         @media (max-width: 768px) {
             .nav-pills { display: none; }
             .hamburger { display: flex; }
-            
             .hero h1 { font-size: 2rem; }
             section { padding: 4rem 3%; }
             .pricing-cards, .features-grid { grid-template-columns: 1fr; }
             .upload-grid { grid-template-columns: 1fr; }
+            .notification { max-width: 280px; font-size: 0.9rem; }
         }
 
         @media (max-width: 480px) {
@@ -503,8 +641,20 @@
             .hero { padding: 4rem 1rem 2rem; }
             .hero h1 { font-size: 1.8rem; }
             .popup-content { padding: 2rem; margin: 1rem; }
-            
             .mobile-menu { width: 90%; max-width: none; }
+            .notification { max-width: 250px; padding: 0.8rem 1.2rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .google-login-btn:focus, .file-label:focus, .pricing-btn:focus, .hero-button:focus {
+            outline: 2px solid var(--accent); outline-offset: 2px;
         }
     </style>
 </head>
@@ -516,7 +666,6 @@
                 AI love reuse
             </div>
             <div style="display: flex; align-items: center;">
-                <!-- Menú Desktop -->
                 <div class="nav-pills">
                     <a href="#inicio" class="nav-pill active">🏠 Inicio</a>
                     <a href="#impacto" class="nav-pill">🌍 Impacto Ambiental</a>
@@ -525,7 +674,6 @@
                     <a href="#equipo" class="nav-pill">👥 Equipo</a>
                 </div>
                 
-                <!-- Botón Hamburguesa -->
                 <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
                     <div class="hamburger-line"></div>
                     <div class="hamburger-line"></div>
@@ -533,17 +681,7 @@
                 </div>
                 
                 <div class="auth-container">
-                    <button class="google-login-btn" onclick="loginWithGoogle()" id="loginBtn">
-                        <svg width="18" height="18" viewBox="0 0 18 18">
-                            <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
-                            <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-                            <path fill="#FBBC04" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
-                            <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
-                        </svg>
-                        Acceder con Gmail
-                    </button>
-                    
-                    <div class="user-info" id="userInfo">
+                    <div class="user-info" id="userInfo" style="display: none;">
                         <img class="user-avatar" id="userAvatar" alt="Usuario">
                         <span id="userName"></span>
                         <button onclick="logout()" style="background: transparent; border: 1px solid white; color: white; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
@@ -553,10 +691,8 @@
         </nav>
     </header>
 
-    <!-- Menú Mobile Overlay -->
     <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
     
-    <!-- Menú Mobile -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
             <h3>AI love reuse</h3>
@@ -602,7 +738,7 @@
             <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
             <p class="hero-description">Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.</p>
             
-            <a href="#funcionamiento" class="hero-button">🎯 Ver Cómo Funciona</a>
+            <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">🚀 Empezar Ahora - Es Gratis</a>
             
             <div class="stats">
                 <div class="stat-item">
@@ -729,7 +865,7 @@
             </div>
             
             <div style="text-align: center; margin-top: 3rem;">
-                <a href="#upload" class="hero-button">🚀 Empezar Ahora - Es Gratis</a>
+                <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">Ver Mis Combinaciones</a>
             </div>
         </div>
     </section>
@@ -739,7 +875,7 @@
             <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">✨ Termina con el Drama Matutino</h2>
             <p style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 2rem;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles que no sabías que existían</p>
             
-            <div id="loginRequired" class="login-required">
+            <div id="loginRequired" class="login-required" style="display: none;">
                 <h3>🔐 Inicia sesión para continuar</h3>
                 <p>Accede con Google para usar nuestro algoritmo de IA que revolucionará tus mañanas</p>
                 <button class="google-login-btn" onclick="loginWithGoogle()" style="margin-top: 1rem;">
@@ -754,32 +890,155 @@
             </div>
 
             <div class="upload-area" id="uploadArea" style="display: none;">
+                <!-- Helper Card con Instrucciones Mejoradas -->
+                <div class="helper-card">
+                    <div class="helper-icon">💡</div>
+                    <div class="helper-content">
+                        <h5>Consejos para mejores resultados</h5>
+                        <p>Usa fotos con buena iluminación, fondo neutro y la prenda bien visible. Evita fotos con personas o múltiples prendas.</p>
+                    </div>
+                </div>
+
                 <div class="upload-grid">
-                    <div class="upload-item">
-                        <i class="fas fa-tshirt" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                    <div class="upload-item" id="tops-upload-area">
+                        <div class="status-indicator" id="tops-status" style="display: none;"></div>
+                        
+                        <i class="fas fa-tshirt tooltip" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;" 
+                           data-tooltip="Prendas superiores: camisas, blusas, chaquetas, suéteres"></i>
+                        
                         <h4>Parte Superior</h4>
                         <p>Camisas, blusas, suéteres</p>
-                        <label for="tops-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
+                        
+                        <!-- Ejemplos Visuales -->
+                        <div class="upload-examples">
+                            <div class="example-item">
+                                <i class="fas fa-tshirt"></i>
+                                <span>Camiseta</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Camisa</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-vest"></i>
+                                <span>Blusa</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-jacket"></i>
+                                <span>Chaqueta</span>
+                            </div>
+                        </div>
+                        
+                        <label for="tops-upload" class="file-label" id="tops-label">📤 Subir Superiores (máx 3)</label>
                         <input type="file" id="tops-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('tops', this)">
+                        
                         <div id="tops-preview" class="preview-area"></div>
+                        
+                        <!-- Loading Overlay -->
+                        <div id="tops-loading" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Validando prenda superior...</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%;"></div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="upload-item">
-                        <i class="fas fa-user-tie" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                    <div class="upload-item" id="bottoms-upload-area">
+                        <div class="status-indicator" id="bottoms-status" style="display: none;"></div>
+                        
+                        <i class="fas fa-user-tie tooltip" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;" 
+                           data-tooltip="Prendas inferiores: pantalones, faldas, shorts, leggins"></i>
+                        
                         <h4>Parte Inferior</h4>
                         <p>Pantalones, faldas, shorts</p>
-                        <label for="bottoms-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
+                        
+                        <!-- Ejemplos Visuales -->
+                        <div class="upload-examples">
+                            <div class="example-item">
+                                <i class="fas fa-male"></i>
+                                <span>Pantalón</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-female"></i>
+                                <span>Falda</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-cut"></i>
+                                <span>Shorts</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-running"></i>
+                                <span>Leggings</span>
+                            </div>
+                        </div>
+                        
+                        <label for="bottoms-upload" class="file-label" id="bottoms-label">📤 Subir Inferiores (máx 3)</label>
                         <input type="file" id="bottoms-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottoms', this)">
+                        
                         <div id="bottoms-preview" class="preview-area"></div>
+                        
+                        <!-- Loading Overlay -->
+                        <div id="bottoms-loading" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Validando prenda inferior...</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%;"></div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="upload-item">
-                        <i class="fas fa-shoe-prints" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                    <div class="upload-item" id="shoes-upload-area">
+                        <div class="status-indicator" id="shoes-status" style="display: none;"></div>
+                        
+                        <i class="fas fa-shoe-prints tooltip" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 1rem;" 
+                           data-tooltip="Calzado: zapatos, sneakers, botas, sandalias, tacones"></i>
+                        
                         <h4>Calzado</h4>
                         <p>Zapatos, sneakers, botas</p>
-                        <label for="shoes-upload" class="file-label">📤 Subir Zapatos (máx 5)</label>
+                        
+                        <!-- Ejemplos Visuales -->
+                        <div class="upload-examples">
+                            <div class="example-item">
+                                <i class="fas fa-shoe-prints"></i>
+                                <span>Sneakers</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-hiking"></i>
+                                <span>Botas</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-high-heel"></i>
+                                <span>Tacones</span>
+                            </div>
+                            <div class="example-item">
+                                <i class="fas fa-socks"></i>
+                                <span>Zapatos</span>
+                            </div>
+                        </div>
+                        
+                        <label for="shoes-upload" class="file-label" id="shoes-label">📤 Subir Zapatos (máx 5)</label>
                         <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('shoes', this)">
+                        
                         <div id="shoes-preview" class="preview-area"></div>
+                        
+                        <!-- Loading Overlay -->
+                        <div id="shoes-loading" class="loading-overlay" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">Validando calzado...</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Summary -->
+                <div id="upload-progress" class="helper-card success" style="display: none;">
+                    <div class="helper-icon">✅</div>
+                    <div class="helper-content">
+                        <h5>Progreso de subida</h5>
+                        <p id="progress-text">Listo para generar combinaciones</p>
                     </div>
                 </div>
                 
@@ -834,9 +1093,9 @@
             </div>
             
             <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
-                <a href="#upload" class="btn-primary">
+                <a href="#upload" class="btn-primary" onclick="handleStartNowClick(event)">
                     <i class="fas fa-play"></i>
-                    Empezar Gratis
+                    Crear Mi Guardarropa Digital
                 </a>
             </div>
         </div>
@@ -871,17 +1130,323 @@
     </footer>
 
     <script>
-        // ✅ CONFIGURACIÓN V7.0 - SINCRONIZADA CON BACKEND COMPLETO
         const GOOGLE_CLIENT_ID = '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
         const API_BASE = "https://outfit-recommender.fly.dev";
 
-        // ✅ ESTADO GLOBAL V7.0
         let isLoggedIn = false;
         let currentUser = null;
-        let uploadedFiles = { tops: [], bottoms: [], shoes: [] };  // ✅ CAMBIO: tops/bottoms en plural
-        const FILE_LIMITS = { tops: 3, bottoms: 3, shoes: 5 };    // ✅ CAMBIO: tops/bottoms en plural
+        let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+        const FILE_LIMITS = { tops: 3, bottoms: 3, shoes: 5 };
 
-        // ✅ FUNCIONES DEL MENÚ HAMBURGUESA
+        function handleStartNowClick(event) {
+            event.preventDefault();
+            
+            if (!isLoggedIn) {
+                showLoginPopup();
+            } else {
+                document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function showLoginPopup() {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            
+            overlay.innerHTML = `
+                <div class="popup-content">
+                    <span class="popup-icon">🚀</span>
+                    <h3 style="color: var(--accent); margin-bottom: 1rem;">¡Empecemos!</h3>
+                    <p class="popup-message">Para generar tus combinaciones personalizadas con IA, necesitas acceder con tu cuenta de Google.<br><br>
+                    <strong>✅ Es completamente gratis</strong><br>
+                    ✅ Solo necesitas tu email<br>
+                    ✅ Sin spam ni publicidad</p>
+                    <div class="popup-buttons" style="margin-top: 2rem;">
+                        <button class="google-login-btn" onclick="loginFromPopup()" style="margin: 0; width: 100%;">
+                            <svg width="18" height="18" viewBox="0 0 18 18">
+                                <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
+                                <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
+                                <path fill="#FBBC4" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
+                                <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
+                            </svg>
+                            Acceder con Google - Es Gratis
+                        </button>
+                        <button class="popup-btn-secondary" onclick="closeLoginPopup()" style="margin-top: 1rem; width: 100%;">
+                            Quizás más tarde
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeLoginPopup();
+            });
+        }
+
+        function showValidationPopup(type, title, message, validationErrors = null) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay validation-popup';
+            
+            let iconClass = '';
+            let titleClass = '';
+            
+            switch(type) {
+                case 'error':
+                    iconClass = '❌';
+                    titleClass = 'error';
+                    break;
+                case 'warning':
+                    iconClass = '⚠️';
+                    titleClass = 'warning';
+                    break;
+                case 'info':
+                    iconClass = 'ℹ️';
+                    titleClass = 'info';
+                    break;
+                default:
+                    iconClass = '🤖';
+                    titleClass = 'info';
+            }
+
+            let validationDetailsHtml = '';
+            if (validationErrors && validationErrors.length > 0) {
+                validationDetailsHtml = `
+                    <div class="validation-details">
+                        ${validationErrors.map(error => `
+                            <div class="validation-item ${error.type || 'error'}">
+                                <div class="validation-icon">
+                                    ${error.type === 'warning' ? '⚠️' : error.type === 'success' ? '✅' : '❌'}
+                                </div>
+                                <div class="validation-content">
+                                    <h4>${error.title || 'Error de Validación'}</h4>
+                                    <p>${error.message || 'Error no especificado'}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            overlay.innerHTML = `
+                <div class="popup-content">
+                    <span class="popup-icon">${iconClass}</span>
+                    <h3 class="popup-title ${titleClass}">${title}</h3>
+                    <p class="popup-message">${message}</p>
+                    ${validationDetailsHtml}
+                    <div class="popup-buttons">
+                        <button class="popup-btn popup-btn-primary" onclick="closeValidationPopup()">
+                            Entendido
+                        </button>
+                        ${validationErrors ? `
+                            <button class="popup-btn popup-btn-secondary" onclick="showUploadTips()">
+                                Ver Consejos
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeValidationPopup();
+            });
+        }
+
+        function closeValidationPopup() {
+            const popup = document.querySelector('.validation-popup');
+            if (popup) {
+                popup.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => popup.remove(), 300);
+            }
+        }
+
+        function showUploadTips() {
+            closeValidationPopup();
+            showValidationPopup('info', 'Consejos para Mejores Fotos', 
+                'Para obtener mejores resultados, sigue estos consejos:', [
+                {
+                    type: 'success',
+                    title: 'Iluminación Natural',
+                    message: 'Toma las fotos con luz natural o buena iluminación artificial'
+                },
+                {
+                    type: 'success', 
+                    title: 'Fondo Neutro',
+                    message: 'Usa fondos blancos, grises o neutros sin distracciones'
+                },
+                {
+                    type: 'success',
+                    title: 'Prenda Completa',
+                    message: 'Asegúrate de que toda la prenda esté visible en la foto'
+                },
+                {
+                    type: 'warning',
+                    title: 'Evita Personas',
+                    message: 'No incluyas personas usando las prendas en las fotos'
+                }
+            ]);
+        }
+
+        function updateStatusIndicator(type, status, message = '') {
+            const indicator = document.getElementById(`${type}-status`);
+            if (!indicator) return;
+
+            indicator.style.display = 'block';
+            indicator.className = `status-indicator ${status}`;
+            indicator.title = message;
+
+            switch(status) {
+                case 'uploading':
+                    indicator.innerHTML = '📤';
+                    break;
+                case 'validating':
+                    indicator.innerHTML = '🔄';
+                    break;
+                case 'success':
+                    indicator.innerHTML = '✅';
+                    break;
+                case 'error':
+                    indicator.innerHTML = '❌';
+                    break;
+                case 'warning':
+                    indicator.innerHTML = '⚠️';
+                    break;
+            }
+        }
+
+        function showLoadingOverlay(type, message = 'Procesando...') {
+            const overlay = document.getElementById(`${type}-loading`);
+            if (overlay) {
+                overlay.style.display = 'flex';
+                const textElement = overlay.querySelector('.loading-text');
+                if (textElement) {
+                    textElement.textContent = message;
+                }
+            }
+        }
+
+        function hideLoadingOverlay(type) {
+            const overlay = document.getElementById(`${type}-loading`);
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
+        function updateUploadProgress() {
+            const progressDiv = document.getElementById('upload-progress');
+            const progressText = document.getElementById('progress-text');
+            
+            const topsCount = uploadedFiles.tops.length;
+            const bottomsCount = uploadedFiles.bottoms.length; 
+            const shoesCount = uploadedFiles.shoes.length;
+            const totalItems = topsCount + bottomsCount + shoesCount;
+            
+            if (totalItems === 0) {
+                progressDiv.style.display = 'none';
+                return;
+            }
+
+            progressDiv.style.display = 'flex';
+            
+            if (topsCount > 0 && bottomsCount > 0 && shoesCount > 0) {
+                progressDiv.className = 'helper-card success';
+                const combinations = topsCount * bottomsCount * shoesCount;
+                progressText.textContent = `¡Perfecto! Puedes generar ${combinations} combinaciones únicas`;
+            } else {
+                progressDiv.className = 'helper-card warning'; 
+                const missing = [];
+                if (topsCount === 0) missing.push('prendas superiores');
+                if (bottomsCount === 0) missing.push('prendas inferiores');
+                if (shoesCount === 0) missing.push('calzado');
+                
+                progressText.textContent = `Faltan: ${missing.join(', ')}. Total subido: ${totalItems} items`;
+            }
+        }
+
+        function getFriendlyErrorMessage(backendError) {
+            try {
+                const errorString = JSON.stringify(backendError).toLowerCase();
+                
+                // Casos específicos del backend mejorado
+                if (errorString.includes('mixed_categories') || errorString.includes('wrong_category')) {
+                    return {
+                        title: 'Categoría Incorrecta',
+                        message: backendError.message || 'Has subido una prenda en la categoría equivocada',
+                        suggestions: [
+                            {
+                                type: 'error',
+                                title: 'Zapatos en Pantalones',
+                                message: 'Parece que subiste zapatos en la sección de pantalones. Por favor, súbelos en la sección correcta.'
+                            }
+                        ]
+                    };
+                }
+                
+                if (errorString.includes('too_many_items')) {
+                    return {
+                        title: 'Límite Excedido',
+                        message: backendError.message || 'Has superado el límite de fotos para esta categoría',
+                        suggestions: [
+                            {
+                                type: 'warning',
+                                title: 'Demasiadas Fotos',
+                                message: 'Elimina algunas fotos antes de subir nuevas. Límites: 3 superiores, 3 inferiores, 5 zapatos.'
+                            }
+                        ]
+                    };
+                }
+                
+                if (errorString.includes('not_in_whitelist')) {
+                    return {
+                        title: 'Prenda No Reconocida',
+                        message: 'No pudimos identificar una prenda válida en esta imagen',
+                        suggestions: [
+                            {
+                                type: 'info',
+                                title: 'Mejora la Foto',
+                                message: 'Usa mejor iluminación, fondo neutro y asegúrate de que la prenda esté bien visible.'
+                            }
+                        ]
+                    };
+                }
+
+                if (errorString.includes('low_confidence')) {
+                    return {
+                        title: 'Imagen Poco Clara',
+                        message: 'La imagen no es lo suficientemente clara para el análisis',
+                        suggestions: [
+                            {
+                                type: 'warning',
+                                title: 'Calidad de Imagen',
+                                message: 'Intenta con mejor iluminación, enfoque más nítido o ángulo diferente.'
+                            }
+                        ]
+                    };
+                }
+                
+                return {
+                    title: 'Error de Procesamiento',
+                    message: backendError.message || 'Error procesando la imagen',
+                    suggestions: []
+                };
+                
+            } catch (error) {
+                console.error('Error parseando mensaje:', error);
+                return {
+                    title: 'Error Inesperado',
+                    message: 'Ocurrió un error. Por favor intenta nuevamente.',
+                    suggestions: []
+                };
+            }
+        }
+
+        function loginFromPopup() {
+            closeLoginPopup();
+            loginWithGoogle();
+        }
+
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById('mobileMenu');
             const overlay = document.getElementById('mobileMenuOverlay');
@@ -895,7 +1460,7 @@
                 mobileMenu.classList.add('active');
                 overlay.classList.add('active');
                 hamburger.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Evita scroll del body
+                document.body.style.overflow = 'hidden';
             }
         }
 
@@ -907,459 +1472,11 @@
             mobileMenu.classList.remove('active');
             overlay.classList.remove('active');
             hamburger.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restaura scroll del body
+            document.body.style.overflow = 'auto';
         }
 
-        // ✅ FUNCIÓN SINCRONIZADA CON BACKEND V7.0
-        function getFriendlyErrorMessage(backendError) {
-            const errorString = JSON.stringify(backendError).toLowerCase();
-            
-            // CÓDIGOS EXACTOS DEL BACKEND V7.0
-            if (errorString.includes('too_many_items')) {
-                if (backendError.message) {
-                    return backendError.message;
-                }
-                return 'Límite de fotos excedido para este tipo de prenda';
-            }
-            
-            if (errorString.includes('not_in_whitelist')) {
-                return backendError.message || 'No pudimos identificar prenda en esta imagen. Por favor, sube una foto clara de tu prenda sobre un fondo neutro, sin personas.';
-            }
-            
-            if (errorString.includes('not_footwear')) {
-                return backendError.message || 'Esta imagen no parece ser calzado válido. Sube una foto clara de zapatos, botas o sandalias.';
-            }
-            
-            if (errorString.includes('tipo de archivo no permitido')) {
-                return 'El formato de la imagen no es compatible. Usa JPG, PNG o similar.';
-            }
-            
-            if (errorString.includes('muy grande')) {
-                return 'La imagen es muy grande. Por favor usa una foto más pequeña (máximo 20MB).';
-            }
-            
-            // Usar mensaje directo del backend si existe
-            if (backendError.message) {
-                return backendError.message;
-            }
-            
-            return 'Error procesando la imagen. Intenta con otra foto.';
-        }
-
-        // ✅ VALIDACIÓN TÉCNICA BÁSICA
-        async function validateClothingImage(file) {
-            if (!file.type.startsWith('image/')) {
-                throw new Error('Solo se permiten archivos de imagen');
-            }
-            
-            if (file.size > 20 * 1024 * 1024) { // 20MB como backend
-                throw new Error('La imagen es muy grande. Máximo 20MB');
-            }
-            
-            return true;
-        }
-
-        // ✅ SUBIDA DE ARCHIVOS V7.0 - ACTUALIZADA PARA MÚLTIPLES
-        async function handleFileUpload(type, input) {
-            if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para subir tus fotos y generar combinaciones, debes acceder con tu cuenta de Google.', true);
-                input.value = '';
-                return;
-            }
-
-            const files = Array.from(input.files);
-            const preview = document.getElementById(`${type}-preview`);
-            const currentCount = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            const availableSlots = maxFiles - currentCount;
-            if (files.length > availableSlots) {
-                const typeText = type === 'tops' ? 'superiores' : type === 'bottoms' ? 'inferiores' : 'shoes';
-                showNotification(`Solo puedes subir ${availableSlots} foto${availableSlots > 1 ? 's' : ''} más de ${typeText}. Máximo: ${maxFiles}`, 'error');
-                return;
-            }
-            
-            for (let file of files) {
-                try {
-                    await validateClothingImage(file);
-                    await processImageFile(file, type, preview);
-                    uploadedFiles[type].push(file);
-                    console.log(`✅ Archivo cargado: ${file.name} (${type})`);
-                } catch (error) {
-                    showNotification(error.message, 'error');
-                    continue;
-                }
-            }
-            
-            updateUploadLabel(type);
-            input.value = '';
-        }
-
-        function processImageFile(file, type, preview) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const container = document.createElement('div');
-                        container.style.position = 'relative';
-                        container.style.display = 'inline-block';
-                        container.style.margin = '0.25rem';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'preview-image';
-                        img.title = `${type} - ${file.name}`;
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-image';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.onclick = () => {
-                            container.remove();
-                            const fileIndex = uploadedFiles[type].indexOf(file);
-                            if (fileIndex > -1) {
-                                uploadedFiles[type].splice(fileIndex, 1);
-                            }
-                            updateUploadLabel(type);
-                        };
-                        
-                        container.appendChild(img);
-                        container.appendChild(removeBtn);
-                        preview.appendChild(container);
-                        resolve();
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = () => reject(new Error('Error leyendo el archivo'));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function updateUploadLabel(type) {
-            const label = document.querySelector(`label[for="${type}-upload"]`);
-            const count = uploadedFiles[type].length;
-            const maxFiles = FILE_LIMITS[type];
-            
-            if (count > 0) {
-                const remaining = maxFiles - count;
-                label.innerHTML = `✅ ${count}/${maxFiles} foto${count > 1 ? 's' : ''} cargada${count > 1 ? 's' : ''}`;
-                if (remaining === 0) {
-                    label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
-                }
-            } else {
-                const typeText = type === 'tops' ? 'Superiores' : type === 'bottoms' ? 'Inferiores' : 'Zapatos';
-                label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
-            }
-        }
-
-        // ✅ RECOMENDACIÓN V7.0 - COMPLETAMENTE ACTUALIZADA
-        async function getRecommendation() {
-            if (!isLoggedIn) {
-                showInvalidImagePopup('Necesitas iniciar sesión primero', 'Para generar combinaciones con IA, debes acceder con tu cuenta de Google.', true);
-                return;
-            }
-
-            if (uploadedFiles.tops.length === 0 || uploadedFiles.bottoms.length === 0 || uploadedFiles.shoes.length === 0) {
-                showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
-                return;
-            }
-
-            const button = document.getElementById('generateBtn');
-            const originalText = button.innerHTML;
-            
-            // Usar mensaje del backend si está disponible
-            button.innerHTML = '<span class="loading"></span> Generando combinaciones personalizadas...';
-            button.disabled = true;
-
-            try {
-                const formData = new FormData();
-                formData.append('user_email', currentUser.email);
-                formData.append('user_name', currentUser.name || '');
-                
-                // ✅ ENVÍO ACTUALIZADO - MÚLTIPLES ARCHIVOS DE CADA TIPO
-                uploadedFiles.tops.forEach((file) => {
-                    formData.append('tops', file);
-                });
-                uploadedFiles.bottoms.forEach((file) => {
-                    formData.append('bottoms', file);
-                });
-                uploadedFiles.shoes.forEach((file) => {
-                    formData.append('shoes', file);
-                });
-
-                console.log(`📤 Enviando: ${uploadedFiles.tops.length} superiores, ${uploadedFiles.bottoms.length} inferiores, ${uploadedFiles.shoes.length} zapatos`);
-                console.log(`📊 Combinaciones posibles: ${uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length}`);
-
-                const response = await fetch(`${API_BASE}/recommend`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    console.log('❌ Error del backend:', errorData);
-                    
-                    const friendlyMessage = getFriendlyErrorMessage(errorData.detail || errorData);
-                    
-                    if (errorData.detail && (errorData.detail.code === 'TOO_MANY_ITEMS' || errorData.detail.code === 'NOT_IN_WHITELIST' || errorData.detail.field)) {
-                        const fieldName = errorData.detail.field || 'imagen';
-                        showInvalidImagePopup(
-                            'Error con la imagen',
-                            `${friendlyMessage}\n\nProblema detectado en: ${fieldName}`,
-                            false
-                        );
-                    } else {
-                        throw new Error(friendlyMessage);
-                    }
-                    return;
-                }
-
-                const data = await response.json();
-                
-                if (!data.results || !Array.isArray(data.results)) {
-                    throw new Error('Respuesta inválida del servidor');
-                }
-                
-                console.log('✅ Recomendaciones V7.0 recibidas:', data);
-                displayRecommendationsV7(data);
-                
-                // ✅ USAR MENSAJE DEL BACKEND
-                const message = data.ui_messages?.result || `${data.recommendations_count} recomendaciones personalizadas para ti`;
-                showNotification(message, 'success');
-                
-            } catch (error) {
-                console.error('❌ Error:', error);
-                showNotification(error.message, 'error');
-                
-                if (error.name === 'TypeError' || error.message.includes('fetch')) {
-                    const fallbackResponse = getFallbackRecommendationsV7();
-                    displayRecommendationsV7(fallbackResponse);
-                    showNotification('Modo offline - datos de demostración', 'info');
-                }
-                
-            } finally {
-                button.innerHTML = originalText;
-                button.disabled = false;
-            }
-        }
-
-        // ✅ MOSTRAR RECOMENDACIONES V7.0 - COMPLETAMENTE NUEVA
-        function displayRecommendationsV7(data) {
-            const resultDiv = document.getElementById('result');
-            const sortedResults = [...data.results].sort((a, b) => b.score - a.score);
-            
-            let html = '';
-            
-            // Header con información del análisis
-            if (data.is_fallback) {
-                html += `
-                    <div style="background: rgba(255, 193, 7, 0.2); border: 2px solid #ffc107; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
-                        <h4 style="color: #ffc107; margin-bottom: 0.5rem;">⚡ Modo Demo</h4>
-                        <p style="margin: 0; color: rgba(255, 255, 255, 0.9);">No se pudo conectar con el servidor. Mostrando simulación</p>
-                    </div>
-                `;
-            } else if (data.input_summary) {
-                html += `
-                    <div style="background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
-                        <h4 style="color: #4CAF50; margin-bottom: 0.5rem;">🎯 IA Completó el Análisis</h4>
-                        <p style="margin: 0;">${data.input_summary.message_for_user || `Se evaluaron ${data.input_summary.total_combinations_evaluated} combinaciones`}</p>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.8;">${data.input_summary.tops_received} superiores × ${data.input_summary.bottoms_received} inferiores × ${data.input_summary.shoes_received} zapatos</p>
-                    </div>
-                `;
-            }
-            
-            sortedResults.forEach((result, displayIndex) => {
-                const isBest = displayIndex === 0;
-                const percentage = (result.score * 100).toFixed(1);
-                
-                // ✅ USAR ÍNDICES CORRECTOS PARA CADA PRENDA
-                const topFile = uploadedFiles.tops[result.top_index] || uploadedFiles.tops[0];
-                const bottomFile = uploadedFiles.bottoms[result.bottom_index] || uploadedFiles.bottoms[0];
-                const shoesFile = uploadedFiles.shoes[result.shoe_index] || uploadedFiles.shoes[0];
-                
-                const topImageUrl = topFile ? URL.createObjectURL(topFile) : '';
-                const bottomImageUrl = bottomFile ? URL.createObjectURL(bottomFile) : '';
-                const shoesImageUrl = shoesFile ? URL.createObjectURL(shoesFile) : '';
-                
-                // ✅ OCASIÓN Y COLORES
-                const occasionBadge = result.predicted_occasion ? 
-                    `<span class="occasion-badge occasion-${result.predicted_occasion}">${result.predicted_occasion}</span>` : '';
-                    
-                const colorPalette = result.color_palette ? `
-                    <div class="color-palette">
-                        <span style="font-size: 0.8rem; margin-right: 0.5rem;">Colores:</span>
-                        ${result.color_palette.top_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.top_colors[0].join(',')})"></span>` : ''}
-                        ${result.color_palette.bottom_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.bottom_colors[0].join(',')})"></span>` : ''}
-                        ${result.color_palette.shoe_colors?.[0] ? `<span class="color-swatch" style="background-color: rgb(${result.color_palette.shoe_colors[0].join(',')})"></span>` : ''}
-                    </div>
-                ` : '';
-                
-                html += `
-                    <div style="background: rgba(255, 255, 255, 0.1); border: 2px solid ${isBest ? '#ffc107' : 'var(--accent)'}; border-radius: 20px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px); position: relative;">
-                        ${isBest ? '<div style="position: absolute; top: -10px; left: 20px; background: #ffc107; color: #333; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">⭐ Mejor compatibilidad</div>' : ''}
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                            <div>
-                                <h3 style="color: var(--accent); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
-                                    ${isBest ? '⭐ ' : ''}Combinación ${result.combination || `#${displayIndex + 1}`}
-                                </h3>
-                                ${occasionBadge}
-                                ${colorPalette}
-                            </div>
-                            <div style="background: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold;">${percentage}%</div>
-                        </div>
-
-                        <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0; gap: 1rem; flex-wrap: wrap;">
-                            <div style="text-align: center;">
-                                <img src="${topImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Superior">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_top || 'Superior'}</p>
-                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.top_index + 1}</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent);">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${bottomImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Inferior">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_bottom || 'Inferior'}</p>
-                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.bottom_index + 1}</p>
-                            </div>
-                            
-                            <div style="font-size: 2rem; color: var(--accent);">+</div>
-                            
-                            <div style="text-align: center;">
-                                <img src="${shoesImageUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 3px solid var(--accent);" alt="Calzado">
-                                <p style="margin-top: 0.5rem; color: var(--accent); font-weight: 600;">${result.detected_shoe || 'Zapato'}</p>
-                                <p style="font-size: 0.8rem; opacity: 0.7;">#${result.shoe_index + 1}</p>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: 15px; line-height: 1.8;">
-                            <p><strong>🎯 Compatibilidad:</strong> ${percentage}% según análisis de IA</p>
-                            <p><strong>💡 Estilo:</strong> ${result.formality === 'formal' ? 'Formal' : 'Casual'}${result.predicted_occasion ? ` • ${result.predicted_occasion}` : ''}</p>
-                            
-                            ${result.scoring_breakdown ? `
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin: 1rem 0; font-size: 0.9rem;">
-                                    <div><strong>CLIP:</strong> ${(result.scoring_breakdown.clip_score * 100).toFixed(0)}%</div>
-                                    <div><strong>Colores:</strong> ${result.scoring_breakdown.color_bonus > 0 ? '+' : ''}${(result.scoring_breakdown.color_bonus * 100).toFixed(0)}%</div>
-                                    <div><strong>Formalidad:</strong> ${(result.scoring_breakdown.formality_bonus * 100).toFixed(0)}%</div>
-                                    ${result.occasion_confidence ? `<div><strong>Ocasión:</strong> ${(result.occasion_confidence * 100).toFixed(0)}%</div>` : ''}
-                                </div>
-                            ` : ''}
-                            
-                            <p><strong>💬 Análisis:</strong> ${isBest ? 'Esta combinación tiene la máxima compatibilidad de colores y estilos.' : 'Excelente alternativa con muy buena armonía visual.'}</p>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button onclick="acceptCombination('${result.combination || result.index}')" style="background: var(--green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                                ❤️ Me gusta
-                            </button>
-                            <button onclick="rejectCombination('${result.combination || result.index}')" style="background: #ff5252; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 25px; font-weight: 600; cursor: pointer;">
-                                👎 No me convence
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            // Footer con información adicional
-            if (data.occasion_analysis?.top_occasions_found?.length > 0) {
-                html += `
-                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
-                        <h4 style="color: var(--accent); margin-bottom: 1rem;">🏷️ Ocasiones Detectadas</h4>
-                        <div>
-                            ${data.occasion_analysis.top_occasions_found.map(occasion => 
-                                `<span class="occasion-badge occasion-${occasion}">${occasion}</span>`
-                            ).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            resultDiv.innerHTML = html;
-            resultDiv.style.display = 'block';
-            setTimeout(() => resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        }
-
-        function getFallbackRecommendationsV7() {
-            const numTops = uploadedFiles.tops.length;
-            const numBottoms = uploadedFiles.bottoms.length;
-            const numShoes = uploadedFiles.shoes.length;
-            const totalCombinations = numTops * numBottoms * numShoes;
-            const numRecommendations = Math.min(totalCombinations, 3);
-            
-            const results = [];
-            for (let i = 0; i < numRecommendations; i++) {
-                results.push({
-                    index: i,
-                    combination: `D${i + 1}`,
-                    score: 0.95 - (i * 0.08) + (Math.random() - 0.5) * 0.08,
-                    formality: Math.random() > 0.5 ? "casual" : "formal",
-                    top_index: i % numTops,
-                    bottom_index: i % numBottoms,
-                    shoe_index: i % numShoes,
-                    detected_top: "Prenda superior",
-                    detected_bottom: "Prenda inferior",
-                    detected_shoe: "Zapato",
-                    predicted_occasion: ["casual", "formal", "semiformal"][i % 3],
-                    occasion_confidence: 0.7 + (Math.random() * 0.2)
-                });
-            }
-            
-            return {
-                results: results,
-                recommendations_count: numRecommendations,
-                input_summary: {
-                    tops_received: numTops,
-                    bottoms_received: numBottoms,
-                    shoes_received: numShoes,
-                    total_combinations_evaluated: totalCombinations,
-                    message_for_user: `Se evaluaron ${totalCombinations} combinaciones de tus prendas`
-                },
-                is_fallback: true
-            };
-        }
-
-        // ✅ FEEDBACK FUNCTIONS
-        function acceptCombination(combinationId) {
-            sendFeedbackToBackend(combinationId, 'si', null);
-            showNotification(`Te gustó la Combinación ${combinationId}`, 'success');
-        }
-
-        function rejectCombination(combinationId) {
-            showNotification('Funcionalidad de feedback en desarrollo', 'info');
-        }
-
-        async function sendFeedbackToBackend(combinationId, accepted, rejectionReason = null) {
-            if (!currentUser || !currentUser.email) return;
-        
-            try {
-                const formData = new FormData();
-                formData.append('user_email', currentUser.email);
-                formData.append('combination_id', combinationId);
-                formData.append('accepted', accepted);
-                if (rejectionReason) {
-                    formData.append('rejection_reason', rejectionReason);
-                }
-        
-                const response = await fetch(`${API_BASE}/api/feedback`, {
-                    method: 'POST',
-                    body: formData
-                });
-        
-                if (response.ok) {
-                    console.log('✅ Feedback enviado exitosamente');
-                }
-            } catch (error) {
-                console.error('❌ Error enviando feedback:', error);
-            }
-        }
-
-        // ✅ GOOGLE AUTH (SIN CAMBIOS)
         function initializeGoogleAuth() {
-            if (typeof google === 'undefined' || typeof google.accounts === 'undefined') {
-                console.error('Google Identity Services no disponible');
-                return;
-            }
+            if (typeof google === 'undefined' || !google.accounts) return;
 
             try {
                 google.accounts.id.initialize({
@@ -1376,7 +1493,7 @@
         function handleGoogleSignIn(response) {
             try {
                 if (!response.credential) {
-                    throw new Error('No se recibió credential de Google');
+                    throw new Error('No se recibió credencial de Google');
                 }
 
                 const token = response.credential;
@@ -1393,43 +1510,32 @@
                 isLoggedIn = true;
                 updateAuthUI();
                 showUploadSection();
-                showNotification(`Bienvenido ${currentUser.given_name || currentUser.name}`, 'success');
+                showNotification(`¡Bienvenido ${currentUser.given_name || currentUser.name}!`, 'success', 4000);
+                
+                setTimeout(() => {
+                    document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+                }, 1000);
                 
             } catch (error) {
                 console.error('Error procesando login:', error);
-                showNotification('Error procesando login: ' + error.message, 'error');
+                showNotification('Error al iniciar sesión: ' + error.message, 'error');
             }
         }
 
         async function loginWithGoogle() {
-            const button = document.getElementById('loginBtn');
-            if (!button) return;
-            
-            const originalText = button.innerHTML;
-            button.innerHTML = '<span class="loading"></span> Conectando...';
-            button.disabled = true;
-            
             try {
-                if (typeof google === 'undefined') {
+                if (typeof google === 'undefined' || !google.accounts) {
                     throw new Error('Servicios de Google no disponibles');
                 }
-
                 google.accounts.id.prompt();
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
-            } finally {
-                setTimeout(() => {
-                    if (!isLoggedIn) {
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
-                }, 5000);
             }
         }
 
         function logout() {
             try {
-                if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                if (typeof google !== 'undefined' && google.accounts?.id) {
                     google.accounts.id.disableAutoSelect();
                 }
             } catch (error) {
@@ -1438,202 +1544,373 @@
             
             isLoggedIn = false;
             currentUser = null;
-            uploadedFiles = { tops: [], bottoms: [], shoes: [] };  // ✅ CAMBIO: tops/bottoms en plural
+            uploadedFiles = { tops: [], bottoms: [], shoes: [] };
             
-            ['tops', 'bottoms', 'shoes'].forEach(type => {  // ✅ CAMBIO: tops/bottoms en plural
+            ['tops', 'bottoms', 'shoes'].forEach(type => {
                 const preview = document.getElementById(`${type}-preview`);
                 if (preview) preview.innerHTML = '';
-                updateUploadLabel(type);
             });
             
             updateAuthUI();
             hideUploadSection();
-            showNotification('Sesión cerrada correctamente', 'info');
+            showNotification('Sesión cerrada correctamente', 'info', 3000);
         }
 
         function updateAuthUI() {
-            const loginBtn = document.getElementById('loginBtn');
             const userInfo = document.getElementById('userInfo');
             
             if (isLoggedIn && currentUser) {
-                loginBtn.style.display = 'none';
-                userInfo.style.display = 'flex';
-                document.getElementById('userName').textContent = currentUser.name;
-                document.getElementById('userAvatar').src = currentUser.picture;
+                if (userInfo) {
+                    userInfo.style.display = 'flex';
+                    const userName = document.getElementById('userName');
+                    const userAvatar = document.getElementById('userAvatar');
+                    if (userName) userName.textContent = currentUser.name || currentUser.email;
+                    if (userAvatar) userAvatar.src = currentUser.picture || '';
+                }
             } else {
-                loginBtn.style.display = 'flex';
-                userInfo.style.display = 'none';
+                if (userInfo) userInfo.style.display = 'none';
             }
         }
 
         function showUploadSection() {
-            document.getElementById('loginRequired').style.display = 'none';
-            document.getElementById('uploadArea').style.display = 'block';
-            document.querySelector('.upload-section').classList.add('active');
+            const loginRequired = document.getElementById('loginRequired');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (uploadArea) uploadArea.style.display = 'block';
         }
 
         function hideUploadSection() {
-            document.getElementById('loginRequired').style.display = 'block';
-            document.getElementById('uploadArea').style.display = 'none';
-            document.querySelector('.upload-section').classList.remove('active');
-            
+            const loginRequired = document.getElementById('loginRequired');
+            const uploadArea = document.getElementById('uploadArea');
             const resultDiv = document.getElementById('result');
+            
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (uploadArea) uploadArea.style.display = 'none';
             if (resultDiv) {
                 resultDiv.innerHTML = '';
                 resultDiv.style.display = 'none';
             }
         }
 
-        // ✅ POPUP FUNCTIONS (SIN CAMBIOS)
-        function showInvalidImagePopup(title, message, redirectToLogin = false) {
-            const overlay = document.createElement('div');
-            overlay.className = 'popup-overlay';
-            
-            overlay.innerHTML = `
-                <div class="popup-content">
-                    <span class="popup-icon">⚠️</span>
-                    <h3 class="popup-title">${title}</h3>
-                    <p class="popup-message" style="white-space: pre-line;">${message}</p>
-                    <div class="popup-buttons">
-                        ${redirectToLogin ? 
-                            `<button class="popup-btn popup-btn-primary" onclick="redirectToGmailLogin()">
-                                Iniciar Sesión con Gmail
-                            </button>` : 
-                            `<button class="popup-btn popup-btn-primary" onclick="closeInvalidImagePopup()">
-                                Entendido
-                            </button>`
-                        }
-                        <button class="popup-btn popup-btn-secondary" onclick="closeInvalidImagePopup()">
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(overlay);
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) closeInvalidImagePopup();
-            });
-        }
-
-        function closeInvalidImagePopup() {
-            const popup = document.querySelector('.popup-overlay');
-            if (popup) popup.remove();
-        }
-
-        function redirectToGmailLogin() {
-            closeInvalidImagePopup();
-            const header = document.querySelector('header');
-            if (header) {
-                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => {
-                    const loginBtn = document.getElementById('loginBtn');
-                    if (loginBtn) {
-                        loginBtn.style.animation = 'pulse 1s ease-in-out 3';
-                        setTimeout(() => loginBtn.style.animation = '', 3000);
-                    }
-                }, 500);
-            }
-        }
-
-        // ✅ PRICING FUNCTIONS (SIN CAMBIOS)
-        function startFreePlan() {
+        async function handleFileUpload(type, input) {
             if (!isLoggedIn) {
-                showInvalidImagePopup('Inicia sesión para comenzar', 'Accede con Google para empezar tu plan gratuito de 30 días', true);
+                showValidationPopup('error', 'Inicia Sesión Requerida', 
+                    'Necesitas iniciar sesión con Google para subir fotos y usar la IA de recomendaciones.');
+                input.value = '';
+                return;
+            }
+
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
+
+            const currentCount = uploadedFiles[type].length;
+            const maxFiles = FILE_LIMITS[type];
+            const availableSlots = maxFiles - currentCount;
+            
+            if (files.length > availableSlots) {
+                const typeText = type === 'tops' ? 'superiores' : 
+                               type === 'bottoms' ? 'inferiores' : 'zapatos';
+                
+                showValidationPopup('warning', 'Límite de Fotos Excedido', 
+                    `Solo puedes subir ${availableSlots} foto${availableSlots !== 1 ? 's' : ''} más de ${typeText}.`, 
+                    [{
+                        type: 'warning',
+                        title: 'Límite Actual',
+                        message: `Máximo permitido: ${maxFiles} fotos por categoría. Actualmente tienes: ${currentCount}`
+                    }]);
+                input.value = '';
                 return;
             }
             
-            showNotification('¡Plan gratuito activado! Comienza a subir tus fotos', 'success');
+            // Mostrar estado de subida
+            updateStatusIndicator(type, 'uploading', 'Subiendo archivos...');
+            showLoadingOverlay(type, 'Subiendo y validando imágenes...');
+            
+            let successCount = 0;
+            let errorCount = 0;
+            const processingErrors = [];
+            
+            for (let [index, file] of files.entries()) {
+                try {
+                    // Validación básica del archivo
+                    await validateClothingImage(file);
+                    
+                    // Simular validación con backend (puedes reemplazar esto con llamada real)
+                    await simulateBackendValidation(file, type);
+                    
+                    // Procesar imagen si pasa validación
+                    const preview = document.getElementById(`${type}-preview`);
+                    await processImageFile(file, type, preview);
+                    uploadedFiles[type].push(file);
+                    successCount++;
+                    
+                    // Actualizar progreso
+                    showLoadingOverlay(type, `Procesando imagen ${index + 1} de ${files.length}...`);
+                    
+                } catch (error) {
+                    errorCount++;
+                    console.error(`Error procesando ${file.name}:`, error);
+                    
+                    const friendlyError = getFriendlyErrorMessage(error);
+                    processingErrors.push({
+                        type: 'error',
+                        title: `Error en ${file.name}`,
+                        message: friendlyError.message || error.message
+                    });
+                }
+            }
+            
+            // Ocultar loading
+            hideLoadingOverlay(type);
+            
+            // Actualizar estado final
+            if (successCount > 0 && errorCount === 0) {
+                updateStatusIndicator(type, 'success', `${successCount} imagen${successCount !== 1 ? 'es' : ''} subida${successCount !== 1 ? 's' : ''} correctamente`);
+            } else if (successCount > 0 && errorCount > 0) {
+                updateStatusIndicator(type, 'warning', `${successCount} exitosas, ${errorCount} con errores`);
+            } else if (errorCount > 0) {
+                updateStatusIndicator(type, 'error', `${errorCount} imagen${errorCount !== 1 ? 'es' : ''} con errores`);
+            }
+            
+            // Actualizar labels y progreso
+            updateUploadLabel(type);
+            updateUploadProgress();
+            updateGenerateButton();
+            
+            // Mostrar popup de resultados si hay errores
+            if (processingErrors.length > 0) {
+                const title = errorCount === files.length ? 'Errores de Validación' : 'Algunas Imágenes con Problemas';
+                const message = errorCount === files.length ? 
+                    'No se pudo procesar ninguna imagen. Revisa los errores a continuación:' :
+                    `Se procesaron ${successCount} imagen${successCount !== 1 ? 'es' : ''} correctamente, pero ${errorCount} tuvieron problemas:`;
+                
+                showValidationPopup('error', title, message, processingErrors);
+            } else if (successCount > 0) {
+                const typeText = type === 'tops' ? 'superiores' : 
+                               type === 'bottoms' ? 'inferiores' : 'zapatos';
+                showNotification(`${successCount} foto${successCount !== 1 ? 's' : ''} de ${typeText} subida${successCount !== 1 ? 's' : ''} correctamente`, 'success', 3000);
+            }
+            
+            input.value = '';
+        }
+
+        async function simulateBackendValidation(file, type) {
+            // Simula validación del backend - reemplaza con llamada real
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simular algunos casos de error para demostración
+                    const rand = Math.random();
+                    
+                    if (rand < 0.1) { // 10% de probabilidad de error de categoría
+                        reject({
+                            code: 'WRONG_CATEGORY',
+                            message: `Esta imagen parece ser ${type === 'tops' ? 'calzado' : 'una prenda superior'}, no ${type === 'tops' ? 'una prenda superior' : 'calzado'}. Súbela en la categoría correcta.`,
+                            field: type
+                        });
+                    } else if (rand < 0.15) { // 5% de probabilidad de imagen poco clara
+                        reject({
+                            code: 'LOW_CONFIDENCE',
+                            message: 'La imagen no es lo suficientemente clara para identificar la prenda correctamente.',
+                            confidence: 0.3
+                        });
+                    } else {
+                        resolve(); // Validación exitosa
+                    }
+                }, 1000 + Math.random() * 2000); // Simular tiempo de procesamiento variable
+            });
+        }
+
+        async function validateClothingImage(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                throw new Error('Formato no compatible. Usa JPG, PNG, WEBP o GIF.');
+            }
+            
+            if (file.size > 20 * 1024 * 1024) { // 20MB
+                throw new Error(`Archivo muy grande: ${(file.size / (1024 * 1024)).toFixed(1)}MB. Máximo: 20MB`);
+            }
+            
+            if (file.size < 1024) { // 1KB mínimo
+                throw new Error('El archivo parece estar corrupto o es muy pequeño.');
+            }
+            
+            return true;
+        }
+
+        function updateUploadLabel(type) {
+            const label = document.querySelector(`label[for="${type}-upload"]`);
+            const count = uploadedFiles[type].length;
+            const maxFiles = FILE_LIMITS[type];
+            const typeText = type === 'tops' ? 'Superiores' : 
+                           type === 'bottoms' ? 'Inferiores' : 'Zapatos';
+            
+            if (count === 0) {
+                label.innerHTML = `📤 Subir ${typeText} (máx ${maxFiles})`;
+                label.style.background = 'linear-gradient(135deg, var(--accent), var(--accent-light))';
+            } else if (count < maxFiles) {
+                label.innerHTML = `✅ ${count}/${maxFiles} - Agregar más`;
+                label.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            } else {
+                label.innerHTML = `🎯 ${count}/${maxFiles} - ¡Completo!`;
+                label.style.background = 'linear-gradient(135deg, #ffc107, #ff9800)';
+            }
+        }
+
+        function updateGenerateButton() {
+            const button = document.getElementById('generateBtn');
+            const hasAll = uploadedFiles.tops.length > 0 && 
+                          uploadedFiles.bottoms.length > 0 && 
+                          uploadedFiles.shoes.length > 0;
+            
+            if (hasAll) {
+                const totalCombinations = uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length;
+                button.innerHTML = `🪄 Generar ${totalCombinations} Combinaciones Inteligentes`;
+                button.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                button.disabled = false;
+            } else {
+                button.innerHTML = '🪄 Sube fotos de cada categoría para continuar';
+                button.style.background = 'linear-gradient(135deg, #6c757d, #5a6268)';
+                button.disabled = true;
+            }
+        }
+
+        function processImageFile(file, type, preview) {
+            return new Promise((resolve, reject) => {
+                if (!file.type.startsWith('image/')) {
+                    reject(new Error('Solo se permiten imágenes'));
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const container = document.createElement('div');
+                    container.style.position = 'relative';
+                    container.style.display = 'inline-block';
+                    container.style.margin = '0.25rem';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-image';
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = () => {
+                        container.remove();
+                        const fileIndex = uploadedFiles[type].indexOf(file);
+                        if (fileIndex > -1) {
+                            uploadedFiles[type].splice(fileIndex, 1);
+                        }
+                    };
+                    
+                    container.appendChild(img);
+                    container.appendChild(removeBtn);
+                    preview.appendChild(container);
+                    resolve();
+                };
+                reader.onerror = () => reject(new Error('Error leyendo el archivo'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function getRecommendation() {
+            if (!isLoggedIn) {
+                showNotification('Necesitas iniciar sesión primero', 'error');
+                return;
+            }
+
+            if (uploadedFiles.tops.length === 0 || uploadedFiles.bottoms.length === 0 || uploadedFiles.shoes.length === 0) {
+                showNotification('Necesitas subir al menos una foto de cada categoría', 'error');
+                return;
+            }
+
+            const button = document.getElementById('generateBtn');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="loading"></span> Generando combinaciones...';
+            button.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('user_email', currentUser.email);
+                
+                uploadedFiles.tops.forEach((file) => {
+                    formData.append('tops', file);
+                });
+                uploadedFiles.bottoms.forEach((file) => {
+                    formData.append('bottoms', file);
+                });
+                uploadedFiles.shoes.forEach((file) => {
+                    formData.append('shoes', file);
+                });
+
+                const response = await fetch(`${API_BASE}/recommend`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error del servidor');
+                }
+
+                const data = await response.json();
+                showNotification('Recomendaciones generadas exitosamente!', 'success');
+                
+            } catch (error) {
+                showNotification('Error generando recomendaciones', 'error');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        function startFreePlan() {
+            if (!isLoggedIn) {
+                showLoginPopup();
+                return;
+            }
+            showNotification('Plan gratuito activado!', 'success');
             document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
         }
 
         function upgradeToPremium() {
-            if (!isLoggedIn) {
-                showInvalidImagePopup('Inicia sesión para actualizar', 'Accede con Google para actualizar a Premium', true);
-                return;
-            }
-            
-            showNotification('Funcionalidad de pago en desarrollo', 'info');
+            showNotification('Funcionalidad en desarrollo', 'info');
         }
 
-        // ✅ UTILITY FUNCTIONS
-        function showNotification(message, type = 'info') {
+        function showNotification(message, type = 'info', duration = 4000) {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
+            
             document.body.appendChild(notification);
+            
             setTimeout(() => {
                 if (document.body.contains(notification)) {
                     document.body.removeChild(notification);
                 }
-            }, 4000);
+            }, duration);
         }
 
-        // ✅ SMOOTH SCROLLING
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
+                if (this.getAttribute('onclick')) return;
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth' });
-                    // Cerrar menú móvil si está abierto
                     closeMobileMenu();
                 }
             });
         });
 
-        // ✅ NAV PILLS ACTIVE - ACTUALIZADO PARA MÓVIL
-        function updateActiveNav() {
-            const sections = ['inicio', 'impacto', 'precios', 'funcionamiento', 'equipo'];
-            const navPills = document.querySelectorAll('.nav-pill');
-            const mobileNavPills = document.querySelectorAll('.mobile-nav-pill');
-            
-            sections.forEach((section, index) => {
-                const element = document.getElementById(section);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= 100 && rect.bottom >= 100) {
-                        // Desktop
-                        navPills.forEach(pill => pill.classList.remove('active'));
-                        if (navPills[index]) {
-                            navPills[index].classList.add('active');
-                        }
-                        // Mobile
-                        mobileNavPills.forEach(pill => pill.classList.remove('active'));
-                        if (mobileNavPills[index]) {
-                            mobileNavPills[index].classList.add('active');
-                        }
-                    }
-                }
-            });
-        }
-
-        window.addEventListener('scroll', updateActiveNav);
-
-        // ✅ HEADER SCROLL EFFECT
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(102, 126, 234, 0.3)';
-            } else {
-                header.style.background = 'rgba(102, 126, 234, 0.1)';
-            }
-        });
-
-        // ✅ CERRAR MENÚ AL HACER CLIC FUERA O AL REDIMENSIONAR
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
                 closeMobileMenu();
             }
         });
 
-        // ✅ INITIALIZE V7.0
         document.addEventListener('DOMContentLoaded', () => {
             updateAuthUI();
-            
-            Object.keys(FILE_LIMITS).forEach(type => {
-                updateUploadLabel(type);
-            });
             
             const checkGoogleLoaded = () => {
                 if (typeof google !== 'undefined' && google.accounts) {
@@ -1643,19 +1920,17 @@
                 }
             };
             
-            setTimeout(checkGoogleLoaded, 1000);
+            setTimeout(checkGoogleLoaded, 1500);
             
             setTimeout(() => {
                 const impactBars = document.querySelectorAll('.impact-fill');
-                impactBars.forEach(bar => {
-                    const width = bar.getAttribute('data-width');
-                    bar.style.width = width + '%';
+                impactBars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        const width = bar.getAttribute('data-width');
+                        bar.style.width = width + '%';
+                    }, index * 200);
                 });
-            }, 2000);
-            
-            setTimeout(() => {
-                showNotification('Bienvenido a AI love reuse v7.0 con menú hamburguesa', 'success');
-            }, 2000);
+            }, 3000);
         });
     </script>
 </body>
