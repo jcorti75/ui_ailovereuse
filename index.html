@@ -444,6 +444,14 @@
   <script>
     const GOOGLE_CLIENT_ID='326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
     const API_BASE="https://outfit-recommender.fly.dev";
+    const fileUrlMap = new WeakMap();
+    function getFileUrl(file){
+      if(!file) return '';
+      if(!fileUrlMap.has(file)){
+        fileUrlMap.set(file, URL.createObjectURL(file));
+      }
+      return fileUrlMap.get(file);
+    }
     let isLoggedIn=false,currentUser=null,uploadedFiles={tops:[],bottoms:[],shoes:[]};
     const FILE_LIMITS={tops:3,bottoms:3,shoes:5};
     let loginOverlayRef=null;
