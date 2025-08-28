@@ -1,17 +1,32 @@
-body {
-    font-family: sans-serif;
-    max-width: 600px;
-    margin: auto;
-    padding: 20px;
-  }
-  input {
-    width: 100%;
-  }
-  button {
-    padding: 10px;
-    background-color: #00aaff;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
+/* ---- Recs row (horizontal scroll) ---- */
+.recs-row{
+  display:flex;
+  gap:1.5rem;
+  overflow-x:auto;
+  padding: .5rem .25rem 1rem;
+  scroll-snap-type:x mandatory;
+}
+.rec-card{
+  min-width: 340px;
+  max-width: 360px;
+  scroll-snap-align:start;
+}
+.rec-photos{
+  display:flex;
+  gap:.75rem;
+  margin:.75rem 0 1rem;
+}
+.rec-photos img{
+  width:90px;height:90px;object-fit:cover;border-radius:14px;
+  border:2px solid rgba(255,255,255,.25);
+  background:#fff;
+}
+.rec-meta{
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.25rem
+}
+.badge{
+  padding:.2rem .6rem;border-radius:999px;background:rgba(255,255,255,.15);font-weight:700;font-size:.85rem
+}
+
+
   
