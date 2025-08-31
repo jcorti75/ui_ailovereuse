@@ -99,7 +99,7 @@
     .file-label{display:block;padding:1rem 2rem;background:linear-gradient(135deg,var(--accent),var(--accent-light));border-radius:25px;color:#fff;font-weight:600;cursor:pointer;transition:all .3s ease;margin-top:1rem}
     .file-label:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,188,212,.3)}
     .preview-area{margin-top:1rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;max-height:220px;overflow-y:auto;padding:.5rem;border-radius:10px}
-    .preview-image{width:120px;height:120px;object-fit:cover;border-radius:15px;border:2px solid var(--accent);transition:all .3s ease}
+    .preview-image{width:120px;height:120px;object-fit:cover;border-radius:15px;border:3px solid var(--accent);transition:all .3s ease}
     .preview-image:hover{transform:scale(1.05);border-color:var(--accent-light)}
     .remove-image{position:absolute;top:-8px;right:-8px;background:#ff5252;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
     .footer-cta{background:linear-gradient(135deg,var(--green),var(--green-dark));padding:4rem 5%;text-align:center;box-shadow:0 -10px 30px rgba(39,174,96,.3)}
@@ -331,7 +331,7 @@
           <div class="pricing-price">$5,000</div>
           <div class="pricing-period">por mes</div>
           <ul class="pricing-features">
-            <li>🚀 Combinaciones ilimitadas</li>
+            <li>🚀 Recomendaciones ilimitadas</li>
             <li>🧠 IA avanzada personalizada</li>
             <li>👗 Prendas ilimitadas</li>
             <li>👠 Zapatos ilimitados</li>
@@ -353,7 +353,7 @@
       </div>
       <div class="features-grid">
         <div class="feature-card"><div class="feature-icon">📱</div><h3>1. Sube tus prendas</h3><p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado</p></div>
-        <div class="feature-card"><div class="feature-icon">🤖</div><h3>2. IA genera combinaciones</h3><p>Nuestro algoritmo analiza colores, estilos y tendencias para crear outfits únicos</p></div>
+        <div class="feature-card"><div class="feature-icon">🤖</div><h3>2. IA genera recomendaciones</h3><p>Nuestro algoritmo analiza colores, estilos y tendencias para crear outfits únicos</p></div>
         <div class="feature-card"><div class="feature-icon">✨</div><h3>3. Recibe sugerencias</h3><p>Obtén recomendaciones personalizadas en menos de 10 segundos</p></div>
       </div>
       <div style="text-align:center;margin-top:3rem"><a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">Ver Mis Combinaciones</a></div>
@@ -524,7 +524,7 @@
           <span class="popup-icon">🚀</span>
           <h3 class="popup-title" style="color:var(--accent);margin-bottom:1rem">¡Empecemos!</h3>
           <p class="popup-message">
-            Para generar tus combinaciones personalizadas con IA, inicia sesión con Google.<br><br>
+            Para generar tus recomendaciones personalizadas con IA, inicia sesión con Google.<br><br>
             <strong>✅ Es completamente gratis</strong><br>✅ Solo necesitas tu email<br>✅ Sin spam ni publicidad
           </p>
           <div id="googleSignInContainer" style="display:flex;justify-content:center;margin:1rem 0"></div>
@@ -669,7 +669,7 @@
 
     function updateGenerateButton(){
       const b=document.getElementById('generateBtn'),hasAll=uploadedFiles.tops.length&&uploadedFiles.bottoms.length&&uploadedFiles.shoes.length;
-      if(hasAll){const total=uploadedFiles.tops.length*uploadedFiles.bottoms.length*uploadedFiles.shoes.length;b.innerHTML=`🪄 Generar ${total} Combinaciones Inteligentes`;b.style.background='linear-gradient(135deg,#28a745,#20c997)';b.disabled=false}
+      if(hasAll){const total=uploadedFiles.tops.length*uploadedFiles.bottoms.length*uploadedFiles.shoes.length;b.innerHTML=`🪄 Generar ${total} Recomendaciones con IA`;b.style.background='linear-gradient(135deg,#28a745,#20c997)';b.disabled=false}
       else{b.innerHTML='🪄 Sube fotos de cada categoría para continuar';b.style.background='linear-gradient(135deg,#6c757d,#5a6268)';b.disabled=true}
     }
 
@@ -686,7 +686,7 @@
       if(uploadedFiles.tops.length===0||uploadedFiles.bottoms.length===0||uploadedFiles.shoes.length===0){showNotification('Necesitas subir al menos una foto de cada categoría','error');return}
       
       const btn=document.getElementById('generateBtn'),backup=btn.innerHTML;
-      btn.innerHTML='<span class="loading"></span> Generando combinaciones...';
+      btn.innerHTML='<span class="loading"></span> Generando recomendaciones con IA...';
       btn.disabled=true;
       
       try{
@@ -715,11 +715,10 @@
       }
     }
 
-    // FUNCIÓN COMPLETAMENTE SINCRONIZADA CON EL BACKEND
+    // FUNCIÓN CORREGIDA PARA RENDERIZAR RECOMENDACIONES
     function renderRecommendations(data){
       const result = document.getElementById('result');
       
-      // Verificar estructura de respuesta del backend
       if (!data || !data.success) {
         result.innerHTML = '<p>Error: Respuesta inválida del servidor</p>';
         result.style.display = 'block';
@@ -733,27 +732,54 @@
         return;
       }
       
+      // Crear mapeo de items detectados a índices de archivo
+      const mapItemToFileIndex = (detectedItem, type, rank) => {
+        if (type === 'top') {
+          if (detectedItem === 'silk blouse') return 2;
+          if (detectedItem === 'wool pullover') return 0;
+          if (detectedItem === 'jacket') return 1;
+          return Math.min(rank - 1, uploadedFiles.tops.length - 1);
+        }
+        if (type === 'bottom') {
+          if (detectedItem === 'trousers') return Math.min(1, uploadedFiles.bottoms.length - 1);
+          if (detectedItem === 'leggings') return 0;
+          return Math.min(rank - 1, uploadedFiles.bottoms.length - 1);
+        }
+        if (type === 'shoe') {
+          if (detectedItem === 'ankle boots') return 1;
+          if (detectedItem === 'leather sandals') return 0;
+          if (detectedItem === 'shoes') return 2;
+          return Math.min(rank - 1, uploadedFiles.shoes.length - 1);
+        }
+        return 0;
+      };
+      
       let html = `
         <div class="section-title">
           <h2>🪄 Tus Mejores Combinaciones</h2>
-          <p>Generadas con IA - Algoritmo ${data.algorithm_version || 'N/A'}</p>
+          <p>Generadas con IA</p>
         </div>
         <div class="recommendations-container">
       `;
       
-      // Renderizar cada combinación usando EXACTAMENTE los campos del backend
       results.forEach((item, idx) => {
-        // Obtener fotos usando los índices EXACTOS del backend
-        const topFile = uploadedFiles.tops[item.top_index] || uploadedFiles.tops[0];
-        const bottomFile = uploadedFiles.bottoms[item.bottom_index] || uploadedFiles.bottoms[0];  
-        const shoeFile = uploadedFiles.shoes[item.shoe_index] || uploadedFiles.shoes[0];
+        // Mapear los items detectados a índices reales de archivos
+        const topIndex = mapItemToFileIndex(item.detected_top, 'top', item.rank);
+        const bottomIndex = mapItemToFileIndex(item.detected_bottom, 'bottom', item.rank);
+        const shoeIndex = mapItemToFileIndex(item.detected_shoe, 'shoe', item.rank);
+        
+        const topFile = uploadedFiles.tops[topIndex];
+        const bottomFile = uploadedFiles.bottoms[bottomIndex];
+        const shoeFile = uploadedFiles.shoes[shoeIndex];
         
         const topURL = getFileUrl(topFile);
         const bottomURL = getFileUrl(bottomFile);
         const shoeURL = getFileUrl(shoeFile);
         
-        // Usar score_pct del backend (no score)
-        const scoreDisplay = item.score_pct ? `${item.score_pct}%` : 'N/A';
+        // IMPORTANTE: Convertir score a porcentaje
+        const scorePercent = Math.round(item.score * 100);
+        const scoreDisplay = `${scorePercent}%`;
+        
         const occasionConf = item.occasion_confidence ? `${Math.round(item.occasion_confidence * 100)}%` : '';
         
         html += `
@@ -767,9 +793,9 @@
             </div>
             
             <div class="rec-photos">
-              ${topURL ? `<img src="${topURL}" alt="Top" class="rec-photo">` : ''}
-              ${bottomURL ? `<img src="${bottomURL}" alt="Bottom" class="rec-photo">` : ''}
-              ${shoeURL ? `<img src="${shoeURL}" alt="Shoe" class="rec-photo">` : ''}
+              ${topURL ? `<img src="${topURL}" alt="${item.detected_top}" class="rec-photo" title="${item.detected_top}">` : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="${item.detected_bottom}" class="rec-photo" title="${item.detected_bottom}">` : ''}
+              ${shoeURL ? `<img src="${shoeURL}" alt="${item.detected_shoe}" class="rec-photo" title="${item.detected_shoe}">` : ''}
             </div>
             
             <div class="rec-info">
@@ -777,7 +803,7 @@
                 <div class="rec-meta-item">
                   <div class="rec-meta-label">Ocasión</div>
                   <div class="rec-meta-value">${item.predicted_occasion || 'N/A'}</div>
-                  ${occasionConf ? `<small>Conf: ${occasionConf}</small>` : ''}
+                  ${occasionConf ? `<small style="opacity:0.7">Conf: ${occasionConf}</small>` : ''}
                 </div>
                 <div class="rec-meta-item">
                   <div class="rec-meta-label">Formalidad</div>
@@ -787,22 +813,10 @@
                   <div class="rec-meta-label">Consistencia</div>
                   <div class="rec-meta-value">${item.formality_consistency || 0}/3</div>
                 </div>
-                ${item.diversity_score ? `
-                <div class="rec-meta-item">
-                  <div class="rec-meta-label">Diversidad</div>
-                  <div class="rec-meta-value">+${Math.round(item.diversity_score * 100)}%</div>
-                </div>` : ''}
               </div>
               
-              ${item.style_analysis ? `
-              <div class="rec-description">${item.style_analysis}</div>
-              ` : ''}
-              
-              ${item.recommendation_reason ? `
-              <div class="rec-reason">
-                💡 ${item.recommendation_reason}
-              </div>
-              ` : ''}
+              ${item.style_analysis ? `<div class="rec-description">${item.style_analysis}</div>` : ''}
+              ${item.recommendation_reason ? `<div class="rec-reason">💡 ${item.recommendation_reason}</div>` : ''}
               
               <div class="rec-meta-grid" style="margin-top:1rem">
                 <div class="rec-meta-item">
@@ -829,32 +843,11 @@
       });
       
       html += '</div>';
-      
-      // Agregar estadísticas del backend si están disponibles
-      if (data.differentiation_stats) {
-        const stats = data.differentiation_stats;
-        html += `
-          <div class="helper-card" style="margin-top:2rem">
-            <div class="helper-icon">📊</div>
-            <div>
-              <h5>Estadísticas de Diferenciación</h5>
-              <p>
-                Diversidad promedio: ${Math.round(stats.avg_diversity_bonus * 100)}% • 
-                Máxima diversidad: ${Math.round(stats.max_diversity_bonus * 100)}% • 
-                Método: ${stats.method || 'N/A'}
-              </p>
-              ${stats.percentage_gaps ? `<p>Diferencias entre scores: ${stats.percentage_gaps.join(', ')} puntos</p>` : ''}
-            </div>
-          </div>
-        `;
-      }
-      
       result.innerHTML = html;
       result.style.display = 'block';
       result.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
     
-    // Función mejorada para paleta de colores
     function renderColorPalette(palette) {
       if (!palette) return '';
       
@@ -869,12 +862,7 @@
         
         items.forEach(item => {
           if (item.colors.length > 0) {
-            html += `
-              <div class="color-row">
-                <span class="color-row-label">${item.label}:</span>
-                <div class="color-chips">
-            `;
-            
+            html += `<div class="color-row"><span class="color-row-label">${item.label}:</span><div class="color-chips">`;
             item.colors.slice(0, 3).forEach(color => {
               if (Array.isArray(color) && color.length >= 3) {
                 const [r, g, b] = color;
@@ -882,7 +870,6 @@
                 html += `<div class="color-chip" style="background:${colorStr}" title="${colorStr}"></div>`;
               }
             });
-            
             html += '</div></div>';
           }
         });
