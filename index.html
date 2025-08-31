@@ -757,69 +757,69 @@
 		
 		// Si solo hay 1 combinación posible (1+1+1), usar índice 0 para todo
 		if (totalPossibleCombos === 1) {
-			topIndex = 0;
-			bottomIndex = 0;
-			shoeIndex = 0;
+		  topIndex = 0;
+		  bottomIndex = 0;
+		  shoeIndex = 0;
 		} 
 		// Si hay exactamente 2 combinaciones posibles
 		else if (totalPossibleCombos === 2) {
-			if (item.rank === 1) {
-				topIndex = 0;
-				bottomIndex = 0;
-				shoeIndex = 0;
-			} else {
-				// Cambiar el que tenga 2 opciones
-				if (uploadedFiles.tops.length === 2) {
-					topIndex = 1;
-					bottomIndex = 0;
-					shoeIndex = 0;
-				} else if (uploadedFiles.bottoms.length === 2) {
-					topIndex = 0;
-					bottomIndex = 1;
-					shoeIndex = 0;
-				} else if (uploadedFiles.shoes.length === 2) {
-					topIndex = 0;
-					bottomIndex = 0;
-					shoeIndex = 1;
-				}
+		  if (item.rank === 1) {
+			topIndex = 0;
+			bottomIndex = 0;
+			shoeIndex = 0;
+		  } else {
+			// Cambiar el que tenga 2 opciones
+			if (uploadedFiles.tops.length === 2) {
+			  topIndex = 1;
+			  bottomIndex = 0;
+			  shoeIndex = 0;
+			} else if (uploadedFiles.bottoms.length === 2) {
+			  topIndex = 0;
+			  bottomIndex = 1;
+			  shoeIndex = 0;
+			} else if (uploadedFiles.shoes.length === 2) {
+			  topIndex = 0;
+			  bottomIndex = 0;
+			  shoeIndex = 1;
 			}
+		  }
 		}
 		// Para 3 o más combinaciones, usar estrategia de distribución
 		else {
-			if (item.rank === 1) {
-				topIndex = 0;
-				bottomIndex = 0;
-				shoeIndex = 0;
-			} else if (item.rank === 2) {
-				// Intentar variar la prenda que tenga más opciones
-				if (uploadedFiles.shoes.length > uploadedFiles.tops.length && 
-					uploadedFiles.shoes.length > uploadedFiles.bottoms.length) {
-					// Si hay más zapatos, variar zapatos primero
-					topIndex = 0;
-					bottomIndex = 0;
-					shoeIndex = Math.min(1, maxShoeIndex);
-				} else if (uploadedFiles.tops.length > uploadedFiles.bottoms.length) {
-					// Si hay más tops, variar tops
-					topIndex = Math.min(1, maxTopIndex);
-					bottomIndex = 0;
-					shoeIndex = 0;
-				} else {
-					// Por defecto, variar bottoms
-					topIndex = 0;
-					bottomIndex = Math.min(1, maxBottomIndex);
-					shoeIndex = Math.min(1, maxShoeIndex);
-				}
-			} else if (item.rank === 3) {
-				// Para la tercera combinación, intentar máxima variación
-				topIndex = Math.min(idx % (maxTopIndex + 1), maxTopIndex);
-				bottomIndex = Math.min(Math.floor(idx / 2) % (maxBottomIndex + 1), maxBottomIndex);
-				shoeIndex = Math.min(2, maxShoeIndex);
+		  if (item.rank === 1) {
+			topIndex = 0;
+			bottomIndex = 0;
+			shoeIndex = 0;
+		  } else if (item.rank === 2) {
+			// Intentar variar la prenda que tenga más opciones
+			if (uploadedFiles.shoes.length > uploadedFiles.tops.length && 
+				uploadedFiles.shoes.length > uploadedFiles.bottoms.length) {
+			  // Si hay más zapatos, variar zapatos primero
+			  topIndex = 0;
+			  bottomIndex = 0;
+			  shoeIndex = Math.min(1, maxShoeIndex);
+			} else if (uploadedFiles.tops.length > uploadedFiles.bottoms.length) {
+			  // Si hay más tops, variar tops
+			  topIndex = Math.min(1, maxTopIndex);
+			  bottomIndex = 0;
+			  shoeIndex = 0;
 			} else {
-				// Para cualquier otro rank, usar módulo para ciclar
-				topIndex = (item.rank - 1) % (maxTopIndex + 1);
-				bottomIndex = Math.floor((item.rank - 1) / 2) % (maxBottomIndex + 1);
-				shoeIndex = (item.rank - 1) % (maxShoeIndex + 1);
+			  // Por defecto, variar bottoms
+			  topIndex = 0;
+			  bottomIndex = Math.min(1, maxBottomIndex);
+			  shoeIndex = Math.min(1, maxShoeIndex);
 			}
+		  } else if (item.rank === 3) {
+			// Para la tercera combinación, intentar máxima variación
+			topIndex = Math.min(idx % (maxTopIndex + 1), maxTopIndex);
+			bottomIndex = Math.min(Math.floor(idx / 2) % (maxBottomIndex + 1), maxBottomIndex);
+			shoeIndex = Math.min(2, maxShoeIndex);
+		  } else {
+			// Para cualquier otro rank, usar módulo para ciclar
+			topIndex = (item.rank - 1) % (maxTopIndex + 1);
+			bottomIndex = Math.floor((item.rank - 1) / 2) % (maxBottomIndex + 1);
+			shoeIndex = (item.rank - 1) % (maxShoeIndex + 1);
+		  }
 		}
 		
 		// VALIDACIÓN: Asegurar que los índices son válidos
@@ -837,7 +837,6 @@
 		const bottomURL = getFileUrl(bottomFile || uploadedFiles.bottoms[0]);
 		const shoeURL = getFileUrl(shoeFile || uploadedFiles.shoes[0]);
 		
-		console.log(`Combo ${item.rank}: top[${topIndex}], bottom[${bottomIndex}], shoe[${shoeIndex}]`);
 		// Convertir score a porcentaje
 		const scorePercent = Math.round(item.score * 100);
 		const scoreDisplay = `${scorePercent}%`;
@@ -898,7 +897,7 @@
 				</div>
 			  </div>
 			  
-			  ${renderColorPalette(item.color_palette)}
+			  <!-- PALETA DE COLORES ELIMINADA -->
 			</div>
 		  </div>
 		`;
@@ -909,40 +908,6 @@
 	  result.style.display = 'block';
 	  result.scrollIntoView({behavior: 'smooth', block: 'start'});
 	}
-    
-    function renderColorPalette(palette) {
-      if (!palette) return '';
-      
-      try {
-        let html = '<div class="color-palette"><div class="color-palette-title">Paleta de Colores:</div>';
-        
-        const items = [
-          {label: 'Top', colors: palette.top_colors || []},
-          {label: 'Bottom', colors: palette.bottom_colors || []},
-          {label: 'Shoe', colors: palette.shoe_colors || []}
-        ];
-        
-        items.forEach(item => {
-          if (item.colors.length > 0) {
-            html += `<div class="color-row"><span class="color-row-label">${item.label}:</span><div class="color-chips">`;
-            item.colors.slice(0, 3).forEach(color => {
-              if (Array.isArray(color) && color.length >= 3) {
-                const [r, g, b] = color;
-                const colorStr = `rgb(${r},${g},${b})`;
-                html += `<div class="color-chip" style="background:${colorStr}" title="${colorStr}"></div>`;
-              }
-            });
-            html += '</div></div>';
-          }
-        });
-        
-        html += '</div>';
-        return html;
-      } catch (e) {
-        console.error('Error rendering color palette:', e);
-        return '';
-      }
-    }
 
     function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
     function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
