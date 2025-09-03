@@ -164,7 +164,7 @@
     .popup-btn-secondary{background:transparent;color:#666;border:2px solid #ddd}
     .popup-btn-secondary:hover{background:#f5f5f5;border-color:#ccc}
     
-    /* NUEVOS ESTILOS PARA RECOMENDACIONES SINCRONIZADOS CON BACKEND */
+    /* ESTILOS PARA RECOMENDACIONES */
     .recommendations-container{margin-top:3rem;max-width:1200px;margin-left:auto;margin-right:auto}
     .rec-card{background:rgba(255,255,255,.12);border-radius:20px;padding:2rem;margin-bottom:2rem;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);transition:all .3s ease}
     .rec-card:hover{transform:translateY(-5px);background:rgba(255,255,255,.18);border-color:var(--accent)}
@@ -715,199 +715,205 @@
       }
     }
 
-    // FUNCIÓN CORREGIDA PARA RENDERIZAR RECOMENDACIONES
-	function renderRecommendations(data){
-	  const result = document.getElementById('result');
-	  
-	  if (!data || !data.success) {
-		result.innerHTML = '<p>Error: Respuesta inválida del servidor</p>';
-		result.style.display = 'block';
-		return;
-	  }
-	  
-	  const results = data.results || [];
-	  if (!results.length) {
-		result.innerHTML = '<p>No se generaron recomendaciones</p>';
-		result.style.display = 'block';
-		return;
-	  }
-	  
-	  let html = `
-		<div class="section-title">
-		  <h2>🪄 Tus Mejores Combinaciones</h2>
-		</div>
-		<div class="recommendations-container">
-	  `;
-	  
-	  results.forEach((item, idx) => {
-		// MAPEO INTELIGENTE SEGÚN CANTIDAD DE ARCHIVOS
-		let topIndex = 0;
-		let bottomIndex = 0;
-		let shoeIndex = 0;
-		
-		// Obtener cantidad de archivos disponibles
-		const maxTopIndex = uploadedFiles.tops.length - 1;
-		const maxBottomIndex = uploadedFiles.bottoms.length - 1;
-		const maxShoeIndex = uploadedFiles.shoes.length - 1;
-		
-		// Calcular total de combinaciones posibles
-		const totalPossibleCombos = uploadedFiles.tops.length * 
-									uploadedFiles.bottoms.length * 
-									uploadedFiles.shoes.length;
-		
-		// Si solo hay 1 combinación posible (1+1+1), usar índice 0 para todo
-		if (totalPossibleCombos === 1) {
-		  topIndex = 0;
-		  bottomIndex = 0;
-		  shoeIndex = 0;
-		} 
-		// Si hay exactamente 2 combinaciones posibles
-		else if (totalPossibleCombos === 2) {
-		  if (item.rank === 1) {
-			topIndex = 0;
-			bottomIndex = 0;
-			shoeIndex = 0;
-		  } else {
-			// Cambiar el que tenga 2 opciones
-			if (uploadedFiles.tops.length === 2) {
-			  topIndex = 1;
-			  bottomIndex = 0;
-			  shoeIndex = 0;
-			} else if (uploadedFiles.bottoms.length === 2) {
-			  topIndex = 0;
-			  bottomIndex = 1;
-			  shoeIndex = 0;
-			} else if (uploadedFiles.shoes.length === 2) {
-			  topIndex = 0;
-			  bottomIndex = 0;
-			  shoeIndex = 1;
-			}
-		  }
-		}
-		// Para 3 o más combinaciones, usar estrategia de distribución
-		else {
-		  if (item.rank === 1) {
-			topIndex = 0;
-			bottomIndex = 0;
-			shoeIndex = 0;
-		  } else if (item.rank === 2) {
-			// Intentar variar la prenda que tenga más opciones
-			if (uploadedFiles.shoes.length > uploadedFiles.tops.length && 
-				uploadedFiles.shoes.length > uploadedFiles.bottoms.length) {
-			  // Si hay más zapatos, variar zapatos primero
-			  topIndex = 0;
-			  bottomIndex = 0;
-			  shoeIndex = Math.min(1, maxShoeIndex);
-			} else if (uploadedFiles.tops.length > uploadedFiles.bottoms.length) {
-			  // Si hay más tops, variar tops
-			  topIndex = Math.min(1, maxTopIndex);
-			  bottomIndex = 0;
-			  shoeIndex = 0;
-			} else {
-			  // Por defecto, variar bottoms
-			  topIndex = 0;
-			  bottomIndex = Math.min(1, maxBottomIndex);
-			  shoeIndex = Math.min(1, maxShoeIndex);
-			}
-		  } else if (item.rank === 3) {
-			// Para la tercera combinación, intentar máxima variación
-			topIndex = Math.min(idx % (maxTopIndex + 1), maxTopIndex);
-			bottomIndex = Math.min(Math.floor(idx / 2) % (maxBottomIndex + 1), maxBottomIndex);
-			shoeIndex = Math.min(2, maxShoeIndex);
-		  } else {
-			// Para cualquier otro rank, usar módulo para ciclar
-			topIndex = (item.rank - 1) % (maxTopIndex + 1);
-			bottomIndex = Math.floor((item.rank - 1) / 2) % (maxBottomIndex + 1);
-			shoeIndex = (item.rank - 1) % (maxShoeIndex + 1);
-		  }
-		}
-		
-		// VALIDACIÓN: Asegurar que los índices son válidos
-		topIndex = Math.max(0, Math.min(topIndex, maxTopIndex));
-		bottomIndex = Math.max(0, Math.min(bottomIndex, maxBottomIndex));
-		shoeIndex = Math.max(0, Math.min(shoeIndex, maxShoeIndex));
-		
-		// Obtener los archivos
-		const topFile = uploadedFiles.tops[topIndex];
-		const bottomFile = uploadedFiles.bottoms[bottomIndex];
-		const shoeFile = uploadedFiles.shoes[shoeIndex];
-		
-		// VALIDACIÓN: Si algún archivo falta, usar el primero disponible como fallback
-		const topURL = getFileUrl(topFile || uploadedFiles.tops[0]);
-		const bottomURL = getFileUrl(bottomFile || uploadedFiles.bottoms[0]);
-		const shoeURL = getFileUrl(shoeFile || uploadedFiles.shoes[0]);
-		
-		// Convertir score a porcentaje
-		const scorePercent = Math.round(item.score * 100);
-		const scoreDisplay = `${scorePercent}%`;
-		
-		const occasionConf = item.occasion_confidence ? `${Math.round(item.occasion_confidence * 100)}%` : '';
-		
-		html += `
-		  <div class="rec-card">
-			<div class="rec-header">
-			  <h3 class="rec-title">${item.combination || 'C' + (idx + 1)}</h3>
-			  <div class="rec-score">
-				<span class="rank-badge">Rank ${item.rank || (idx + 1)}</span>
-				<span class="score-badge">${scoreDisplay}</span>
-			  </div>
-			</div>
-			
-			<div class="rec-photos">
-			  ${topURL ? `<img src="${topURL}" alt="${item.detected_top || 'Top'}" class="rec-photo" title="${item.detected_top || 'Prenda superior'}">` : ''}
-			  ${bottomURL ? `<img src="${bottomURL}" alt="${item.detected_bottom || 'Bottom'}" class="rec-photo" title="${item.detected_bottom || 'Prenda inferior'}">` : ''}
-			  ${shoeURL ? `<img src="${shoeURL}" alt="${item.detected_shoe || 'Shoe'}" class="rec-photo" title="${item.detected_shoe || 'Calzado'}">` : ''}
-			</div>
-			
-			<div class="rec-info">
-			  <div class="rec-meta-grid">
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">Ocasión</div>
-				  <div class="rec-meta-value">${item.predicted_occasion || 'N/A'}</div>
-				  ${occasionConf ? `<small style="opacity:0.7">Conf: ${occasionConf}</small>` : ''}
-				</div>
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">Formalidad</div>
-				  <div class="rec-meta-value">${item.formality || 'N/A'}</div>
-				</div>
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">Consistencia</div>
-				  <div class="rec-meta-value">${item.formality_consistency || 0}/3</div>
-				</div>
-			  </div>
-			  
-			  ${item.style_analysis ? `<div class="rec-description">${item.style_analysis}</div>` : ''}
-			  ${item.recommendation_reason ? `<div class="rec-reason">💡 ${item.recommendation_reason}</div>` : ''}
-			  
-			  <div class="rec-meta-grid" style="margin-top:1rem">
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">👕 Top</div>
-				  <div class="rec-meta-value">${item.detected_top || 'N/A'}</div>
-				  <small>${item.top_formality || 'N/A'}</small>
-				</div>
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">👖 Bottom</div>
-				  <div class="rec-meta-value">${item.detected_bottom || 'N/A'}</div>
-				  <small>${item.bottom_formality || 'N/A'}</small>
-				</div>
-				<div class="rec-meta-item">
-				  <div class="rec-meta-label">👟 Shoe</div>
-				  <div class="rec-meta-value">${item.detected_shoe || 'N/A'}</div>
-				  <small>${item.shoe_formality || 'N/A'}</small>
-				</div>
-			  </div>
-			  
-			  <!-- PALETA DE COLORES ELIMINADA -->
-			</div>
-		  </div>
-		`;
-	  });
-	  
-	  html += '</div>';
-	  result.innerHTML = html;
-	  result.style.display = 'block';
-	  result.scrollIntoView({behavior: 'smooth', block: 'start'});
-	}
+    // FUNCIÓN CORREGIDA PARA RENDERIZAR RECOMENDACIONES CON SCORES CORRECTOS
+    function renderRecommendations(data){
+      const result = document.getElementById('result');
+      
+      if (!data || !data.success) {
+        result.innerHTML = '<p>Error: Respuesta inválida del servidor</p>';
+        result.style.display = 'block';
+        return;
+      }
+      
+      const results = data.results || [];
+      if (!results.length) {
+        result.innerHTML = '<p>No se generaron recomendaciones</p>';
+        result.style.display = 'block';
+        return;
+      }
+      
+      // Debug: Ver scores recibidos del backend
+      console.log('[DEBUG] Scores recibidos del backend:', results.map(r => ({rank: r.rank, score: r.score})));
+      
+      let html = `
+        <div class="section-title">
+          <h2>🪄 Tus Mejores Combinaciones</h2>
+        </div>
+        <div class="recommendations-container">
+      `;
+      
+      results.forEach((item, idx) => {
+        // MAPEO INTELIGENTE SEGÚN CANTIDAD DE ARCHIVOS
+        let topIndex = 0;
+        let bottomIndex = 0;
+        let shoeIndex = 0;
+        
+        // Obtener cantidad de archivos disponibles
+        const maxTopIndex = uploadedFiles.tops.length - 1;
+        const maxBottomIndex = uploadedFiles.bottoms.length - 1;
+        const maxShoeIndex = uploadedFiles.shoes.length - 1;
+        
+        // Calcular total de combinaciones posibles
+        const totalPossibleCombos = uploadedFiles.tops.length * 
+                                    uploadedFiles.bottoms.length * 
+                                    uploadedFiles.shoes.length;
+        
+        // Si solo hay 1 combinación posible (1+1+1), usar índice 0 para todo
+        if (totalPossibleCombos === 1) {
+          topIndex = 0;
+          bottomIndex = 0;
+          shoeIndex = 0;
+        } 
+        // Si hay exactamente 2 combinaciones posibles
+        else if (totalPossibleCombos === 2) {
+          if (item.rank === 1) {
+            topIndex = 0;
+            bottomIndex = 0;
+            shoeIndex = 0;
+          } else {
+            // Cambiar el que tenga 2 opciones
+            if (uploadedFiles.tops.length === 2) {
+              topIndex = 1;
+              bottomIndex = 0;
+              shoeIndex = 0;
+            } else if (uploadedFiles.bottoms.length === 2) {
+              topIndex = 0;
+              bottomIndex = 1;
+              shoeIndex = 0;
+            } else if (uploadedFiles.shoes.length === 2) {
+              topIndex = 0;
+              bottomIndex = 0;
+              shoeIndex = 1;
+            }
+          }
+        }
+        // Para 3 o más combinaciones, usar estrategia de distribución
+        else {
+          if (item.rank === 1) {
+            topIndex = 0;
+            bottomIndex = 0;
+            shoeIndex = 0;
+          } else if (item.rank === 2) {
+            // Intentar variar la prenda que tenga más opciones
+            if (uploadedFiles.shoes.length > uploadedFiles.tops.length && 
+                uploadedFiles.shoes.length > uploadedFiles.bottoms.length) {
+              // Si hay más zapatos, variar zapatos primero
+              topIndex = 0;
+              bottomIndex = 0;
+              shoeIndex = Math.min(1, maxShoeIndex);
+            } else if (uploadedFiles.tops.length > uploadedFiles.bottoms.length) {
+              // Si hay más tops, variar tops
+              topIndex = Math.min(1, maxTopIndex);
+              bottomIndex = 0;
+              shoeIndex = 0;
+            } else {
+              // Por defecto, variar bottoms
+              topIndex = 0;
+              bottomIndex = Math.min(1, maxBottomIndex);
+              shoeIndex = Math.min(1, maxShoeIndex);
+            }
+          } else if (item.rank === 3) {
+            // Para la tercera combinación, intentar máxima variación
+            topIndex = Math.min(idx % (maxTopIndex + 1), maxTopIndex);
+            bottomIndex = Math.min(Math.floor(idx / 2) % (maxBottomIndex + 1), maxBottomIndex);
+            shoeIndex = Math.min(2, maxShoeIndex);
+          } else {
+            // Para cualquier otro rank, usar módulo para ciclar
+            topIndex = (item.rank - 1) % (maxTopIndex + 1);
+            bottomIndex = Math.floor((item.rank - 1) / 2) % (maxBottomIndex + 1);
+            shoeIndex = (item.rank - 1) % (maxShoeIndex + 1);
+          }
+        }
+        
+        // VALIDACIÓN: Asegurar que los índices son válidos
+        topIndex = Math.max(0, Math.min(topIndex, maxTopIndex));
+        bottomIndex = Math.max(0, Math.min(bottomIndex, maxBottomIndex));
+        shoeIndex = Math.max(0, Math.min(shoeIndex, maxShoeIndex));
+        
+        // Obtener los archivos
+        const topFile = uploadedFiles.tops[topIndex];
+        const bottomFile = uploadedFiles.bottoms[bottomIndex];
+        const shoeFile = uploadedFiles.shoes[shoeIndex];
+        
+        // VALIDACIÓN: Si algún archivo falta, usar el primero disponible como fallback
+        const topURL = getFileUrl(topFile || uploadedFiles.tops[0]);
+        const bottomURL = getFileUrl(bottomFile || uploadedFiles.bottoms[0]);
+        const shoeURL = getFileUrl(shoeFile || uploadedFiles.shoes[0]);
+        
+        // Convertir score a porcentaje - CORREGIDO
+        // El backend envía valores entre 0 y 1 (ej: 0.95 = 95%, 0.88 = 88%)
+        const scoreValue = item.score || 0.85; // Default 85% si no hay score
+        const scorePercent = Math.round(scoreValue * 100);
+        const scoreDisplay = `${scorePercent}%`;
+        
+        // Debug para verificar valores del backend
+        console.log(`Combo ${idx + 1} - Rank: ${item.rank}, Score raw: ${scoreValue}, Porcentaje: ${scorePercent}%`);
+        
+        const occasionConf = item.occasion_confidence ? `${Math.round(item.occasion_confidence * 100)}%` : '';
+        
+        html += `
+          <div class="rec-card">
+            <div class="rec-header">
+              <h3 class="rec-title">${item.combination || 'C' + (idx + 1)}</h3>
+              <div class="rec-score">
+                <span class="rank-badge">Rank ${item.rank || (idx + 1)}</span>
+                <span class="score-badge">${scoreDisplay}</span>
+              </div>
+            </div>
+            
+            <div class="rec-photos">
+              ${topURL ? `<img src="${topURL}" alt="${item.detected_top || 'Top'}" class="rec-photo" title="${item.detected_top || 'Prenda superior'}">` : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="${item.detected_bottom || 'Bottom'}" class="rec-photo" title="${item.detected_bottom || 'Prenda inferior'}">` : ''}
+              ${shoeURL ? `<img src="${shoeURL}" alt="${item.detected_shoe || 'Shoe'}" class="rec-photo" title="${item.detected_shoe || 'Calzado'}">` : ''}
+            </div>
+            
+            <div class="rec-info">
+              <div class="rec-meta-grid">
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Ocasión</div>
+                  <div class="rec-meta-value">${item.predicted_occasion || 'N/A'}</div>
+                  ${occasionConf ? `<small style="opacity:0.7">Conf: ${occasionConf}</small>` : ''}
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Formalidad</div>
+                  <div class="rec-meta-value">${item.formality || 'N/A'}</div>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">Consistencia</div>
+                  <div class="rec-meta-value">${item.formality_consistency || 0}/3</div>
+                </div>
+              </div>
+              
+              ${item.style_analysis ? `<div class="rec-description">${item.style_analysis}</div>` : ''}
+              ${item.recommendation_reason ? `<div class="rec-reason">💡 ${item.recommendation_reason}</div>` : ''}
+              
+              <div class="rec-meta-grid" style="margin-top:1rem">
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👕 Top</div>
+                  <div class="rec-meta-value">${item.detected_top || 'N/A'}</div>
+                  <small>${item.top_formality || 'N/A'}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👖 Bottom</div>
+                  <div class="rec-meta-value">${item.detected_bottom || 'N/A'}</div>
+                  <small>${item.bottom_formality || 'N/A'}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👟 Shoe</div>
+                  <div class="rec-meta-value">${item.detected_shoe || 'N/A'}</div>
+                  <small>${item.shoe_formality || 'N/A'}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      result.innerHTML = html;
+      result.style.display = 'block';
+      result.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
 
     function startFreePlan(){if(!isLoggedIn){showLoginPopup();return}showNotification('Plan gratuito activado!','success');document.getElementById('upload').scrollIntoView({behavior:'smooth'})}
     function upgradeToPremium(){showNotification('Funcionalidad en desarrollo','info')}
