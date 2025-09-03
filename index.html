@@ -17,9 +17,36 @@
     @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
     header{position:fixed;top:0;width:100%;padding:1rem 5%;background:rgba(102,126,234,.1);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1);z-index:1000;transition:all .3s ease}
     nav{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto}
-    .logo{font-size:1.5rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:.8rem}
-    .logo-icon{width:45px;height:45px;background:linear-gradient(135deg,var(--red),#ff6666);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+    
+    /* LOGO ACTUALIZADO - NoshopiA estilizado */
+    .logo{
+      font-size:2rem;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      letter-spacing:-1px;
+    }
+    .logo-no{color:#FF0000}
+    .logo-shop{color:#000000}
+    .logo-i{
+      color:#4CAF50;
+      position:relative;
+      margin-right:2px;
+    }
+    .logo-i::before{
+      content:'';
+      position:absolute;
+      width:8px;
+      height:8px;
+      background-color:#4CAF50;
+      border-radius:50%;
+      top:-10px;
+      left:50%;
+      transform:translateX(-50%);
+    }
+    .logo-a{color:#4CAF50}
+    
     .nav-pills{display:flex;background:rgba(255,255,255,.1);padding:.5rem;border-radius:50px;backdrop-filter:blur(10px);gap:.5rem;margin-right:2rem}
     .nav-pill{padding:.7rem 1.5rem;border-radius:25px;color:#fff;text-decoration:none;font-weight:500;transition:all .3s ease;font-size:.9rem}
     .nav-pill:hover,.nav-pill.active{background:rgba(255,255,255,.2);transform:translateY(-2px)}
@@ -52,8 +79,8 @@
     .hero-button{padding:1.2rem 3rem;background:linear-gradient(135deg,var(--accent),var(--accent-light));border:none;border-radius:50px;color:#fff;font-weight:600;font-size:1.1rem;cursor:pointer;transition:all .3s ease;display:inline-flex;align-items:center;gap:.8rem;margin-bottom:4rem;text-decoration:none}
     .hero-button:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(0,188,212,.4)}
     .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;max-width:800px;margin:0 auto}
-    .stat-item{background:rgba(255,255,255,.1);padding:2rem 1rem;border-radius:20px;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);transition:all .3s ease;text-align:center}
-    .stat-item:hover{transform:translateY(-5px);background:rgba(255,255,255,.15)}
+    .stat-item{background:rgba(255,255,255,.2);padding:2rem 1rem;border-radius:20px;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.3);transition:all .3s ease;text-align:center}
+    .stat-item:hover{transform:translateY(-5px);background:rgba(255,255,255,.3)}
     .stat-number{font-size:2.5rem;font-weight:900;color:var(--accent);margin-bottom:.5rem;display:block}
     .stat-label{font-size:1rem;opacity:.9;font-weight:500}
     .impact-section{background:rgba(0,0,0,.1);backdrop-filter:blur(10px)}
@@ -102,7 +129,7 @@
     .preview-image{width:120px;height:120px;object-fit:cover;border-radius:15px;border:3px solid var(--accent);transition:all .3s ease}
     .preview-image:hover{transform:scale(1.05);border-color:var(--accent-light)}
     .remove-image{position:absolute;top:-8px;right:-8px;background:#ff5252;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
-    .footer-cta{background:linear-gradient(135deg,var(--green),var(--green-dark));padding:4rem 5%;text-align:center;box-shadow:0 -10px 30px rgba(39,174,96,.3)}
+    .footer-cta{background:linear-gradient(135deg,#66BB6A,#81C784);padding:4rem 5%;text-align:center;box-shadow:0 -10px 30px rgba(102,187,106,.3)}
     .footer-cta h3{font-size:2.2rem;margin-bottom:1rem;font-weight:800}
     .footer-cta p{font-size:1.2rem;margin-bottom:2rem;opacity:.9;max-width:600px;margin-left:auto;margin-right:auto}
     .cta-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;margin:3rem 0;max-width:600px;margin-left:auto;margin-right:auto}
@@ -201,6 +228,7 @@
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .loading{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
     
     /* Responsive mejorado */
     @media (max-width:768px){
@@ -232,7 +260,14 @@
 <body>
   <header>
     <nav>
-      <div class="logo"><div class="logo-icon">🚫</div>No shop iA</div>
+      <!-- LOGO ACTUALIZADO CON EL ESTILO CORRECTO -->
+      <div class="logo">
+        <span style="color:#FF0000;font-weight:900">No</span>
+        <span style="color:#000000;font-weight:900">shop</span>
+        <span style="color:#4CAF50;font-weight:900;font-style:normal">i</span>
+        <span style="color:#4CAF50;font-weight:900">A</span>
+      </div>
+      
       <div style="display:flex;align-items:center;">
         <div class="nav-pills">
           <a href="#inicio" class="nav-pill active">🏠 Inicio</a>
@@ -257,7 +292,10 @@
   <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-header">
-      <h3>No shop iA</h3>
+      <!-- LOGO TAMBIÉN ACTUALIZADO EN EL MENÚ MÓVIL -->
+      <h3>
+        <span class="logo-no">No</span><span class="logo-shop">shop</span><span class="logo-i">i</span><span class="logo-a">A</span>
+      </h3>
       <p style="color:rgba(255,255,255,.8);font-size:.9rem">Reutiliza tu ropa con IA</p>
     </div>
     <a href="#inicio" class="mobile-nav-pill active" onclick="closeMobileMenu()"><i class="fas fa-home" style="margin-right:1rem"></i>Inicio</a>
@@ -444,7 +482,7 @@
     <div class="section-container">
       <div class="section-title">
         <h2>👥 Nuestro Equipo</h2>
-        <p class="section-subtitle">Conoce a las personas detrás de No shop iA</p>
+        <p class="section-subtitle">Conoce a las personas detrás de NoshopiA</p>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:3rem;margin-top:3rem">
         <div class="feature-card" style="padding:3rem;text-align:center">
@@ -478,7 +516,9 @@
   <footer>
     <div class="footer-content">
       <div class="footer-column">
-        <h3>No shop iA</h3>
+        <h3>
+          <span class="logo-no">No</span><span class="logo-shop">shop</span><span class="logo-i">i</span><span class="logo-a">A</span>
+        </h3>
         <p>Maximiza tu ropa, minimiza tu Impacto Ambiental con nuestra tecnología de inteligencia artificial.</p>
         <div class="social-icons">
           <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -492,7 +532,7 @@
         <a href="#inicio">Inicio</a><a href="#impacto">Impacto Ambiental</a><a href="#precios">Precios</a><a href="#funcionamiento">Cómo Funciona</a><a href="#equipo">Nuestro Equipo</a>
       </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2024 No shop iA. Todos los derechos reservados.</p></div>
+    <div class="footer-bottom"><p>&copy; 2024 NoshopiA. Todos los derechos reservados.</p></div>
   </footer>
 
   <script>
