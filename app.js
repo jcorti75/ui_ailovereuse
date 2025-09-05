@@ -1,5 +1,5 @@
 // 1) Apunta tu frontend al backend en Fly.io
-const API_BASE = "https://outfit-recommender.fly.dev";
+const API_BASE = "https://outfit-recommender-production-cab0.up.railway.app/";
 
 // Asume que, tras el login de Google, guardas:
 let currentUser = { email: "", name: "" }; 
@@ -83,4 +83,5 @@ async function sendFeedback(combinationId, accepted, rejectionReason = "") {
     console.error("Error feedback:", e);
   }
 }
+
 
