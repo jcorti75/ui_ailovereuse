@@ -173,6 +173,7 @@
       border-radius: 10px;
       margin-bottom: 0.5rem;
       transition: all 0.3s ease;
+      cursor: pointer;
     }
 
     .mobile-nav-pill:hover {
@@ -323,89 +324,269 @@
       display: block;
     }
 
-    /* Profile Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
+    /* Impact Section */
+    .impact-section {
+      background: var(--bg-secondary);
+      padding: 6rem 5%;
     }
 
-    .modal.active {
-      display: flex;
+    .impact-bars {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
     }
 
-    .modal-content {
+    .impact-item {
+      margin-bottom: 2rem;
       background: var(--bg-primary);
-      border-radius: 20px;
-      padding: 2.5rem;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
     }
 
-    .modal-content h2 {
-      color: var(--text-primary);
+    .impact-label {
+      display: flex;
+      justify-content: space-between;
       margin-bottom: 1rem;
-      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
-    .modal-content p {
+    .impact-bar {
+      height: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .impact-fill {
+      height: 100%;
+      border-radius: 10px;
+      width: 0;
+      transition: width 1.5s ease-in-out;
+    }
+
+    .impact-item:nth-child(1) .impact-fill {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+    .impact-item:nth-child(2) .impact-fill {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+    .impact-item:nth-child(3) .impact-fill {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+    .impact-item:nth-child(4) .impact-fill {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    /* Pricing Section */
+    .pricing-section {
+      background: var(--bg-primary);
+      padding: 6rem 5%;
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 3rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--bg-secondary);
+      border-radius: 25px;
+      padding: 3rem 2rem;
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+      position: relative;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .pricing-card.premium {
+      border-color: var(--warning);
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--warning);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .pricing-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+
+    .pricing-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-period {
+      font-size: 1rem;
       color: var(--text-secondary);
       margin-bottom: 2rem;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    .form-group select,
-    .form-group input {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 1rem;
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2.5rem;
+      text-align: left;
       background: var(--bg-primary);
+      border-radius: 15px;
+      padding: 1.5rem;
+    }
+
+    .pricing-features li {
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       color: var(--text-primary);
     }
 
-    .form-group select:focus,
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    .pricing-features li:last-child {
+      border-bottom: none;
     }
 
-    .btn-submit {
+    .pricing-btn {
       width: 100%;
-      padding: 1rem;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
+      padding: 1.2rem;
       border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .btn-submit:hover {
+    .pricing-btn.free {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+    }
+
+    .pricing-btn.premium {
+      background: linear-gradient(135deg, var(--warning), #d97706);
+      color: white;
+    }
+
+    .pricing-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Features Section */
+    .features-section {
+      background: var(--bg-secondary);
+      padding: 6rem 5%;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--bg-primary);
+      padding: 2.5rem 2rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Team Section */
+    .team-section {
+      background: var(--bg-primary);
+      padding: 6rem 5%;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .team-card {
+      background: var(--bg-secondary);
+      padding: 3rem 2rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .team-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .team-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .team-role {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .team-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
     }
 
     /* Occasion Selector */
@@ -473,10 +654,13 @@
     #otherOccasionInput {
       margin-top: 1rem;
       width: 100%;
+      max-width: 400px;
       padding: 0.8rem;
       border: 1px solid var(--border);
       border-radius: 10px;
       display: none;
+      background: var(--bg-primary);
+      color: var(--text-primary);
     }
 
     /* Upload Section */
@@ -587,123 +771,6 @@
       height: 24px;
       cursor: pointer;
       font-size: 12px;
-    }
-
-    /* Feedback Modal */
-    .feedback-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    }
-
-    .feedback-modal.active {
-      display: flex;
-    }
-
-    .feedback-content {
-      background: var(--bg-primary);
-      border-radius: 20px;
-      padding: 2.5rem;
-      max-width: 800px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-
-    .feedback-content h3 {
-      color: var(--text-primary);
-      margin-bottom: 1.5rem;
-      font-size: 1.6rem;
-    }
-
-    .recommendation-options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .recommendation-option {
-      background: var(--bg-secondary);
-      border: 2px solid var(--border);
-      border-radius: 15px;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .recommendation-option:hover {
-      border-color: var(--primary);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.1);
-    }
-
-    .recommendation-option.selected {
-      border-color: var(--success);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
-    }
-
-    .outfit-preview {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-
-    .outfit-preview img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-
-    .rejection-reasons {
-      background: var(--bg-secondary);
-      border-radius: 15px;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-    }
-
-    .rejection-reasons h4 {
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-    }
-
-    .rejection-reasons select {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-    }
-
-    .btn-reject-all {
-      width: 100%;
-      padding: 1rem;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-reject-all:hover {
-      background: var(--error);
-      color: white;
-      border-color: var(--error);
     }
 
     /* Recommendations Display */
@@ -825,6 +892,76 @@
     }
 
     /* Footer */
+    .footer-cta {
+      background: linear-gradient(135deg, var(--success), #059669);
+      padding: 4rem 5%;
+      text-align: center;
+      color: white;
+    }
+
+    .footer-cta h3 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      font-weight: 800;
+    }
+
+    .footer-cta p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin: 3rem 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-feature {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 2rem 1.5rem;
+      transition: transform 0.3s;
+    }
+
+    .cta-feature:hover {
+      transform: translateY(-5px);
+    }
+
+    .cta-feature i {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #ffd166;
+    }
+
+    .btn-primary {
+      background: #fff;
+      color: var(--success);
+      padding: 1rem 2.5rem;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      background: #ffd166;
+      color: var(--text-primary);
+    }
+
     footer {
       background: var(--bg-secondary);
       padding: 3rem 5% 2rem;
@@ -854,6 +991,7 @@
       display: block;
       text-decoration: none;
       transition: all 0.3s ease;
+      cursor: pointer;
     }
 
     .footer-column a:hover {
@@ -926,11 +1064,12 @@
       section { padding: 4rem 3%; }
       .upload-grid { grid-template-columns: 1fr; }
       .occasion-grid { grid-template-columns: repeat(2, 1fr); }
-      .recommendation-options { grid-template-columns: 1fr; }
+      .pricing-cards { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 480px) {
-      .modal-content { padding: 1.5rem; }
       .occasion-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -985,53 +1124,6 @@
     <a href="#equipo" class="mobile-nav-pill" onclick="scrollToSection('equipo'); closeMobileMenu();">Equipo</a>
   </div>
 
-  <!-- Modal de Perfil -->
-  <div id="profileModal" class="modal">
-    <div class="modal-content">
-      <h2>🎯 Personaliza tu experiencia</h2>
-      <p>Para darte las mejores recomendaciones, necesitamos conocerte un poco mejor</p>
-      
-      <form id="profileForm">
-        <input type="hidden" id="tempUserEmail" />
-        
-        <div class="form-group">
-          <label>Color de piel:</label>
-          <select id="skinColor" required>
-            <option value="">Selecciona...</option>
-            <option value="claro">Claro</option>
-            <option value="medio">Medio</option>
-            <option value="oscuro">Oscuro</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Tramo de edad:</label>
-          <select id="ageRange" required>
-            <option value="">Selecciona...</option>
-            <option value="menor_18">Menor de 18</option>
-            <option value="18-24">18 a 24 años</option>
-            <option value="25-34">25 a 34 años</option>
-            <option value="35-44">35 a 44 años</option>
-            <option value="45-54">45 a 54 años</option>
-            <option value="mas_54">Más de 54 años</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label>Género:</label>
-          <select id="gender" required>
-            <option value="">Selecciona...</option>
-            <option value="hombre">Hombre</option>
-            <option value="mujer">Mujer</option>
-            <option value="no_binario">No binario</option>
-          </select>
-        </div>
-        
-        <button type="submit" class="btn-submit">Continuar</button>
-      </form>
-    </div>
-  </div>
-
   <!-- Hero Section -->
   <section id="inicio" class="hero">
     <div style="max-width: 900px;">
@@ -1061,6 +1153,143 @@
     </div>
   </section>
 
+  <!-- Impact Section -->
+  <section id="impacto" class="impact-section">
+    <div class="section-container">
+      <div class="section-title">
+        <h2>🌍 Impacto Ambiental</h2>
+        <p class="section-subtitle">La industria de la moda es una de las más contaminantes del planeta. Reutilizar tu ropa tiene un impacto positivo inmediato.</p>
+      </div>
+      <div class="impact-bars">
+        <div class="impact-item">
+          <div class="impact-label">
+            <span>Reducción en consumo de agua</span>
+            <span>85%</span>
+          </div>
+          <div class="impact-bar">
+            <div class="impact-fill" data-width="85"></div>
+          </div>
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Cada prenda nueva requiere miles de litros de agua en su producción.
+          </p>
+        </div>
+        <div class="impact-item">
+          <div class="impact-label">
+            <span>Menos emisiones de CO₂</span>
+            <span>72%</span>
+          </div>
+          <div class="impact-bar">
+            <div class="impact-fill" data-width="72"></div>
+          </div>
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            El transporte y manufactura textil son grandes emisores de carbono.
+          </p>
+        </div>
+        <div class="impact-item">
+          <div class="impact-label">
+            <span>Reducción residuos textiles</span>
+            <span>68%</span>
+          </div>
+          <div class="impact-bar">
+            <div class="impact-fill" data-width="68"></div>
+          </div>
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Millones de toneladas de ropa terminan en vertederos anualmente.
+          </p>
+        </div>
+        <div class="impact-item">
+          <div class="impact-label">
+            <span>Menos uso de químicos</span>
+            <span>63%</span>
+          </div>
+          <div class="impact-bar">
+            <div class="impact-fill" data-width="63"></div>
+          </div>
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Los tintes y tratamientos textiles contaminan ríos y océanos.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="precios" class="pricing-section">
+    <div class="section-container">
+      <div class="section-title">
+        <h2>💳 Precios Simples y Claros</h2>
+        <p class="section-subtitle">Elige el plan que mejor se adapte a tu estilo de vida</p>
+      </div>
+      <div class="pricing-cards">
+        <div class="pricing-card">
+          <div class="pricing-icon">🎁</div>
+          <h3 class="pricing-title">Plan Free</h3>
+          <div class="pricing-price">Gratis</div>
+          <div class="pricing-period">Primer mes completo</div>
+          <ul class="pricing-features">
+            <li>✅ 30 combinaciones incluidas</li>
+            <li>✅ Análisis básico de IA</li>
+            <li>✅ 3 prendas superiores</li>
+            <li>✅ 3 prendas inferiores</li>
+            <li>✅ 5 zapatos diferentes</li>
+            <li>✅ Recomendaciones instantáneas</li>
+            <li>✅ Sin compromiso</li>
+          </ul>
+          <button class="pricing-btn free" onclick="startFreePlan()">Empezar Gratis</button>
+        </div>
+        <div class="pricing-card premium">
+          <div class="pricing-badge">Más Popular</div>
+          <div class="pricing-icon">⭐</div>
+          <h3 class="pricing-title">Plan Premium</h3>
+          <div class="pricing-price">$5,000</div>
+          <div class="pricing-period">por mes</div>
+          <ul class="pricing-features">
+            <li>🚀 Recomendaciones ilimitadas</li>
+            <li>🧠 IA avanzada personalizada</li>
+            <li>👗 Prendas ilimitadas</li>
+            <li>👠 Zapatos ilimitados</li>
+            <li>⚡ Análisis en tiempo real</li>
+            <li>🎨 Sugerencias de estilo</li>
+            <li>📱 Soporte prioritario</li>
+          </ul>
+          <button class="pricing-btn premium" onclick="upgradeToPremium()">Actualizar a Premium</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works Section -->
+  <section id="funcionamiento" class="features-section">
+    <div class="section-container">
+      <div class="section-title">
+        <h2>⚙️ Cómo Funciona</h2>
+        <p class="section-subtitle">Descubre combinaciones únicas con tu ropa actual en solo tres simples pasos</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>1. Sube tus prendas</h3>
+          <p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado. Nuestra IA analiza cada pieza automáticamente.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>2. IA genera recomendaciones</h3>
+          <p>Nuestro algoritmo avanzado analiza colores, estilos, ocasiones y tendencias para crear outfits únicos y balanceados.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <h3>3. Recibe sugerencias</h3>
+          <p>Obtén recomendaciones personalizadas rankeadas por score de compatibilidad en menos de 10 segundos.</p>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">
+          Ver Mis Combinaciones
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- Upload Section -->
   <section id="upload" class="upload-section">
     <div class="section-container">
@@ -1082,7 +1311,7 @@
         </button>
       </div>
 
-      <!-- Occasion Selector -->
+      <!-- Occasion Selector - AGREGADO PARA CORREGIR ERROR 422 -->
       <div id="occasionSelector" class="occasion-section" style="display: none;">
         <h3>¿Qué planes tienes para esta ocasión?</h3>
         <div class="occasion-grid">
@@ -1094,7 +1323,7 @@
             <i class="fas fa-dumbbell"></i>
             <span>Deportes/Gym</span>
           </button>
-          <button class="occasion-btn" data-occasion="amigos">
+          <button class="occasion-btn" data-occasion="casual">
             <i class="fas fa-users"></i>
             <span>Junta casual con amigos</span>
           </button>
@@ -1154,34 +1383,53 @@
     </div>
   </section>
 
-  <!-- Feedback Modal -->
-  <div id="feedbackModal" class="feedback-modal">
-    <div class="feedback-content">
-      <h3>¿Cuál te quedas?</h3>
-      
-      <div id="recommendationOptions" class="recommendation-options">
-        <!-- Se llena dinámicamente con las 3 opciones -->
+  <!-- Team Section -->
+  <section id="equipo" class="team-section">
+    <div class="section-container">
+      <div class="section-title">
+        <h2>👥 Nuestro Equipo</h2>
+        <p class="section-subtitle">Conoce a las personas detrás de NoshopiA</p>
       </div>
-      
-      <button class="btn-reject-all" onclick="rejectAll()">No me convence ninguna</button>
-      
-      <div id="rejectionReasons" class="rejection-reasons" style="display: none;">
-        <h4>No me convencen por:</h4>
-        <select id="rejectionReason">
-          <option value="">Selecciona una razón...</option>
-          <option value="colores_no_combinan">Los colores no combinan bien</option>
-          <option value="no_realista">Recomendación no realista para mí</option>
-          <option value="muy_formal">Demasiado formal para la ocasión</option>
-          <option value="muy_casual">Demasiado casual/informal</option>
-          <option value="colores_apagados">Los colores son muy apagados/aburridos</option>
-          <option value="colores_llamativos">Los colores son demasiado llamativos</option>
-          <option value="no_mi_estilo">No es mi estilo personal</option>
-          <option value="similar_reciente">Ya usé algo similar recientemente</option>
-        </select>
-        <button class="btn-submit" onclick="submitRejection()">Enviar feedback</button>
+      <div class="team-grid">
+        <div class="team-card">
+          <h3>José Francisco Corti Badia</h3>
+          <p class="team-role">Founder & CEO</p>
+          <p>Ingeniero Comercial, Diplomado en GenAI U. De Chile 2025 y Diplomado en AI PUC 2022. Experto en Inteligencia Artificial con más de 15 años creando soluciones tecnológicas innovadoras en distintas industrias.</p>
+        </div>
+        <div class="team-card">
+          <h3>Paola Andrea Curti Simpson</h3>
+          <p class="team-role">Directora Creativa</p>
+          <p>Arquitecta especialista en moda sustentable con amplia experiencia en diseño consciente y sostenibilidad. Lidera la visión creativa y el impacto ambiental de nuestras soluciones.</p>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="footer-cta">
+    <div class="section-container">
+      <h3>🚀 ¡Comienza Ahora!</h3>
+      <p>Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
+      <div class="cta-features">
+        <div class="cta-feature">
+          <i class="fas fa-gift"></i>
+          <h4>Gratis</h4>
+          <p>Sin costo inicial</p>
+        </div>
+        <div class="cta-feature">
+          <i class="fas fa-clock"></i>
+          <h4>Instantáneo</h4>
+          <p>Resultados en 10 segundos</p>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
+        <a href="#upload" class="btn-primary" onclick="handleStartNowClick(event)">
+          <i class="fas fa-play"></i>
+          Crear Mi Guardarropa Digital
+        </a>
+      </div>
+    </div>
+  </section>
 
   <footer>
     <div class="footer-content">
@@ -1193,10 +1441,11 @@
       </div>
       <div class="footer-column">
         <h3>Enlaces Rápidos</h3>
-        <a href="#inicio" onclick="scrollToSection('inicio')">Inicio</a>
-        <a href="#impacto" onclick="scrollToSection('impacto')">Impacto Ambiental</a>
-        <a href="#precios" onclick="scrollToSection('precios')">Precios</a>
-        <a href="#funcionamiento" onclick="scrollToSection('funcionamiento')">Cómo Funciona</a>
+        <a onclick="scrollToSection('inicio')">Inicio</a>
+        <a onclick="scrollToSection('impacto')">Impacto Ambiental</a>
+        <a onclick="scrollToSection('precios')">Precios</a>
+        <a onclick="scrollToSection('funcionamiento')">Cómo Funciona</a>
+        <a onclick="scrollToSection('equipo')">Nuestro Equipo</a>
       </div>
     </div>
     <div style="padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-secondary);">
@@ -1211,9 +1460,7 @@
     let isLoggedIn = false;
     let currentUser = null;
     let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-    let selectedOccasion = null;
-    let userProfile = null;
-    let pendingGoogleCredential = null;
+    let selectedOccasion = null; // AGREGADO PARA OCASIÓN
     
     const FILE_LIMITS = { tops: 3, bottoms: 3, shoes: 5 };
 
@@ -1222,6 +1469,15 @@
       updateAuthUI();
       checkGoogleAuth();
       setupEventListeners();
+      
+      // Animar las barras de impacto cuando se carga la página
+      setTimeout(() => {
+        document.querySelectorAll('.impact-fill').forEach((bar, index) => {
+          setTimeout(() => {
+            bar.style.width = bar.getAttribute('data-width') + '%';
+          }, index * 200);
+        });
+      }, 1500);
     });
 
     function checkGoogleAuth() {
@@ -1247,10 +1503,7 @@
     }
 
     function setupEventListeners() {
-      // Profile form
-      document.getElementById('profileForm').addEventListener('submit', handleProfileSubmit);
-      
-      // Occasion buttons
+      // Occasion buttons - AGREGADO PARA MANEJAR OCASIONES
       document.querySelectorAll('.occasion-btn').forEach(btn => {
         btn.addEventListener('click', handleOccasionSelect);
       });
@@ -1283,36 +1536,14 @@
       }
     }
 
-    // FLUJO: Click en "Empezar" -> Mostrar perfil -> Login -> Ocasión -> Upload
+    // FLUJO: Click en "Empezar" -> Login -> Ocasión -> Upload
     function handleStartNowClick(e) {
       e.preventDefault();
       if (!isLoggedIn) {
-        showProfileModal();
+        loginWithGoogle();
       } else {
         scrollToSection('upload');
         showOccasionSelector();
-      }
-    }
-
-    function showProfileModal() {
-      document.getElementById('profileModal').classList.add('active');
-    }
-
-    async function handleProfileSubmit(e) {
-      e.preventDefault();
-      
-      const profileData = {
-        skin_color: document.getElementById('skinColor').value,
-        age_range: document.getElementById('ageRange').value,
-        gender: document.getElementById('gender').value
-      };
-      
-      userProfile = profileData;
-      document.getElementById('profileModal').classList.remove('active');
-      
-      // Ahora sí mostrar login de Google
-      if (typeof google !== 'undefined' && google.accounts?.id) {
-        google.accounts.id.prompt();
       }
     }
 
@@ -1328,11 +1559,6 @@
           token: response.credential
         };
         
-        // Guardar perfil en backend
-        if (userProfile) {
-          await saveUserProfile(currentUser.email);
-        }
-        
         isLoggedIn = true;
         updateAuthUI();
         showOccasionSelector();
@@ -1345,32 +1571,13 @@
       }
     }
 
-    async function saveUserProfile(email) {
-      try {
-        const formData = new FormData();
-        formData.append('email', email);
-        formData.append('skin_color', userProfile.skin_color);
-        formData.append('age_range', userProfile.age_range);
-        formData.append('gender', userProfile.gender);
-        
-        const response = await fetch(`${API_BASE}/api/profile/create`, {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!response.ok) {
-          console.error('Error guardando perfil');
-        }
-      } catch (e) {
-        console.error('Error:', e);
-      }
-    }
-
+    // FUNCIÓN PARA MOSTRAR SELECTOR DE OCASIÓN
     function showOccasionSelector() {
       document.getElementById('loginRequired').style.display = 'none';
       document.getElementById('occasionSelector').style.display = 'block';
     }
 
+    // FUNCIÓN PARA MANEJAR SELECCIÓN DE OCASIÓN
     function handleOccasionSelect(e) {
       const btn = e.currentTarget;
       selectedOccasion = btn.dataset.occasion;
@@ -1405,7 +1612,6 @@
     function logout() {
       isLoggedIn = false;
       currentUser = null;
-      userProfile = null;
       selectedOccasion = null;
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
       updateAuthUI();
@@ -1502,12 +1708,12 @@
         btn.innerHTML = `🪄 Generar ${total} Recomendaciones con IA`;
         btn.disabled = false;
       } else {
-        btn.innerHTML = '🪄 Sube fotos de cada categoría para continuar';
+        btn.innerHTML = '🪄 Sube fotos de cada categoría y selecciona ocasión';
         btn.disabled = true;
       }
     }
 
-    // FUNCIÓN CORREGIDA - NOMBRES DE CAMPOS EXACTOS SEGÚN EL BACKEND
+    // FUNCIÓN CORREGIDA - INCLUYE OCASIÓN PARA EVITAR ERROR 422
     async function getRecommendation() {
       if (!selectedOccasion) {
         showNotification('Selecciona una ocasión primero', 'warning');
@@ -1521,20 +1727,20 @@
       try {
         const formData = new FormData();
         formData.append('user_email', currentUser.email);
-        formData.append('occasion', selectedOccasion === 'otros' ? 
-                       document.getElementById('otherOccasionInput').value || 'otros' : 
-                       selectedOccasion);
         
-        // NOMBRES EXACTOS QUE ESPERA EL BACKEND - SINGULAR
+        // AGREGAR OCASIÓN - CORRIGE ERROR 422
+        const occasionValue = selectedOccasion === 'otros' ? 
+                             document.getElementById('otherOccasionInput').value || 'otros' : 
+                             selectedOccasion;
+        formData.append('occasion', occasionValue);
+        
+        // NOMBRES EXACTOS QUE ESPERA EL BACKEND
         uploadedFiles.tops.forEach(f => formData.append('tops', f));
         uploadedFiles.bottoms.forEach(f => formData.append('bottoms', f));
         uploadedFiles.shoes.forEach(f => formData.append('shoes', f));
         
         console.log('Enviando a:', `${API_BASE}/api/recommend`);
-        console.log('FormData contenido:');
-        for (let pair of formData.entries()) {
-          console.log(pair[0] + ':', pair[1]);
-        }
+        console.log('Ocasión enviada:', occasionValue);
         
         const response = await fetch(`${API_BASE}/api/recommend`, {
           method: 'POST',
@@ -1550,7 +1756,6 @@
         
         if (data.success) {
           renderRecommendations(data);
-          showFeedbackModal(data.results);
         } else {
           throw new Error(data.message || 'Error generando recomendaciones');
         }
@@ -1575,19 +1780,30 @@
       `;
       
       results.forEach((item, idx) => {
-        // Quitar "Formal" duplicado del style_analysis
-        let styleAnalysis = item.style_analysis || '';
-        if (styleAnalysis.includes('• Formal') || styleAnalysis.includes('• Informal')) {
-          styleAnalysis = styleAnalysis.replace(/•\s*(Formal|Informal)/, '').trim();
-        }
+        // Crear URLs para las imágenes
+        const topFile = uploadedFiles.tops[idx % uploadedFiles.tops.length];
+        const bottomFile = uploadedFiles.bottoms[idx % uploadedFiles.bottoms.length];
+        const shoeFile = uploadedFiles.shoes[idx % uploadedFiles.shoes.length];
+        
+        const topURL = topFile ? URL.createObjectURL(topFile) : '';
+        const bottomURL = bottomFile ? URL.createObjectURL(bottomFile) : '';
+        const shoeURL = shoeFile ? URL.createObjectURL(shoeFile) : '';
+        
+        const scorePercent = Math.round((item.score || 0.85) * 100);
         
         html += `
           <div class="rec-card">
             <div class="rec-header">
               <h3 class="rec-title">Combinación ${idx + 1}</h3>
               <div class="rec-score">
-                <span class="score-badge">${Math.round(item.score * 100)}%</span>
+                <span class="score-badge">${scorePercent}%</span>
               </div>
+            </div>
+            
+            <div class="rec-photos">
+              ${topURL ? `<img src="${topURL}" alt="Top" class="rec-photo">` : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="Bottom" class="rec-photo">` : ''}
+              ${shoeURL ? `<img src="${shoeURL}" alt="Shoe" class="rec-photo">` : ''}
             </div>
             
             <div class="rec-info">
@@ -1606,7 +1822,7 @@
                 </div>
               </div>
               
-              ${styleAnalysis ? `<div class="style-analysis">${styleAnalysis}</div>` : ''}
+              ${item.style_analysis ? `<div class="style-analysis">${item.style_analysis}</div>` : ''}
             </div>
           </div>
         `;
@@ -1617,61 +1833,17 @@
       result.style.display = 'block';
     }
 
-    function showFeedbackModal(recommendations) {
-      const modal = document.getElementById('feedbackModal');
-      const optionsDiv = document.getElementById('recommendationOptions');
-      
-      optionsDiv.innerHTML = recommendations.slice(0, 3).map((rec, idx) => `
-        <div class="recommendation-option" onclick="selectRecommendation('${rec.index || idx}')">
-          <h4>Opción ${idx + 1}</h4>
-          <p>Score: ${Math.round((rec.score || 0.85) * 100)}%</p>
-          <p>Armonía: ${rec.harmony_type || 'Equilibrada'}</p>
-          <button class="btn-submit">Elegir esta</button>
-        </div>
-      `).join('');
-      
-      modal.classList.add('active');
-    }
-
-    async function selectRecommendation(id) {
-      await sendFeedback(id, 'si', null);
-      document.getElementById('feedbackModal').classList.remove('active');
-      showNotification('¡Gracias por tu elección!', 'success');
-    }
-
-    function rejectAll() {
-      document.getElementById('rejectionReasons').style.display = 'block';
-    }
-
-    async function submitRejection() {
-      const reason = document.getElementById('rejectionReason').value;
-      if (!reason) {
-        showNotification('Selecciona una razón', 'warning');
+    function startFreePlan() {
+      if (!isLoggedIn) {
+        loginWithGoogle();
         return;
       }
-      
-      await sendFeedback('all_rejected', 'no', reason);
-      document.getElementById('feedbackModal').classList.remove('active');
-      document.getElementById('rejectionReasons').style.display = 'none';
-      showNotification('Gracias por tu feedback', 'info');
+      showNotification('Plan gratuito activado!', 'success');
+      scrollToSection('upload');
     }
 
-    async function sendFeedback(combinationId, accepted, reason) {
-      try {
-        const formData = new FormData();
-        formData.append('user_email', currentUser.email);
-        formData.append('combination_id', combinationId);
-        formData.append('accepted', accepted);
-        if (reason) formData.append('rejection_reason', reason);
-        formData.append('occasion', selectedOccasion);
-        
-        await fetch(`${API_BASE}/api/feedback`, {
-          method: 'POST',
-          body: formData
-        });
-      } catch (e) {
-        console.error('Error enviando feedback:', e);
-      }
+    function upgradeToPremium() {
+      showNotification('Funcionalidad en desarrollo', 'info');
     }
 
     function showNotification(message, type = 'info', duration = 4000) {
