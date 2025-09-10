@@ -64,7 +64,7 @@
       margin: 0 auto;
     }
 
-    /* Logo NoshopiA */
+    /* Logo NoshopiA - CORREGIDO: SIN punto sobre la i */
     .logo {
       font-size: 2rem;
       font-weight: 900;
@@ -80,17 +80,7 @@
       position: relative;
       margin-right: 2px;
     }
-    .logo-i::before {
-      content: '';
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background-color: #4CAF50;
-      border-radius: 50%;
-      top: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+    /* ELIMINADO EL PUNTO - La i ya tiene su punto natural */
     .logo-a { color: #4CAF50; }
 
     /* Navigation */
@@ -317,7 +307,7 @@
       display: block;
     }
 
-    /* Profile Modal - NUEVO */
+    /* Profile Modal */
     .modal {
       position: fixed;
       top: 0;
@@ -402,7 +392,7 @@
       box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
     }
 
-    /* Occasion Selector - NUEVO */
+    /* Occasion Selector */
     .occasion-section {
       background: var(--bg-secondary);
       padding: 3rem 0;
@@ -583,7 +573,7 @@
       font-size: 12px;
     }
 
-    /* Feedback Modal - ACTUALIZADO */
+    /* Feedback Modal */
     .feedback-modal {
       position: fixed;
       top: 0;
@@ -810,7 +800,6 @@
       color: var(--primary);
     }
 
-    /* Armonía display - SIN "Formal" duplicado */
     .style-analysis {
       background: linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(30, 58, 138, 0.02));
       border-left: 4px solid var(--primary);
@@ -980,7 +969,7 @@
     <a href="#equipo" class="mobile-nav-pill" onclick="closeMobileMenu()">Equipo</a>
   </div>
 
-  <!-- NUEVO: Modal de Perfil (aparece ANTES del login) -->
+  <!-- Modal de Perfil -->
   <div id="profileModal" class="modal">
     <div class="modal-content">
       <h2>🎯 Personaliza tu experiencia</h2>
@@ -1077,7 +1066,7 @@
         </button>
       </div>
 
-      <!-- NUEVO: Occasion Selector (aparece DESPUÉS del login, ANTES del upload) -->
+      <!-- Occasion Selector -->
       <div id="occasionSelector" class="occasion-section" style="display: none;">
         <h3>¿Qué planes tienes para esta ocasión?</h3>
         <div class="occasion-grid">
@@ -1109,7 +1098,7 @@
         <input type="text" id="otherOccasionInput" placeholder="Especificar ocasión (máx 50 caracteres)" maxlength="50" />
       </div>
 
-      <!-- Upload Area (solo se muestra después de seleccionar ocasión) -->
+      <!-- Upload Area -->
       <div class="upload-area" id="uploadArea" style="display: none;">
         <div class="upload-grid">
           <div class="upload-item">
@@ -1149,7 +1138,7 @@
     </div>
   </section>
 
-  <!-- NUEVO: Feedback Modal con 8 opciones -->
+  <!-- Feedback Modal -->
   <div id="feedbackModal" class="feedback-modal">
     <div class="feedback-content">
       <h3>¿Cuál te quedas?</h3>
@@ -1473,6 +1462,7 @@
       }
     }
 
+    // FUNCIÓN CORREGIDA - ALINEADA CON EL BACKEND
     async function getRecommendation() {
       if (!selectedOccasion) {
         showNotification('Selecciona una ocasión primero', 'warning');
@@ -1490,25 +1480,33 @@
                        document.getElementById('otherOccasionInput').value || 'otros' : 
                        selectedOccasion);
         
-        uploadedFiles.tops.forEach(f => formData.append('tops', f));
-        uploadedFiles.bottoms.forEach(f => formData.append('bottoms', f));
-        uploadedFiles.shoes.forEach(f => formData.append('shoes', f));
+        // NOMBRES CORRECTOS DE CAMPOS SEGÚN EL BACKEND
+        uploadedFiles.tops.forEach(f => formData.append('top_images', f));
+        uploadedFiles.bottoms.forEach(f => formData.append('bottom_images', f));
+        uploadedFiles.shoes.forEach(f => formData.append('shoe_images', f));
         
-        // Usar v2 si existe, sino usar endpoint original
-        const response = await fetch(`${API_BASE}/recommend`, {
+        // URL CORRECTA CON /api/recommend
+        const response = await fetch(`${API_BASE}/api/recommend`, {
           method: 'POST',
           body: formData
         });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Error ${response.status}: ${errorText}`);
+        }
         
         const data = await response.json();
         
         if (data.success) {
           renderRecommendations(data);
           showFeedbackModal(data.results);
+        } else {
+          throw new Error(data.message || 'Error generando recomendaciones');
         }
       } catch (e) {
         console.error('Error:', e);
-        showNotification('Error generando recomendaciones', 'error');
+        showNotification(`Error: ${e.message}`, 'error');
       } finally {
         btn.innerHTML = '🪄 Generar Nuevas Recomendaciones';
         btn.disabled = false;
