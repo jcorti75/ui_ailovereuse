@@ -1775,21 +1775,45 @@
       let html = `
         <div class="section-title">
           <h2 style="color: var(--text-primary);">🪄 Tus Mejores Combinaciones</h2>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin-top: 0.5rem;">
+            ${data.message || `Mostrando las mejores ${results.length} combinaciones`}
+          </p>
         </div>
         <div class="recommendations-container">
       `;
       
       results.forEach((item, idx) => {
-        // Crear URLs para las imágenes
-        const topFile = uploadedFiles.tops[idx % uploadedFiles.tops.length];
-        const bottomFile = uploadedFiles.bottoms[idx % uploadedFiles.bottoms.length];
-        const shoeFile = uploadedFiles.shoes[idx % uploadedFiles.shoes.length];
+        // USAR ÍNDICES CORRECTOS DEL BACKEND
+        const topIndex = item.top?.index || 0;
+        const bottomIndex = item.bottom?.index || 0;
+        const shoeIndex = item.shoe?.index || 0;
+        
+        // Obtener archivos usando los índices del backend
+        const topFile = uploadedFiles.tops[topIndex] || uploadedFiles.tops[0];
+        const bottomFile = uploadedFiles.bottoms[bottomIndex] || uploadedFiles.bottoms[0];
+        const shoeFile = uploadedFiles.shoes[shoeIndex] || uploadedFiles.shoes[0];
         
         const topURL = topFile ? URL.createObjectURL(topFile) : '';
         const bottomURL = bottomFile ? URL.createObjectURL(bottomFile) : '';
         const shoeURL = shoeFile ? URL.createObjectURL(shoeFile) : '';
         
-        const scorePercent = Math.round((item.score || 0.85) * 100);
+        // SCORE CORREGIDO - USAR final_score DEL BACKEND
+        const scorePercent = Math.round((item.final_score || 0.85) * 100);
+        
+        // Información enriquecida del backend
+        const harmonyType = item.harmony_type || 'Equilibrada';
+        const harmonyDesc = item.harmony_description || '';
+        const occasionMatch = item.occasion_match || selectedOccasion;
+        const styleTips = item.style_tips || [];
+        
+        // Información de prendas detectadas
+        const topDetected = item.top?.detected_item || 'Prenda superior';
+        const bottomDetected = item.bottom?.detected_item || 'Prenda inferior';
+        const shoeDetected = item.shoe?.detected_item || 'Calzado';
+        
+        const topFormality = item.top?.formality || 'casual';
+        const bottomFormality = item.bottom?.formality || 'casual';
+        const shoeFormality = item.shoe?.formality || 'casual';
         
         html += `
           <div class="rec-card">
@@ -1801,28 +1825,55 @@
             </div>
             
             <div class="rec-photos">
-              ${topURL ? `<img src="${topURL}" alt="Top" class="rec-photo">` : ''}
-              ${bottomURL ? `<img src="${bottomURL}" alt="Bottom" class="rec-photo">` : ''}
-              ${shoeURL ? `<img src="${shoeURL}" alt="Shoe" class="rec-photo">` : ''}
+              ${topURL ? `<img src="${topURL}" alt="${topDetected}" class="rec-photo" title="${topDetected}">` : ''}
+              ${bottomURL ? `<img src="${bottomURL}" alt="${bottomDetected}" class="rec-photo" title="${bottomDetected}">` : ''}
+              ${shoeURL ? `<img src="${shoeURL}" alt="${shoeDetected}" class="rec-photo" title="${shoeDetected}">` : ''}
             </div>
             
             <div class="rec-info">
               <div class="rec-meta-grid">
                 <div class="rec-meta-item">
                   <div class="rec-meta-label">Ocasión</div>
-                  <div class="rec-meta-value">${selectedOccasion}</div>
+                  <div class="rec-meta-value">${occasionMatch}</div>
                 </div>
                 <div class="rec-meta-item">
                   <div class="rec-meta-label">Armonía</div>
-                  <div class="rec-meta-value">${item.harmony_type || 'Equilibrada'}</div>
+                  <div class="rec-meta-value">${harmonyType}</div>
                 </div>
                 <div class="rec-meta-item">
-                  <div class="rec-meta-label">Formalidad</div>
-                  <div class="rec-meta-value">${item.formality || 'Casual'}</div>
+                  <div class="rec-meta-label">Coherencia</div>
+                  <div class="rec-meta-value">${Math.round((item.scores?.style_coherence || 0.75) * 100)}%</div>
                 </div>
               </div>
               
-              ${item.style_analysis ? `<div class="style-analysis">${item.style_analysis}</div>` : ''}
+              ${harmonyDesc ? `<div class="style-analysis">🎨 ${harmonyDesc}</div>` : ''}
+              
+              <div class="rec-meta-grid" style="margin-top: 1rem;">
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👕 Superior</div>
+                  <div class="rec-meta-value">${topDetected}</div>
+                  <small style="color: var(--text-secondary); text-transform: capitalize;">${topFormality}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👖 Inferior</div>
+                  <div class="rec-meta-value">${bottomDetected}</div>
+                  <small style="color: var(--text-secondary); text-transform: capitalize;">${bottomFormality}</small>
+                </div>
+                <div class="rec-meta-item">
+                  <div class="rec-meta-label">👟 Calzado</div>
+                  <div class="rec-meta-value">${shoeDetected}</div>
+                  <small style="color: var(--text-secondary); text-transform: capitalize;">${shoeFormality}</small>
+                </div>
+              </div>
+              
+              ${styleTips.length > 0 ? `
+                <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+                  <h5 style="color: var(--text-primary); margin-bottom: 0.5rem;">💡 Tips de Estilo:</h5>
+                  <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary);">
+                    ${styleTips.map(tip => `<li style="margin-bottom: 0.3rem;">${tip}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
             </div>
           </div>
         `;
@@ -1831,6 +1882,11 @@
       html += '</div>';
       result.innerHTML = html;
       result.style.display = 'block';
+      
+      // Scroll suave a los resultados
+      setTimeout(() => {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
 
     function startFreePlan() {
