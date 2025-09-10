@@ -1503,18 +1503,54 @@
     }
 
     function setupEventListeners() {
-      // Occasion buttons - AGREGADO PARA MANEJAR OCASIONES
+      // Limpiar listeners existentes para evitar duplicados
       document.querySelectorAll('.occasion-btn').forEach(btn => {
+        btn.removeEventListener('click', handleOccasionSelect);
         btn.addEventListener('click', handleOccasionSelect);
       });
       
       // Other occasion input
-      document.getElementById('otherOccasionInput').addEventListener('input', (e) => {
-        if (selectedOccasion === 'otros') {
-          selectedOccasion = e.target.value || 'otros';
-        }
-      });
+      const otherInput = document.getElementById('otherOccasionInput');
+      if (otherInput) {
+        otherInput.removeEventListener('input', handleOtherOccasionInput);
+        otherInput.addEventListener('input', handleOtherOccasionInput);
+      }
     }
+
+    function handleOtherOccasionInput(e) {
+      if (selectedOccasion === 'otros') {
+        selectedOccasion = e.target.value || 'otros';
+      }
+    }
+
+    // Función de emergencia para resetear todo si se "pega"
+    function emergencyReset() {
+      try {
+        console.log('🚨 Ejecutando reset de emergencia...');
+        resetApplicationState();
+        setupEventListeners();
+        
+        // Mostrar notificación de éxito
+        showNotification('Estado resetado exitosamente', 'success');
+        
+        // Scroll a inicio
+        scrollToSection('inicio');
+        
+        console.log('✅ Reset de emergencia completado');
+      } catch (error) {
+        console.error('❌ Error en reset de emergencia:', error);
+        showNotification('Error en reset. Recarga la página.', 'error');
+      }
+    }
+
+    // Agregar atajo de teclado para reset de emergencia
+    document.addEventListener('keydown', function(e) {
+      // Ctrl + Shift + R para reset de emergencia
+      if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        emergencyReset();
+      }
+    });
 
     // NAVEGACIÓN CORREGIDA
     function scrollToSection(sectionId) {
