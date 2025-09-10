@@ -101,6 +101,7 @@
       font-weight: 500;
       transition: all 0.3s ease;
       font-size: 0.9rem;
+      cursor: pointer;
     }
 
     .nav-pill:hover,
@@ -162,6 +163,21 @@
     .mobile-menu-overlay.active {
       opacity: 1;
       visibility: visible;
+    }
+
+    .mobile-nav-pill {
+      display: block;
+      padding: 1rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-nav-pill:hover {
+      background: var(--bg-secondary);
+      transform: translateX(10px);
     }
 
     /* Google Login Button */
@@ -931,11 +947,11 @@
       
       <div style="display: flex; align-items: center;">
         <div class="nav-pills">
-          <a href="#inicio" class="nav-pill active">🏠 Inicio</a>
-          <a href="#impacto" class="nav-pill">🌍 Impacto Ambiental</a>
-          <a href="#precios" class="nav-pill">💳 Precios</a>
-          <a href="#funcionamiento" class="nav-pill">⚙️ Cómo funciona</a>
-          <a href="#equipo" class="nav-pill">👥 Equipo</a>
+          <a href="#inicio" class="nav-pill active" onclick="scrollToSection('inicio')">🏠 Inicio</a>
+          <a href="#impacto" class="nav-pill" onclick="scrollToSection('impacto')">🌍 Impacto Ambiental</a>
+          <a href="#precios" class="nav-pill" onclick="scrollToSection('precios')">💳 Precios</a>
+          <a href="#funcionamiento" class="nav-pill" onclick="scrollToSection('funcionamiento')">⚙️ Cómo funciona</a>
+          <a href="#equipo" class="nav-pill" onclick="scrollToSection('equipo')">👥 Equipo</a>
         </div>
         
         <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
@@ -962,11 +978,11 @@
       <h3 style="color: var(--primary);">NoshopiA</h3>
       <p style="color: var(--text-secondary); font-size: 0.9rem;">Reutiliza tu ropa con IA</p>
     </div>
-    <a href="#inicio" class="mobile-nav-pill" onclick="closeMobileMenu()">Inicio</a>
-    <a href="#impacto" class="mobile-nav-pill" onclick="closeMobileMenu()">Impacto Ambiental</a>
-    <a href="#precios" class="mobile-nav-pill" onclick="closeMobileMenu()">Precios</a>
-    <a href="#funcionamiento" class="mobile-nav-pill" onclick="closeMobileMenu()">Cómo funciona</a>
-    <a href="#equipo" class="mobile-nav-pill" onclick="closeMobileMenu()">Equipo</a>
+    <a href="#inicio" class="mobile-nav-pill" onclick="scrollToSection('inicio'); closeMobileMenu();">Inicio</a>
+    <a href="#impacto" class="mobile-nav-pill" onclick="scrollToSection('impacto'); closeMobileMenu();">Impacto Ambiental</a>
+    <a href="#precios" class="mobile-nav-pill" onclick="scrollToSection('precios'); closeMobileMenu();">Precios</a>
+    <a href="#funcionamiento" class="mobile-nav-pill" onclick="scrollToSection('funcionamiento'); closeMobileMenu();">Cómo funciona</a>
+    <a href="#equipo" class="mobile-nav-pill" onclick="scrollToSection('equipo'); closeMobileMenu();">Equipo</a>
   </div>
 
   <!-- Modal de Perfil -->
@@ -1177,10 +1193,10 @@
       </div>
       <div class="footer-column">
         <h3>Enlaces Rápidos</h3>
-        <a href="#inicio">Inicio</a>
-        <a href="#impacto">Impacto Ambiental</a>
-        <a href="#precios">Precios</a>
-        <a href="#funcionamiento">Cómo Funciona</a>
+        <a href="#inicio" onclick="scrollToSection('inicio')">Inicio</a>
+        <a href="#impacto" onclick="scrollToSection('impacto')">Impacto Ambiental</a>
+        <a href="#precios" onclick="scrollToSection('precios')">Precios</a>
+        <a href="#funcionamiento" onclick="scrollToSection('funcionamiento')">Cómo Funciona</a>
       </div>
     </div>
     <div style="padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-secondary);">
@@ -1247,13 +1263,33 @@
       });
     }
 
+    // NAVEGACIÓN CORREGIDA
+    function scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Actualizar pills activos
+        document.querySelectorAll('.nav-pill').forEach(pill => {
+          pill.classList.remove('active');
+          if (pill.getAttribute('onclick') && pill.getAttribute('onclick').includes(sectionId)) {
+            pill.classList.add('active');
+          }
+        });
+        
+        // Scroll suave
+        element.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }
+
     // FLUJO: Click en "Empezar" -> Mostrar perfil -> Login -> Ocasión -> Upload
     function handleStartNowClick(e) {
       e.preventDefault();
       if (!isLoggedIn) {
         showProfileModal();
       } else {
-        document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+        scrollToSection('upload');
         showOccasionSelector();
       }
     }
@@ -1302,7 +1338,7 @@
         showOccasionSelector();
         showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
         
-        document.getElementById('upload').scrollIntoView({ behavior: 'smooth' });
+        scrollToSection('upload');
       } catch (e) {
         console.error('Error en login:', e);
         showNotification('Error al iniciar sesión', 'error');
@@ -1397,7 +1433,7 @@
       }
       
       for (const file of files) {
-        const preview = await createPreview(file);
+        const preview = await createPreview(file, type);
         document.getElementById(`${type}-preview`).appendChild(preview);
         uploadedFiles[type].push(file);
       }
@@ -1407,7 +1443,7 @@
       input.value = '';
     }
 
-    function createPreview(file) {
+    function createPreview(file, type) {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1422,7 +1458,16 @@
           const removeBtn = document.createElement('button');
           removeBtn.className = 'remove-image';
           removeBtn.innerHTML = '×';
-          removeBtn.onclick = () => container.remove();
+          removeBtn.onclick = () => {
+            // Remover del array también
+            const index = Array.from(container.parentNode.children).indexOf(container);
+            if (index !== -1) {
+              uploadedFiles[type].splice(index, 1);
+              updateUploadLabel(type);
+              updateGenerateButton();
+            }
+            container.remove();
+          };
           
           container.appendChild(img);
           container.appendChild(removeBtn);
@@ -1462,7 +1507,7 @@
       }
     }
 
-    // FUNCIÓN CORREGIDA - ALINEADA CON EL BACKEND
+    // FUNCIÓN CORREGIDA - NOMBRES DE CAMPOS EXACTOS SEGÚN EL BACKEND
     async function getRecommendation() {
       if (!selectedOccasion) {
         showNotification('Selecciona una ocasión primero', 'warning');
@@ -1480,12 +1525,17 @@
                        document.getElementById('otherOccasionInput').value || 'otros' : 
                        selectedOccasion);
         
-        // NOMBRES CORRECTOS DE CAMPOS SEGÚN EL BACKEND
-        uploadedFiles.tops.forEach(f => formData.append('top_images', f));
-        uploadedFiles.bottoms.forEach(f => formData.append('bottom_images', f));
-        uploadedFiles.shoes.forEach(f => formData.append('shoe_images', f));
+        // NOMBRES EXACTOS QUE ESPERA EL BACKEND - SINGULAR
+        uploadedFiles.tops.forEach(f => formData.append('tops', f));
+        uploadedFiles.bottoms.forEach(f => formData.append('bottoms', f));
+        uploadedFiles.shoes.forEach(f => formData.append('shoes', f));
         
-        // URL CORRECTA CON /api/recommend
+        console.log('Enviando a:', `${API_BASE}/api/recommend`);
+        console.log('FormData contenido:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ':', pair[1]);
+        }
+        
         const response = await fetch(`${API_BASE}/api/recommend`, {
           method: 'POST',
           body: formData
@@ -1505,7 +1555,7 @@
           throw new Error(data.message || 'Error generando recomendaciones');
         }
       } catch (e) {
-        console.error('Error:', e);
+        console.error('Error completo:', e);
         showNotification(`Error: ${e.message}`, 'error');
       } finally {
         btn.innerHTML = '🪄 Generar Nuevas Recomendaciones';
