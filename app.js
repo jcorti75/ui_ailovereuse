@@ -1,5 +1,5 @@
 // 1) Apunta tu frontend al backend en Railway
-const API_BASE = "https://outfit-recommender-production-cab0.up.railway.app";
+const API_BASE = "https://noshopia-production.up.railway.app";
 
 // Asume que, tras el login de Google, guardas:
 let currentUser = { email: "", name: "" }; 
@@ -83,7 +83,6 @@ async function sendFeedback(combinationId, accepted, rejectionReason = "") {
     console.error("Error feedback:", e);
   }
 }
-
 
 
 
