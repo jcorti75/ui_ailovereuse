@@ -5,7 +5,7 @@
    ============================================================================= */
 const CONFIG = {
   GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
-  API_BASE: "https://outfit-recommender-production-cab0.up.railway.app",
+  API_BASE: "https://noshopia-production.up.railway.app",
   FILE_LIMITS: { tops: 3, bottoms: 3, shoes: 5 }
 };
 
