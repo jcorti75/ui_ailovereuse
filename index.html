@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NoshopiA - Reutiliza tu ropa con IA</title>
-
-  <!-- External Libraries -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoShopiA - Reutiliza tu ropa con IA</title>
+  
+  <!-- CDN Libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
@@ -40,7 +42,6 @@
       font-size: 1.2em;
     }
 
-    /* Header */
     header {
       position: fixed;
       top: 0;
@@ -86,7 +87,7 @@
     .nav-pill {
       padding: 0.7rem 1.5rem;
       border-radius: 25px;
-      color: var(--text-primary);
+      color: #000000;
       text-decoration: none;
       font-weight: 500;
       transition: all 0.3s ease;
@@ -101,90 +102,6 @@
       transform: translateY(-2px);
     }
 
-    .hamburger {
-      display: none;
-      flex-direction: column;
-      cursor: pointer;
-      padding: 0.5rem;
-    }
-
-    .hamburger-line {
-      width: 25px;
-      height: 3px;
-      background: var(--text-primary);
-      margin: 3px 0;
-      transition: all 0.3s ease;
-    }
-
-    .mobile-menu {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 80%;
-      max-width: 350px;
-      height: 100vh;
-      background: rgba(255, 255, 255, 0.95);
-      z-index: 999;
-      padding: 6rem 2rem 2rem;
-      transition: left 0.3s ease;
-      backdrop-filter: blur(20px);
-    }
-
-    .mobile-menu.active { left: 0; }
-
-    .mobile-menu-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: rgba(0,0,0,0.5);
-      z-index: 998;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .mobile-menu-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .mobile-nav-pill {
-      display: block;
-      padding: 1rem;
-      color: var(--text-primary);
-      text-decoration: none;
-      border-radius: 10px;
-      margin-bottom: 0.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .mobile-nav-pill:hover {
-      background: rgba(59, 130, 246, 0.1);
-      transform: translateX(10px);
-    }
-
-    .auth-container {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .user-info {
-      display: none;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .user-avatar {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      border: 2px solid var(--primary);
-    }
-
-    /* Hero Section */
     .hero {
       min-height: 100vh;
       display: flex;
@@ -202,7 +119,7 @@
       font-size: clamp(2.5rem, 6vw, 4rem);
       font-weight: 800;
       margin-bottom: 1rem;
-      color: var(--text-primary);
+      color: #000000;
       line-height: 1.2;
     }
 
@@ -210,7 +127,7 @@
       font-size: 1.3rem;
       margin-bottom: 0.5rem;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .hero-button {
@@ -266,7 +183,6 @@
       display: block;
     }
 
-    /* Sections */
     section {
       padding: 6rem 5%;
       position: relative;
@@ -297,7 +213,6 @@
       opacity: 0.8;
     }
 
-    /* Impact Section */
     .impact-section {
       background: var(--background);
     }
@@ -318,7 +233,7 @@
       justify-content: space-between;
       margin-bottom: 0.5rem;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .impact-bar {
@@ -342,7 +257,6 @@
     .impact-fill[data-width="68"] { width: 68%; }
     .impact-fill[data-width="63"] { width: 63%; }
 
-    /* Pricing Section */
     .pricing-section {
       background: rgba(249, 250, 251, 0.5);
     }
@@ -397,19 +311,20 @@
       font-size: 1.8rem;
       font-weight: 700;
       margin-bottom: 1rem;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .pricing-price {
       font-size: 3rem;
       font-weight: 900;
-      color: var(--text-primary);
+      color: #000000;
       margin: 1rem 0;
     }
 
     .pricing-period {
       font-size: 1rem;
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.7;
       margin-bottom: 2rem;
       font-weight: 600;
     }
@@ -422,7 +337,7 @@
 
     .pricing-features li {
       padding: 0.5rem 0;
-      color: var(--text-primary);
+      color: #000000;
       line-height: 1.6;
     }
 
@@ -453,7 +368,6 @@
       box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
     }
 
-    /* Features Section */
     .features-section {
       background: var(--background);
     }
@@ -489,15 +403,15 @@
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 1rem;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .feature-card p {
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.8;
       line-height: 1.6;
     }
 
-    /* Upload Section */
     .upload-section {
       background: rgba(249, 250, 251, 0.5);
     }
@@ -525,6 +439,7 @@
       gap: 0.8rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       font-size: 0.9rem;
+      margin: 1rem auto;
     }
 
     .google-login-btn:hover {
@@ -533,7 +448,6 @@
       color: white;
     }
 
-    /* Closet Question */
     .closet-question {
       background: rgba(59, 130, 246, 0.05);
       border-radius: 20px;
@@ -571,7 +485,6 @@
       color: var(--primary);
     }
 
-    /* Closet Container */
     .closet-container {
       display: none;
       background: var(--background);
@@ -610,7 +523,8 @@
       border: none;
       cursor: pointer;
       font-weight: 600;
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.7;
       transition: all 0.3s ease;
       white-space: nowrap;
       border-bottom: 3px solid transparent;
@@ -622,6 +536,7 @@
     .closet-tab.active {
       background: var(--background);
       color: var(--primary);
+      opacity: 1;
       border-bottom-color: var(--primary);
     }
 
@@ -685,7 +600,7 @@
     }
 
     .occasion-section h3 {
-      color: var(--text-primary);
+      color: #000000;
       margin-bottom: 2rem;
     }
 
@@ -715,7 +630,7 @@
     }
 
     .occasion-btn span {
-      color: var(--text-primary);
+      color: #000000;
       font-weight: 500;
     }
 
@@ -804,7 +719,6 @@
       justify-content: center;
     }
 
-    /* Team Section */
     .team-section {
       background: var(--background);
     }
@@ -834,7 +748,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .team-role {
@@ -845,11 +759,11 @@
     }
 
     .team-card p {
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.8;
       line-height: 1.6;
     }
 
-    /* Footer CTA */
     .footer-cta {
       background: rgba(59, 130, 246, 0.05);
       padding: 4rem 5%;
@@ -859,12 +773,13 @@
       font-size: 2rem;
       font-weight: 700;
       margin-bottom: 1rem;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .footer-cta p {
       font-size: 1.1rem;
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.8;
       margin-bottom: 3rem;
     }
 
@@ -908,10 +823,9 @@
       box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
     }
 
-    /* Footer */
     footer {
       background: var(--background);
-      color: var(--text-primary);
+      color: #000000;
       padding: 3rem 5% 2rem;
       border-top: 1px solid var(--border);
     }
@@ -929,11 +843,12 @@
       font-size: 1.3rem;
       font-weight: 700;
       margin-bottom: 1.5rem;
-      color: var(--text-primary);
+      color: #000000;
     }
 
     .footer-column p, .footer-column a {
-      color: var(--text-secondary);
+      color: #000000;
+      opacity: 0.7;
       text-decoration: none;
       line-height: 1.8;
       transition: color 0.3s ease;
@@ -943,10 +858,9 @@
     }
 
     .footer-column a:hover {
-      color: var(--text-primary);
+      opacity: 1;
     }
 
-    /* Loading and notifications */
     .loading {
       display: inline-block;
       width: 20px;
@@ -992,10 +906,21 @@
       to { transform: translateX(0); opacity: 1; }
     }
 
-    /* Responsive */
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+    }
+
     @media (max-width: 768px) {
       .nav-pills { display: none; }
-      .hamburger { display: flex; }
       .stats { grid-template-columns: 1fr; }
       .pricing-cards { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
@@ -1030,16 +955,10 @@
           <a href="#equipo" class="nav-pill" onclick="scrollToSection('equipo')">👥 Equipo</a>
         </div>
         
-        <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
-          <div class="hamburger-line"></div>
-          <div class="hamburger-line"></div>
-          <div class="hamburger-line"></div>
-        </div>
-        
         <div class="auth-container">
           <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
-            <span id="userName" style="color: var(--text-primary);"></span>
+            <span id="userName" style="color: #000000;"></span>
             <button onclick="logout()" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
           </div>
         </div>
@@ -1047,27 +966,13 @@
     </nav>
   </header>
 
-  <!-- Mobile Menu -->
-  <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
-  <div class="mobile-menu" id="mobileMenu">
-    <div class="mobile-menu-header">
-      <h3 style="color: var(--primary);">NoshopiA</h3>
-      <p style="color: var(--text-secondary); font-size: 0.9rem;">Reutiliza tu ropa con IA</p>
-    </div>
-    <a href="#inicio" class="mobile-nav-pill" onclick="scrollToSection('inicio'); closeMobileMenu();">Inicio</a>
-    <a href="#impacto" class="mobile-nav-pill" onclick="scrollToSection('impacto'); closeMobileMenu();">Impacto Ambiental</a>
-    <a href="#precios" class="mobile-nav-pill" onclick="scrollToSection('precios'); closeMobileMenu();">Precios</a>
-    <a href="#funcionamiento" class="mobile-nav-pill" onclick="scrollToSection('funcionamiento'); closeMobileMenu();">Cómo funciona</a>
-    <a href="#equipo" class="mobile-nav-pill" onclick="scrollToSection('equipo'); closeMobileMenu();">Equipo</a>
-  </div>
-
   <!-- Hero Section -->
   <section id="inicio" class="hero">
     <div style="max-width: 900px;">
       <span style="font-size: 4rem; margin-bottom: 1rem; display: block;">🚫🛍️👕</span>
       <h1>Reutiliza tu ropa con IA y minimiza tu Impacto Ambiental</h1>
       <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
-      <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;">
+      <p style="font-size: 1.1rem; color: #000000; opacity: 0.8; margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;">
         Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.
       </p>
       <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">
@@ -1076,15 +981,15 @@
       <div class="stats">
         <div class="stat-item">
           <span class="stat-number">15min</span>
-          <span style="color: var(--text-secondary);">Ahorrados cada mañana</span>
+          <span style="color: #000000; opacity: 0.7;">Ahorrados cada mañana</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">10s</span>
-          <span style="color: var(--text-secondary);">Para generar outfit</span>
+          <span style="color: #000000; opacity: 0.7;">Para generar outfit</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">25kg</span>
-          <span style="color: var(--text-secondary);">CO₂ reducido</span>
+          <span style="color: #000000; opacity: 0.7;">CO₂ reducido</span>
         </div>
       </div>
     </div>
@@ -1106,7 +1011,7 @@
           <div class="impact-bar">
             <div class="impact-fill" data-width="85"></div>
           </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
             Cada prenda nueva requiere miles de litros de agua en su producción.
           </p>
         </div>
@@ -1118,7 +1023,7 @@
           <div class="impact-bar">
             <div class="impact-fill" data-width="72"></div>
           </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
             El transporte y manufactura textil son grandes emisores de carbono.
           </p>
         </div>
@@ -1130,7 +1035,7 @@
           <div class="impact-bar">
             <div class="impact-fill" data-width="68"></div>
           </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
             Millones de toneladas de ropa terminan en vertederos anualmente.
           </p>
         </div>
@@ -1142,7 +1047,7 @@
           <div class="impact-bar">
             <div class="impact-fill" data-width="63"></div>
           </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
             Los tintes y tratamientos textiles contaminan ríos y océanos.
           </p>
         </div>
@@ -1230,14 +1135,14 @@
   <!-- Upload Section -->
   <section id="upload" class="upload-section">
     <div class="section-container">
-      <h2 style="color: var(--text-primary);">✨ Termina con el Drama Matutino</h2>
-      <p style="color: var(--text-secondary);">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
+      <h2 style="color: #000000;">✨ Termina con el Drama Matutino</h2>
+      <p style="color: #000000; opacity: 0.8;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
 
       <!-- Login Required Message -->
       <div id="loginRequired" class="login-required">
-        <h3 style="color: var(--text-primary);">🔐 Inicia sesión para continuar</h3>
-        <p style="color: var(--text-secondary);">Accede con Google para usar nuestro algoritmo de IA</p>
-        <button class="google-login-btn" onclick="loginWithGoogle()" style="margin: 1rem auto;">
+        <h3 style="color: #000000;">🔐 Inicia sesión para continuar</h3>
+        <p style="color: #000000; opacity: 0.8;">Accede con Google para usar nuestro algoritmo de IA</p>
+        <button class="google-login-btn" onclick="loginWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
@@ -1431,8 +1336,8 @@
         <div class="upload-grid">
           <div class="upload-item">
             <i class="fas fa-tshirt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-            <h4 style="color: var(--text-primary);">Parte Superior</h4>
-            <p style="color: var(--text-secondary);">Camisas, blusas, suéteres</p>
+            <h4 style="color: #000000;">Parte Superior</h4>
+            <p style="color: #000000; opacity: 0.8;">Camisas, blusas, suéteres</p>
             <label for="tops-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
             <input type="file" id="tops-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('tops', this)" />
             <div id="tops-preview" class="preview-area"></div>
@@ -1440,8 +1345,8 @@
 
           <div class="upload-item">
             <i class="fas fa-user-tie" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-            <h4 style="color: var(--text-primary);">Parte Inferior</h4>
-            <p style="color: var(--text-secondary);">Pantalones, faldas, shorts</p>
+            <h4 style="color: #000000;">Parte Inferior</h4>
+            <p style="color: #000000; opacity: 0.8;">Pantalones, faldas, shorts</p>
             <label for="bottoms-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
             <input type="file" id="bottoms-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('bottoms', this)" />
             <div id="bottoms-preview" class="preview-area"></div>
@@ -1449,8 +1354,8 @@
 
           <div class="upload-item">
             <i class="fas fa-shoe-prints" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
-            <h4 style="color: var(--text-primary);">Calzado</h4>
-            <p style="color: var(--text-secondary);">Zapatos, sneakers, botas</p>
+            <h4 style="color: #000000;">Calzado</h4>
+            <p style="color: #000000; opacity: 0.8;">Zapatos, sneakers, botas</p>
             <label for="shoes-upload" class="file-label">📤 Subir Zapatos (máx 5)</label>
             <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple onchange="handleFileUpload('shoes', this)" />
             <div id="shoes-preview" class="preview-area"></div>
@@ -1531,7 +1436,7 @@
         <a onclick="scrollToSection('equipo')">Nuestro Equipo</a>
       </div>
     </div>
-    <div style="padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-secondary);">
+    <div style="padding-top: 2rem; border-top: 1px solid var(--border); color: #000000; opacity: 0.7; text-align: center;">
       <p>&copy; 2024 NoshopiA. Todos los derechos reservados.</p>
     </div>
   </footer>
@@ -1561,30 +1466,6 @@
         });
         document.querySelector(`[onclick*="${sectionId}"]`).classList.add('active');
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobileMenu');
-      const overlay = document.getElementById('mobileMenuOverlay');
-      const hamburger = document.getElementById('hamburgerBtn');
-      
-      if (menu && overlay && hamburger) {
-        menu.classList.toggle('active');
-        overlay.classList.toggle('active');
-        hamburger.classList.toggle('active');
-      }
-    }
-
-    function closeMobileMenu() {
-      const menu = document.getElementById('mobileMenu');
-      const overlay = document.getElementById('mobileMenuOverlay');
-      const hamburger = document.getElementById('hamburgerBtn');
-      
-      if (menu && overlay && hamburger) {
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-        hamburger.classList.remove('active');
       }
     }
 
@@ -1852,21 +1733,52 @@
       btn.disabled = true;
       
       try {
+        // FORMATO CORRECTO PARA EL BACKEND HÍBRIDO
         const formData = new FormData();
+        
+        // Agregar información del usuario
         formData.append('user_email', currentUser.email);
         formData.append('occasion', selectedOccasion);
         
-        uploadedFiles.tops.forEach(f => formData.append('tops', f));
-        uploadedFiles.bottoms.forEach(f => formData.append('bottoms', f));
-        uploadedFiles.shoes.forEach(f => formData.append('shoes', f));
+        // Crear arrays de tipos y archivos en el orden correcto
+        let allFiles = [];
+        let types = [];
         
-        const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
+        // Agregar tops
+        uploadedFiles.tops.forEach(file => {
+          allFiles.push(file);
+          types.push('top');
+        });
+        
+        // Agregar bottoms  
+        uploadedFiles.bottoms.forEach(file => {
+          allFiles.push(file);
+          types.push('bottom');
+        });
+        
+        // Agregar shoes
+        uploadedFiles.shoes.forEach(file => {
+          allFiles.push(file);
+          types.push('shoe');
+        });
+        
+        // Agregar archivos al FormData
+        allFiles.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        // Agregar string de tipos separados por coma
+        formData.append('types', types.join(','));
+        
+        // Llamar al endpoint híbrido optimizado
+        const response = await fetch(`${CONFIG.API_BASE}/api/recommend-local`, {
           method: 'POST',
           body: formData
         });
         
         if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${await response.text()}`);
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `Error ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -1905,8 +1817,8 @@
       
       let html = `
         <div style="text-align: center; margin-bottom: 2rem;">
-          <h2 style="color: var(--text-primary);">🪄 Tus Mejores Combinaciones</h2>
-          <p style="color: var(--text-secondary);">
+          <h2 style="color: #000000;">🪄 Tus Mejores Combinaciones</h2>
+          <p style="color: #000000; opacity: 0.8;">
             ${data.message || `Mostrando las mejores ${results.length} combinaciones`}
           </p>
         </div>
@@ -1919,33 +1831,33 @@
         
         html += `
           <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
-            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--text-primary); padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR COMBINACIÓN</div>' : ''}
+            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR COMBINACIÓN</div>' : ''}
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
-              <h3 style="color: var(--text-primary); margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
-              <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? 'var(--text-primary)' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+              <h3 style="color: #000000; margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
+              <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center;">
               <div>
-                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.top?.detected_item || 'Superior'}</div>
+                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
+                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
               </div>
               <div>
-                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.bottom?.detected_item || 'Inferior'}</div>
+                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
+                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
               </div>
               <div>
-                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.shoe?.detected_item || 'Calzado'}</div>
+                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
+                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
               </div>
             </div>
             
             <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
-              <div style="color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">
+              <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">
                 Armonía: ${item.harmony_type || 'Equilibrada'}
               </div>
-              <div style="color: var(--text-secondary); font-size: 0.9rem;">
+              <div style="color: #000000; opacity: 0.8; font-size: 0.9rem;">
                 ${item.harmony_description || 'Combinación balanceada'}
               </div>
             </div>
@@ -1989,7 +1901,7 @@
       const list = document.getElementById('savedRecommendationsList');
       if (!list || savedRecommendations.length === 0) {
         if (list) {
-          list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Aquí aparecerán tus combinaciones favoritas guardadas</p>';
+          list.innerHTML = '<p style="text-align: center; color: #000000; opacity: 0.7; padding: 2rem;">Aquí aparecerán tus combinaciones favoritas guardadas</p>';
         }
         return;
       }
@@ -2000,13 +1912,13 @@
         
         return `
           <div style="background: var(--background); border: 1px solid var(--border); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; position: relative; ${isBest ? 'border-color: var(--gold); background: rgba(251, 191, 36, 0.05);' : ''}">
-            ${isBest ? '<div style="position: absolute; top: -10px; right: -10px; background: var(--gold); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⭐</div>' : ''}
+            ${isBest ? '<div style="position: absolute; top: -10px; right: -10px; background: var(--gold); color: #000000; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⭐</div>' : ''}
             <div style="flex: 1;">
-              <h4 style="margin: 0; color: var(--text-primary);">Combinación ${rec.occasion}</h4>
-              <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">${rec.top?.detected_item || 'Superior'} + ${rec.bottom?.detected_item || 'Inferior'} + ${rec.shoe?.detected_item || 'Calzado'}</p>
-              <small style="color: var(--text-secondary);">Guardada el ${rec.saved_date}</small>
+              <h4 style="margin: 0; color: #000000;">Combinación ${rec.occasion}</h4>
+              <p style="margin: 0.5rem 0; color: #000000; opacity: 0.8; font-size: 0.9rem;">${rec.top?.detected_item || 'Superior'} + ${rec.bottom?.detected_item || 'Inferior'} + ${rec.shoe?.detected_item || 'Calzado'}</p>
+              <small style="color: #000000; opacity: 0.7;">Guardada el ${rec.saved_date}</small>
             </div>
-            <div style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? 'var(--text-primary)' : 'white'}; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700;">${score}%</div>
+            <div style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700;">${score}%</div>
           </div>
         `;
       }).join('');
