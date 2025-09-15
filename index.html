@@ -10,9 +10,1007 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- Your CSS file -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --background: #ffffff;
+      --border: #e5e7eb;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --success: #10b981;
+      --gold: #fbbf24;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background: var(--background);
+      color: #000000;
+      min-height: 100vh;
+      font-size: 1.2em;
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 1rem 5%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 3rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      letter-spacing: 1px;
+    }
+
+    .logo-no { color: #ef4444; }
+    .logo-shop { color: #000000; }
+    .logo-i { color: #22c55e; }
+    .logo-a { color: #22c55e; }
+
+    .nav-pills {
+      display: flex;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.5rem;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      gap: 0.5rem;
+    }
+
+    .nav-pill {
+      padding: 0.7rem 1.5rem;
+      border-radius: 25px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .nav-pill:hover, .nav-pill.active {
+      background: rgba(59, 130, 246, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .hamburger-line {
+      width: 25px;
+      height: 3px;
+      background: var(--text-primary);
+      margin: 3px 0;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      max-width: 350px;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 999;
+      padding: 6rem 2rem 2rem;
+      transition: left 0.3s ease;
+      backdrop-filter: blur(20px);
+    }
+
+    .mobile-menu.active { left: 0; }
+
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-nav-pill {
+      display: block;
+      padding: 1rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-nav-pill:hover {
+      background: rgba(59, 130, 246, 0.1);
+      transform: translateX(10px);
+    }
+
+    .auth-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      padding: 6rem 2rem 4rem;
+      background: var(--background);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .hero-subtitle {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .hero-button {
+      padding: 1.2rem 3rem;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 4rem;
+      text-decoration: none;
+    }
+
+    .hero-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .stat-item {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 2rem 1rem;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    /* Sections */
+    section {
+      padding: 6rem 5%;
+      position: relative;
+      z-index: 2;
+      background: var(--background);
+    }
+
+    .section-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .section-title h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: #000000;
+    }
+
+    .section-subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 4rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #000000;
+      opacity: 0.8;
+    }
+
+    /* Impact Section */
+    .impact-section {
+      background: var(--background);
+    }
+
+    .impact-bars {
+      display: grid;
+      gap: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .impact-item {
+      text-align: left;
+    }
+
+    .impact-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .impact-bar {
+      height: 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .impact-fill {
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-radius: 10px;
+      transition: width 2s ease;
+      width: 0%;
+    }
+
+    .impact-fill[data-width="85"] { width: 85%; }
+    .impact-fill[data-width="72"] { width: 72%; }
+    .impact-fill[data-width="68"] { width: 68%; }
+    .impact-fill[data-width="63"] { width: 63%; }
+
+    /* Pricing Section */
+    .pricing-section {
+      background: rgba(249, 250, 251, 0.5);
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 800px;
+      margin: 3rem auto 0;
+    }
+
+    .pricing-card {
+      background: var(--background);
+      border-radius: 25px;
+      padding: 3rem 2rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .pricing-card.premium {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.02);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      padding: 0.5rem 2rem;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .pricing-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      margin: 1rem 0;
+    }
+
+    .pricing-period {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      padding: 0.5rem 0;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .pricing-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .pricing-btn.free {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .pricing-btn.premium {
+      background: var(--primary);
+      color: white;
+    }
+
+    .pricing-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Features Section */
+    .features-section {
+      background: var(--background);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--background);
+      border-radius: 25px;
+      padding: 3rem 2rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+      font-size: 4rem;
+      margin-bottom: 2rem;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Upload Section */
+    .upload-section {
+      background: rgba(249, 250, 251, 0.5);
+    }
+
+    .login-required {
+      background: rgba(251, 191, 36, 0.1);
+      border: 2px solid #f59e0b;
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .google-login-btn {
+      background: white;
+      color: #333;
+      padding: 0.8rem 2rem;
+      border: 2px solid var(--primary);
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      font-size: 0.9rem;
+    }
+
+    .google-login-btn:hover {
+      transform: translateY(-2px);
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Closet Question */
+    .closet-question {
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+      border: 2px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .closet-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .closet-option {
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .closet-option:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .option-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+
+    /* Closet Container */
+    .closet-container {
+      display: none;
+      background: var(--background);
+      border-radius: 25px;
+      margin: 2rem 0;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .closet-header {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      padding: 1.5rem 2rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .closet-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .closet-tabs {
+      display: flex;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .closet-tab {
+      padding: 1rem 2rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .closet-tab.active {
+      background: var(--background);
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .closet-content {
+      padding: 2rem;
+      min-height: 300px;
+    }
+
+    .folder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .folder-item {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .folder-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      border-color: var(--primary);
+    }
+
+    .folder-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .folder-name {
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .folder-count {
+      font-size: 0.85rem;
+      color: #000000;
+      opacity: 0.7;
+      line-height: 1.4;
+    }
+
+    .occasion-section {
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+    }
+
+    .occasion-section h3 {
+      color: var(--text-primary);
+      margin-bottom: 2rem;
+    }
+
+    .occasion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .occasion-btn {
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: 15px;
+      padding: 1.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .occasion-btn i {
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .occasion-btn span {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .occasion-btn:hover, .occasion-btn.selected {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .upload-area {
+      background: rgba(59, 130, 246, 0.02);
+      border: 2px dashed var(--border);
+      border-radius: 25px;
+      padding: 4rem 2rem;
+      margin: 2rem 0;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .upload-item {
+      background: var(--background);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-label {
+      display: block;
+      padding: 1rem 2rem;
+      background: var(--primary);
+      border-radius: 25px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .file-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .preview-area {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .preview-image {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 15px;
+      border: 2px solid var(--primary);
+      position: relative;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Team Section */
+    .team-section {
+      background: var(--background);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .team-card {
+      background: var(--background);
+      border-radius: 25px;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .team-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-card h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .team-role {
+      font-size: 1rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .team-card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Footer CTA */
+    .footer-cta {
+      background: rgba(59, 130, 246, 0.05);
+      padding: 4rem 5%;
+    }
+
+    .footer-cta h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .footer-cta p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+    }
+
+    .cta-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      max-width: 600px;
+      margin: 0 auto 3rem;
+    }
+
+    .cta-feature {
+      text-align: center;
+      padding: 2rem;
+      background: var(--background);
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .cta-feature:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      padding: 1rem 2rem;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--background);
+      color: var(--text-primary);
+      padding: 3rem 5% 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 3rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-column h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .footer-column p, .footer-column a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.8;
+      transition: color 0.3s ease;
+      display: block;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .footer-column a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Loading and notifications */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 2rem;
+      border-radius: 15px;
+      color: white;
+      font-weight: 600;
+      z-index: 10000;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: slideInRight 0.3s ease;
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .notification.info {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-pills { display: none; }
+      .hamburger { display: flex; }
+      .stats { grid-template-columns: 1fr; }
+      .pricing-cards { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .occasion-grid { grid-template-columns: repeat(2, 1fr); }
+      .upload-grid { grid-template-columns: 1fr; }
+      .footer-content { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+    }
+
+    @media (max-width: 480px) {
+      .occasion-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
+
 <body>
   <header>
     <nav>
@@ -41,7 +1039,7 @@
         <div class="auth-container">
           <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
-            <span id="userName"></span>
+            <span id="userName" style="color: var(--text-primary);"></span>
             <button onclick="logout()" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
           </div>
         </div>
@@ -236,7 +1234,7 @@
       <p style="color: var(--text-secondary);">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
 
       <!-- Login Required Message -->
-      <div id="loginRequired" class="login-required" style="display: none;">
+      <div id="loginRequired" class="login-required">
         <h3 style="color: var(--text-primary);">🔐 Inicia sesión para continuar</h3>
         <p style="color: var(--text-secondary);">Accede con Google para usar nuestro algoritmo de IA</p>
         <button class="google-login-btn" onclick="loginWithGoogle()" style="margin: 1rem auto;">
@@ -250,6 +1248,157 @@
         </button>
       </div>
 
+      <!-- Closet Question -->
+      <div id="closetQuestion" class="closet-question" style="display: none;">
+        <h3 style="color: #000000; margin-bottom: 1rem;">👗 ¿Quieres armar tu Closet Favorito?</h3>
+        <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
+          Organiza tu ropa en carpetas inteligentes y guarda tus combinaciones favoritas
+        </p>
+        
+        <div class="closet-options">
+          <div class="closet-option" onclick="enableCloset()">
+            <div class="option-icon">✨</div>
+            <h4 style="color: #000000; margin-bottom: 0.5rem;">Sí, quiero Mi Closet</h4>
+            <p style="color: #000000; opacity: 0.7; font-size: 0.9rem;">Sistema de carpetas inteligente</p>
+          </div>
+          
+          <div class="closet-option" onclick="useDirectMode()">
+            <div class="option-icon">⚡</div>
+            <h4 style="color: #000000; margin-bottom: 0.5rem;">Ir directo</h4>
+            <p style="color: #000000; opacity: 0.7; font-size: 0.9rem;">Solo recomendaciones</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closet Container -->
+      <div id="closetContainer" class="closet-container">
+        <div class="closet-header">
+          <i class="fas fa-folder-open" style="font-size: 1.5rem;"></i>
+          <h2>Mi Closet Favorito</h2>
+        </div>
+        
+        <div class="closet-tabs">
+          <button class="closet-tab active" onclick="showClosetTab('superiores')" data-tab="superiores">
+            <i class="fas fa-tshirt"></i> Prendas Superiores
+          </button>
+          <button class="closet-tab" onclick="showClosetTab('inferiores')" data-tab="inferiores">
+            <i class="fas fa-user-tie"></i> Prendas Inferiores
+          </button>
+          <button class="closet-tab" onclick="showClosetTab('calzado')" data-tab="calzado">
+            <i class="fas fa-shoe-prints"></i> Calzado
+          </button>
+          <button class="closet-tab" onclick="showClosetTab('recomendaciones')" data-tab="recomendaciones">
+            <i class="fas fa-star"></i> Mis Recomendaciones
+          </button>
+        </div>
+
+        <div class="closet-content">
+          <!-- Prendas Superiores -->
+          <div id="superiores" class="closet-tab-content">
+            <h3 style="margin-bottom: 1rem; color: #000000;">🔸 Prendas Superiores</h3>
+            <div class="folder-grid">
+              <div class="folder-item">
+                <div class="folder-icon">👕</div>
+                <div class="folder-name">Poleras</div>
+                <div class="folder-count">poleras lisas, con estampados, polerones</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">👔</div>
+                <div class="folder-name">Camisas</div>
+                <div class="folder-count">camisas de vestir, casuales, mezclilla</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🧥</div>
+                <div class="folder-name">Sweaters</div>
+                <div class="folder-count">sweaters, cardiganes, poleras con capucha</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🏷️</div>
+                <div class="folder-name">Chaquetas</div>
+                <div class="folder-count">casacas, blazers, de cuero</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🧥</div>
+                <div class="folder-name">Abrigos</div>
+                <div class="folder-count">parkas, de invierno, Montgomery</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prendas Inferiores -->
+          <div id="inferiores" class="closet-tab-content" style="display: none;">
+            <h3 style="margin-bottom: 1rem; color: #000000;">🔸 Prendas Inferiores</h3>
+            <div class="folder-grid">
+              <div class="folder-item">
+                <div class="folder-icon">👖</div>
+                <div class="folder-name">Pantalones</div>
+                <div class="folder-count">jeans, de tela, de vestir</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🩳</div>
+                <div class="folder-name">Shorts</div>
+                <div class="folder-count">bermudas, deportivos, de playa</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">👗</div>
+                <div class="folder-name">Faldas</div>
+                <div class="folder-count">minifalda, falda tubo, largas</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🩱</div>
+                <div class="folder-name">Calzas</div>
+                <div class="folder-count">leggins, deportivas, térmicas</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">👗</div>
+                <div class="folder-name">Vestidos</div>
+                <div class="folder-count">casuales, formales, largos</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calzado -->
+          <div id="calzado" class="closet-tab-content" style="display: none;">
+            <h3 style="margin-bottom: 1rem; color: #000000;">🔸 Calzado</h3>
+            <div class="folder-grid">
+              <div class="folder-item">
+                <div class="folder-icon">👞</div>
+                <div class="folder-name">Zapatos</div>
+                <div class="folder-count">de vestir, mocasines, con tacos</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">👟</div>
+                <div class="folder-name">Zapatillas</div>
+                <div class="folder-count">deportivas, urbanas</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">🥾</div>
+                <div class="folder-name">Botas</div>
+                <div class="folder-count">bototos, de lluvia, botines</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">👡</div>
+                <div class="folder-name">Sandalias</div>
+                <div class="folder-count">chalas, con taco, deportivas</div>
+              </div>
+              <div class="folder-item">
+                <div class="folder-icon">⚽</div>
+                <div class="folder-name">Especializados</div>
+                <div class="folder-count">running, trekking, trabajo</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recomendaciones -->
+          <div id="recomendaciones" class="closet-tab-content" style="display: none;">
+            <h3 style="margin-bottom: 2rem; color: #000000;">⭐ Mis Recomendaciones Guardadas</h3>
+            <div id="savedRecommendationsList" style="text-align: center; color: #000000; opacity: 0.7; padding: 2rem;">
+              Aquí aparecerán tus combinaciones favoritas guardadas
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Occasion Selector -->
       <div id="occasionSelector" class="occasion-section" style="display: none;">
         <h3>¿Qué planes tienes para esta ocasión?</h3>
@@ -258,13 +1407,13 @@
             <i class="fas fa-briefcase"></i>
             <span>Toca Oficina</span>
           </button>
-          <button class="occasion-btn" data-occasion="gym">
+          <button class="occasion-btn" data-occasion="deportivo">
             <i class="fas fa-dumbbell"></i>
             <span>Deportes/Gym</span>
           </button>
           <button class="occasion-btn" data-occasion="casual">
             <i class="fas fa-users"></i>
-            <span>Junta casual con amigos</span>
+            <span>Junta casual</span>
           </button>
           <button class="occasion-btn" data-occasion="formal">
             <i class="fas fa-black-tie"></i>
@@ -274,12 +1423,7 @@
             <i class="fas fa-ring"></i>
             <span>Matrimonio</span>
           </button>
-          <button class="occasion-btn" data-occasion="otros">
-            <i class="fas fa-ellipsis-h"></i>
-            <span>Otros</span>
-          </button>
         </div>
-        <input type="text" id="otherOccasionInput" placeholder="Especificar ocasión (máx 50 caracteres)" maxlength="50" />
       </div>
 
       <!-- Upload Area -->
@@ -351,18 +1495,18 @@
       <p>Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
       <div class="cta-features">
         <div class="cta-feature">
-          <i class="fas fa-gift"></i>
-          <h4>Gratis</h4>
-          <p>Sin costo inicial</p>
+          <div style="font-size: 4rem; margin-bottom: 1rem; color: var(--success);">🎁</div>
+          <h4 style="color: #000000; font-weight: 700; font-size: 1.5rem;">Gratis</h4>
+          <p style="color: #000000; opacity: 0.7;">Sin costo inicial</p>
         </div>
         <div class="cta-feature">
-          <i class="fas fa-clock"></i>
-          <h4>Instantáneo</h4>
-          <p>Resultados en 10 segundos</p>
+          <div style="font-size: 4rem; margin-bottom: 1rem; color: var(--primary);">⚡</div>
+          <h4 style="color: #000000; font-weight: 700; font-size: 1.5rem;">Instantáneo</h4>
+          <p style="color: #000000; opacity: 0.7;">Resultados en 10 segundos</p>
         </div>
       </div>
       <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
-        <a href="#upload" class="btn-primary" onclick="handleStartNowClick(event)">
+        <a href="#upload" class="btn-primary" onclick="handleStartNowClick(event)" style="padding: 1.2rem 3rem; font-size: 1.1rem;">
           <i class="fas fa-play"></i>
           Crear Mi Guardarropa Digital
         </a>
@@ -392,7 +1536,534 @@
     </div>
   </footer>
 
-  <!-- Your JavaScript file -->
-  <script src="js_file.js"></script>
+  <script>
+    // CONFIGURACIÓN
+    const CONFIG = {
+      GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
+      API_BASE: "https://noshopia-production.up.railway.app",
+      FILE_LIMITS: { tops: 3, bottoms: 3, shoes: 5 }
+    };
+
+    // Variables globales
+    let isLoggedIn = false;
+    let currentUser = null;
+    let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+    let selectedOccasion = null;
+    let closetMode = false;
+    let savedRecommendations = [];
+
+    // FUNCIONES DE NAVEGACIÓN
+    function scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        document.querySelectorAll('.nav-pill').forEach(pill => {
+          pill.classList.remove('active');
+        });
+        document.querySelector(`[onclick*="${sectionId}"]`).classList.add('active');
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const overlay = document.getElementById('mobileMenuOverlay');
+      const hamburger = document.getElementById('hamburgerBtn');
+      
+      if (menu && overlay && hamburger) {
+        menu.classList.toggle('active');
+        overlay.classList.toggle('active');
+        hamburger.classList.toggle('active');
+      }
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const overlay = document.getElementById('mobileMenuOverlay');
+      const hamburger = document.getElementById('hamburgerBtn');
+      
+      if (menu && overlay && hamburger) {
+        menu.classList.remove('active');
+        overlay.classList.remove('active');
+        hamburger.classList.remove('active');
+      }
+    }
+
+    // FUNCIONES DE AUTENTICACIÓN
+    function checkGoogleAuth() {
+      const checkInterval = setInterval(() => {
+        if (typeof google !== 'undefined' && google.accounts?.id) {
+          clearInterval(checkInterval);
+          initializeGoogleAuth();
+        }
+      }, 500);
+    }
+
+    function initializeGoogleAuth() {
+      try {
+        google.accounts.id.initialize({
+          client_id: CONFIG.GOOGLE_CLIENT_ID,
+          callback: handleGoogleSignIn,
+          auto_select: false,
+          ux_mode: 'popup'
+        });
+      } catch (e) {
+        console.error('Error inicializando Google Auth:', e);
+      }
+    }
+
+    async function handleGoogleSignIn(response) {
+      if (!response.credential) return;
+      
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        currentUser = {
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture,
+          token: response.credential
+        };
+        
+        isLoggedIn = true;
+        updateAuthUI();
+        showClosetQuestion();
+        showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
+      } catch (e) {
+        console.error('Error en login:', e);
+        showNotification('Error al iniciar sesión', 'error');
+      }
+    }
+
+    function loginWithGoogle() {
+      try {
+        if (typeof google !== 'undefined' && google.accounts?.id) {
+          google.accounts.id.prompt();
+        } else {
+          showNotification('Google Auth no está listo', 'error');
+        }
+      } catch (e) {
+        showNotification('Error: ' + e.message, 'error');
+      }
+    }
+
+    function logout() {
+      isLoggedIn = false;
+      currentUser = null;
+      selectedOccasion = null;
+      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      closetMode = false;
+      updateAuthUI();
+      hideAllSections();
+      document.getElementById('loginRequired').style.display = 'block';
+      showNotification('Sesión cerrada', 'info');
+    }
+
+    function updateAuthUI() {
+      const userInfo = document.getElementById('userInfo');
+      if (isLoggedIn && currentUser) {
+        userInfo.style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userAvatar').src = currentUser.picture;
+      } else {
+        userInfo.style.display = 'none';
+      }
+    }
+
+    function handleStartNowClick(e) {
+      e.preventDefault();
+      scrollToSection('upload');
+      if (!isLoggedIn) {
+        document.getElementById('loginRequired').style.display = 'block';
+      } else {
+        showClosetQuestion();
+      }
+    }
+
+    // FUNCIONES DEL CLOSET
+    function hideAllSections() {
+      document.getElementById('closetQuestion').style.display = 'none';
+      document.getElementById('closetContainer').style.display = 'none';
+      document.getElementById('occasionSelector').style.display = 'none';
+      document.getElementById('uploadArea').style.display = 'none';
+    }
+
+    function showClosetQuestion() {
+      hideAllSections();
+      document.getElementById('loginRequired').style.display = 'none';
+      document.getElementById('closetQuestion').style.display = 'block';
+    }
+
+    function enableCloset() {
+      closetMode = true;
+      hideAllSections();
+      document.getElementById('closetContainer').style.display = 'block';
+      showNotification('¡Mi Closet Favorito activado! 👗', 'success');
+    }
+
+    function useDirectMode() {
+      closetMode = false;
+      hideAllSections();
+      showOccasionSelector();
+    }
+
+    function showOccasionSelector() {
+      document.getElementById('occasionSelector').style.display = 'block';
+    }
+
+    function showClosetTab(tabId) {
+      document.querySelectorAll('.closet-tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      
+      document.querySelectorAll('.closet-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      document.getElementById(tabId).style.display = 'block';
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    }
+
+    // FUNCIONES DE OCASIONES
+    function setupEventListeners() {
+      document.querySelectorAll('.occasion-btn').forEach(btn => {
+        btn.addEventListener('click', handleOccasionSelect);
+      });
+    }
+
+    function handleOccasionSelect(e) {
+      const btn = e.currentTarget;
+      selectedOccasion = btn.dataset.occasion;
+      
+      document.querySelectorAll('.occasion-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      
+      document.getElementById('uploadArea').style.display = 'block';
+      updateGenerateButton();
+      showNotification(`Ocasión seleccionada: ${btn.textContent.trim()}`, 'info');
+    }
+
+    // FUNCIONES DE ARCHIVOS
+    async function handleFileUpload(type, input) {
+      if (!isLoggedIn) {
+        showNotification('Debes iniciar sesión primero', 'error');
+        input.value = '';
+        return;
+      }
+      
+      const files = Array.from(input.files);
+      const currentCount = uploadedFiles[type].length;
+      const maxCount = CONFIG.FILE_LIMITS[type];
+      
+      if (currentCount + files.length > maxCount) {
+        showNotification(`Máximo ${maxCount} archivos para ${type}`, 'error');
+        input.value = '';
+        return;
+      }
+      
+      for (const file of files) {
+        const preview = await createPreview(file, type);
+        document.getElementById(`${type}-preview`).appendChild(preview);
+        uploadedFiles[type].push(file);
+      }
+      
+      updateUploadLabel(type);
+      updateGenerateButton();
+      input.value = '';
+    }
+
+    function createPreview(file, type) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const container = document.createElement('div');
+          container.style.position = 'relative';
+          container.style.display = 'inline-block';
+          
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'preview-image';
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-image';
+          removeBtn.innerHTML = '×';
+          removeBtn.onclick = () => {
+            const index = Array.from(container.parentNode.children).indexOf(container);
+            if (index !== -1) {
+              uploadedFiles[type].splice(index, 1);
+              updateUploadLabel(type);
+              updateGenerateButton();
+            }
+            container.remove();
+          };
+          
+          container.appendChild(img);
+          container.appendChild(removeBtn);
+          resolve(container);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function updateUploadLabel(type) {
+      const label = document.querySelector(`label[for="${type}-upload"]`);
+      const count = uploadedFiles[type].length;
+      const max = CONFIG.FILE_LIMITS[type];
+      
+      const labels = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
+      const typeLabel = labels[type] || type;
+      
+      if (count === 0) {
+        label.innerHTML = `📤 Subir ${typeLabel} (máx ${max})`;
+      } else if (count < max) {
+        label.innerHTML = `✅ ${count}/${max} - Agregar más`;
+      } else {
+        label.innerHTML = `🎯 ${count}/${max} - ¡Completo!`;
+      }
+    }
+
+    function updateGenerateButton() {
+      const btn = document.getElementById('generateBtn');
+      const hasAll = uploadedFiles.tops.length > 0 && 
+                     uploadedFiles.bottoms.length > 0 && 
+                     uploadedFiles.shoes.length > 0;
+      
+      if (hasAll && selectedOccasion) {
+        const total = uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length;
+        btn.innerHTML = `🪄 Generar ${total} Recomendaciones con IA`;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      } else {
+        btn.innerHTML = '🪄 Sube fotos de cada categoría para continuar';
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+      }
+    }
+
+    // FUNCIONES DE RECOMENDACIONES
+    async function getRecommendation() {
+      if (!selectedOccasion) {
+        showNotification('Selecciona una ocasión primero', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('generateBtn');
+      btn.innerHTML = '<span class="loading"></span> Generando recomendaciones...';
+      btn.disabled = true;
+      
+      try {
+        const formData = new FormData();
+        formData.append('user_email', currentUser.email);
+        formData.append('occasion', selectedOccasion);
+        
+        uploadedFiles.tops.forEach(f => formData.append('tops', f));
+        uploadedFiles.bottoms.forEach(f => formData.append('bottoms', f));
+        uploadedFiles.shoes.forEach(f => formData.append('shoes', f));
+        
+        const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${await response.text()}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          renderRecommendations(data);
+          if (closetMode && data.results && data.results.length > 0) {
+            saveRecommendation(data.results[0]);
+          }
+        } else {
+          throw new Error(data.message || 'Error generando recomendaciones');
+        }
+      } catch (e) {
+        console.error('Error:', e);
+        showNotification(`Error: ${e.message}`, 'error');
+      } finally {
+        btn.innerHTML = '🪄 Generar Nuevas Recomendaciones';
+        btn.disabled = false;
+      }
+    }
+
+    function renderRecommendations(data) {
+      const result = document.getElementById('result');
+      const results = data.results || [];
+      
+      // Encontrar la mejor recomendación (mayor final_score)
+      let bestIndex = 0;
+      let highestScore = 0;
+      results.forEach((item, index) => {
+        const score = item.final_score || 0.85;
+        if (score > highestScore) {
+          highestScore = score;
+          bestIndex = index;
+        }
+      });
+      
+      let html = `
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 style="color: var(--text-primary);">🪄 Tus Mejores Combinaciones</h2>
+          <p style="color: var(--text-secondary);">
+            ${data.message || `Mostrando las mejores ${results.length} combinaciones`}
+          </p>
+        </div>
+        <div style="display: grid; gap: 2rem;">
+      `;
+      
+      results.forEach((item, idx) => {
+        const scorePercent = Math.round((item.final_score || 0.85) * 100);
+        const isBest = idx === bestIndex;
+        
+        html += `
+          <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
+            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: var(--text-primary); padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR COMBINACIÓN</div>' : ''}
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
+              <h3 style="color: var(--text-primary); margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
+              <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? 'var(--text-primary)' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center;">
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.top?.detected_item || 'Superior'}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.bottom?.detected_item || 'Inferior'}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.8rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">${item.shoe?.detected_item || 'Calzado'}</div>
+              </div>
+            </div>
+            
+            <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
+              <div style="color: var(--text-primary); font-weight: 600; margin-bottom: 0.5rem;">
+                Armonía: ${item.harmony_type || 'Equilibrada'}
+              </div>
+              <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                ${item.harmony_description || 'Combinación balanceada'}
+              </div>
+            </div>
+            
+            ${closetMode ? `<button onclick="saveRecommendationToCloset(${JSON.stringify(item).replace(/"/g, '&quot;')})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Mi Closet</button>` : ''}
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      result.innerHTML = html;
+      result.style.display = 'block';
+      
+      setTimeout(() => {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function saveRecommendation(recommendation) {
+      const saved = {
+        id: Date.now(),
+        ...recommendation,
+        saved_date: new Date().toLocaleDateString('es-ES'),
+        occasion: selectedOccasion
+      };
+      
+      savedRecommendations.unshift(saved);
+      if (savedRecommendations.length > 10) {
+        savedRecommendations = savedRecommendations.slice(0, 10);
+      }
+      
+      updateSavedRecommendationsList();
+    }
+
+    function saveRecommendationToCloset(recommendation) {
+      saveRecommendation(recommendation);
+      showNotification('Recomendación guardada en tu closet ⭐', 'success');
+    }
+
+    function updateSavedRecommendationsList() {
+      const list = document.getElementById('savedRecommendationsList');
+      if (!list || savedRecommendations.length === 0) {
+        if (list) {
+          list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Aquí aparecerán tus combinaciones favoritas guardadas</p>';
+        }
+        return;
+      }
+
+      list.innerHTML = savedRecommendations.map((rec, index) => {
+        const isBest = index === 0;
+        const score = Math.round((rec.final_score || 0.85) * 100);
+        
+        return `
+          <div style="background: var(--background); border: 1px solid var(--border); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; position: relative; ${isBest ? 'border-color: var(--gold); background: rgba(251, 191, 36, 0.05);' : ''}">
+            ${isBest ? '<div style="position: absolute; top: -10px; right: -10px; background: var(--gold); color: var(--text-primary); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⭐</div>' : ''}
+            <div style="flex: 1;">
+              <h4 style="margin: 0; color: var(--text-primary);">Combinación ${rec.occasion}</h4>
+              <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">${rec.top?.detected_item || 'Superior'} + ${rec.bottom?.detected_item || 'Inferior'} + ${rec.shoe?.detected_item || 'Calzado'}</p>
+              <small style="color: var(--text-secondary);">Guardada el ${rec.saved_date}</small>
+            </div>
+            <div style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? 'var(--text-primary)' : 'white'}; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700;">${score}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // NOTIFICACIONES
+    function showNotification(message, type = 'info', duration = 4000) {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, duration);
+    }
+
+    // Funciones de precios
+    function startFreePlan() {
+      if (!isLoggedIn) {
+        loginWithGoogle();
+      } else {
+        showNotification('¡Plan Gratis activado!', 'success');
+        scrollToSection('upload');
+      }
+    }
+
+    function upgradeToPremium() {
+      showNotification('Próximamente: Sistema de pagos', 'info');
+    }
+
+    // INICIALIZACIÓN
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAuthUI();
+      checkGoogleAuth();
+      setupEventListeners();
+      
+      // Animar barras de impacto cuando se ven
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const fills = entry.target.querySelectorAll('.impact-fill');
+            fills.forEach(fill => {
+              const width = fill.getAttribute('data-width');
+              fill.style.width = width + '%';
+            });
+          }
+        });
+      });
+      
+      const impactSection = document.querySelector('.impact-bars');
+      if (impactSection) {
+        observer.observe(impactSection);
+      }
+    });
+  </script>
 </body>
 </html>
