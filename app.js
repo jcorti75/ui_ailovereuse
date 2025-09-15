@@ -1,4 +1,4 @@
-// 1) Apunta tu frontend al backend en Railway
+quier// 1) Apunta tu frontend al backend en Railway
 const API_BASE = "https://noshopia-production.up.railway.app";
 
 // Asume que, tras el login de Google, guardas:
@@ -83,6 +83,7 @@ async function sendFeedback(combinationId, accepted, rejectionReason = "") {
     console.error("Error feedback:", e);
   }
 }
+
 
 
 
