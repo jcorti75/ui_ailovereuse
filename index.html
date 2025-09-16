@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NoShopiA - Reutiliza tu ropa con IA</title>
   
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
   <!-- CDN Libraries -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -928,24 +931,6 @@
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
     }
 
-    .btn-primary {
-      padding: 1rem 2rem;
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      border-radius: 25px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    }
-
     footer {
       background: var(--background);
       color: #000000;
@@ -984,18 +969,23 @@
       opacity: 1;
     }
 
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: #ffffff;
-      animation: spin 1s ease-in-out infinite;
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 1rem;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .auth-container {
+      display: flex;
+      align-items: center;
+      margin-left: 1rem;
+    }
+
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
     }
 
     .notification {
@@ -1027,47 +1017,6 @@
     @keyframes slideInRight {
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
-    }
-
-    .user-info {
-      display: none !important;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .auth-container {
-      display: flex;
-      align-items: center;
-      margin-left: 1rem;
-    }
-
-    .user-avatar {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      border: 2px solid var(--primary);
-    }
-
-    .user-menu {
-      position: relative;
-    }
-
-    .user-dropdown {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
-      margin-top: 0.5rem;
-      min-width: 200px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      display: none;
-    }
-
-    .user-dropdown.active {
-      display: block;
     }
 
     .profile-section {
@@ -1131,6 +1080,20 @@
       box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
     }
 
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .nav-pills { 
@@ -1165,14 +1128,6 @@
         grid-template-columns: 1fr; 
       }
       
-      .occasion-grid { 
-        grid-template-columns: repeat(2, 1fr); 
-      }
-      
-      .upload-grid { 
-        grid-template-columns: 1fr; 
-      }
-      
       .footer-content { 
         grid-template-columns: 1fr; 
         text-align: center; 
@@ -1181,6 +1136,14 @@
 
       .profile-options {
         grid-template-columns: 1fr;
+      }
+
+      .occasion-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+      }
+      
+      .upload-grid { 
+        grid-template-columns: 1fr; 
       }
     }
 
@@ -1216,7 +1179,7 @@
         </button>
         
         <div class="auth-container">
-          <div class="user-info" id="userInfo" style="display: none !important;">
+          <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
             <span id="userName" style="color: #000000;"></span>
             <button onclick="logout()" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
@@ -1245,10 +1208,11 @@
         Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.
       </p>
       
-      <button id="mainLoginBtn" class="hero-button" onclick="handleMainLogin()" style="display: block;">
+      <!-- Login Button -->
+      <div id="mainLoginBtn" class="hero-button" onclick="handleMainLogin()">
         <i class="fab fa-google"></i>
         Conectar con Google - ¡Es Gratis!
-      </button>
+      </div>
       
       <div class="stats">
         <div class="stat-item">
@@ -1824,7 +1788,7 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Scripts - Cargar en el orden correcto -->
   <script src="config.js"></script>
   <script src="ui.js"></script>
   <script src="auth.js"></script>
@@ -1834,223 +1798,5 @@
   <script src="api.js"></script>
   <script src="recommendations.js"></script>
   <script src="main.js" defer></script>
-
-  <script>
-    // Funciones básicas del closet - versión corregida y optimizada
-    function showClosetTab(tabId) {
-      console.log('Cambiando a pestaña:', tabId);
-      
-      // Ocultar todas las pestañas
-      document.querySelectorAll('.closet-tab-content').forEach(content => {
-        content.style.display = 'none';
-      });
-      
-      // Remover clase active de todas las pestañas
-      document.querySelectorAll('.closet-tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      
-      // Mostrar pestaña seleccionada
-      const targetContent = document.getElementById(tabId);
-      if (targetContent) {
-        targetContent.style.display = 'block';
-      }
-      
-      // Activar botón de pestaña
-      const targetTab = document.querySelector(`[data-tab="${tabId}"]`);
-      if (targetTab) {
-        targetTab.classList.add('active');
-      }
-    }
-    
-    function enableCloset() {
-      document.getElementById('closetQuestion').style.display = 'none';
-      document.getElementById('closetContainer').style.display = 'block';
-      document.getElementById('userEmail').textContent = 'usuario@email.com'; // Se actualizará con datos reales
-    }
-    
-    function useDirectMode() {
-      document.getElementById('closetQuestion').style.display = 'none';
-      document.getElementById('occasionSelector').style.display = 'block';
-    }
-
-    // Funcionalidad para subcategorías - subir fotos desde dispositivo
-    function setupFolderClicks() {
-      document.querySelectorAll('.folder-item').forEach(folder => {
-        folder.addEventListener('click', function() {
-          const folderName = this.querySelector('.folder-name').textContent;
-          console.log('Clicked en:', folderName);
-          
-          // Crear input de archivo temporal
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          fileInput.multiple = true;
-          fileInput.style.display = 'none';
-          
-          // Cuando se seleccionen archivos
-          fileInput.onchange = function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length > 0) {
-              showNotification(`Subiendo ${files.length} foto(s) de ${folderName}...`, 'success');
-              
-              // Procesar las fotos
-              files.forEach((file, index) => {
-                console.log(`Archivo ${index + 1}:`, file.name, file.type);
-                
-                // Validar tipo de archivo
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                if (!validTypes.includes(file.type)) {
-                  showNotification(`${file.name} no es un tipo de imagen válido`, 'error');
-                  return;
-                }
-                
-                // Crear preview de la imagen
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                  console.log(`Imagen ${index + 1} cargada para ${folderName}`);
-                  // Aquí se podría guardar la imagen en el closet
-                  // Mostrar preview temporal o procesar según necesidades
-                };
-                reader.readAsDataURL(file);
-              });
-              
-              // Mostrar notificación de éxito
-              setTimeout(() => {
-                showNotification(`${files.length} foto(s) de ${folderName} cargadas exitosamente`, 'success');
-              }, 1000);
-            }
-            
-            // Limpiar el input
-            document.body.removeChild(fileInput);
-          };
-          
-          // Agregar al DOM y hacer click
-          document.body.appendChild(fileInput);
-          fileInput.click();
-        });
-      });
-    }
-    
-    // Función de notificación mejorada
-    function showNotification(message, type = 'info', duration = 3000) {
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 1rem 2rem;
-        border-radius: 15px;
-        color: white;
-        font-weight: 600;
-        z-index: 10000;
-        max-width: 350px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        animation: slideInRight 0.3s ease;
-        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 
-                    type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 
-                    'linear-gradient(135deg, #3b82f6, #1d4ed8)'};
-      `;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.remove();
-        }
-      }, duration);
-    }
-
-    // Funciones básicas de navegación
-    function scrollToSection(sectionId) {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        document.querySelectorAll('.nav-pill').forEach(pill => {
-          pill.classList.remove('active');
-        });
-        const activeLink = document.querySelector(`[onclick*="${sectionId}"]`);
-        if (activeLink) activeLink.classList.add('active');
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-
-    function toggleMobileMenu() {
-      const mobileNav = document.getElementById('mobileNav');
-      mobileNav.classList.toggle('active');
-    }
-
-    // Funciones de placeholder para evitar errores
-    function handleMainLogin() {
-      showNotification('Función de login en desarrollo', 'info');
-    }
-
-    function logout() {
-      showNotification('Sesión cerrada', 'info');
-    }
-
-    function submitUserProfile() {
-      showNotification('Perfil enviado correctamente', 'success');
-    }
-
-    function handleFileUpload(type, input) {
-      showNotification(`Subiendo archivos de ${type}...`, 'info');
-    }
-
-    function getRecommendation() {
-      showNotification('Generando recomendaciones...', 'info');
-    }
-
-    function startFreePlan() {
-      showNotification('Plan gratuito activado', 'success');
-    }
-
-    function upgradeToPremium() {
-      showNotification('Funcionalidad premium próximamente', 'info');
-    }
-    
-    // Asignar funciones a window para acceso global
-    window.showClosetTab = showClosetTab;
-    window.enableCloset = enableCloset;
-    window.useDirectMode = useDirectMode;
-    window.scrollToSection = scrollToSection;
-    window.toggleMobileMenu = toggleMobileMenu;
-    window.handleMainLogin = handleMainLogin;
-    window.logout = logout;
-    window.submitUserProfile = submitUserProfile;
-    window.handleFileUpload = handleFileUpload;
-    window.getRecommendation = getRecommendation;
-    window.startFreePlan = startFreePlan;
-    window.upgradeToPremium = upgradeToPremium;
-    
-    // Configurar event listeners cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('NoShopiA cargado correctamente');
-      
-      // Configurar clicks de folders después de un pequeño delay
-      setTimeout(setupFolderClicks, 1000);
-      
-      // Animar barras de impacto cuando se ven
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const fills = entry.target.querySelectorAll('.impact-fill');
-            fills.forEach(fill => {
-              const width = fill.getAttribute('data-width');
-              fill.style.width = width + '%';
-            });
-          }
-        });
-      });
-      
-      const impactSection = document.querySelector('.impact-bars');
-      if (impactSection) {
-        observer.observe(impactSection);
-      }
-    });
-    
-    console.log('✅ NoShopiA: Todas las funciones cargadas correctamente');
-  </script>
 </body>
 </html>
