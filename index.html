@@ -1415,7 +1415,86 @@
         </div>
       </div>
 
-      <!-- Closet Question -->
+      <!-- Formulario de Perfil de Usuario -->
+      <div id="profileForm" class="closet-question" style="display: none;">
+        <h3 style="color: #000000; margin-bottom: 1rem;">👤 Completa tu Perfil</h3>
+        <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
+          Para darte mejores recomendaciones, necesitamos conocerte un poco más
+        </p>
+        
+        <div style="display: grid; gap: 2rem; max-width: 600px; margin: 0 auto;">
+          <!-- Color de piel -->
+          <div>
+            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
+              Color de piel:
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <button type="button" class="profile-option" data-field="skin_color" data-value="claro">
+                <div style="background: #F5DEB3; width: 30px; height: 30px; border-radius: 50%; margin: 0 auto 0.5rem;"></div>
+                Claro
+              </button>
+              <button type="button" class="profile-option" data-field="skin_color" data-value="medio">
+                <div style="background: #DEB887; width: 30px; height: 30px; border-radius: 50%; margin: 0 auto 0.5rem;"></div>
+                Medio
+              </button>
+              <button type="button" class="profile-option" data-field="skin_color" data-value="oscuro">
+                <div style="background: #8B4513; width: 30px; height: 30px; border-radius: 50%; margin: 0 auto 0.5rem;"></div>
+                Oscuro
+              </button>
+            </div>
+          </div>
+          
+          <!-- Rango de edad -->
+          <div>
+            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
+              Rango de edad:
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <button type="button" class="profile-option" data-field="age_range" data-value="menor_18">
+                Menor 18
+              </button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="18-24">
+                18-24
+              </button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="25-34">
+                25-34
+              </button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="35-44">
+                35-44
+              </button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="45-54">
+                45-54
+              </button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="mas_54">
+                Más de 54
+              </button>
+            </div>
+          </div>
+          
+          <!-- Género -->
+          <div>
+            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
+              Género:
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <button type="button" class="profile-option" data-field="gender" data-value="hombre">
+                👨 Hombre
+              </button>
+              <button type="button" class="profile-option" data-field="gender" data-value="mujer">
+                👩 Mujer
+              </button>
+              <button type="button" class="profile-option" data-field="gender" data-value="no_binario">
+                🧑 No binario
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <button id="createProfileBtn" class="hero-button" onclick="submitUserProfile()" disabled style="margin-top: 2rem;">
+          <i class="fas fa-user-plus"></i>
+          Completar Perfil
+        </button>
+      </div>
       <div id="closetQuestion" class="closet-question" style="display: none;">
         <h3 style="color: #000000; margin-bottom: 1rem;">👗 ¿Quieres armar tu Closet Favorito?</h3>
         <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
@@ -2245,14 +2324,20 @@
         console.log('=== DEBUG REQUEST ===');
         console.log('Endpoint:', `${CONFIG.API_BASE}/api/recommend`);
         console.log('User email:', currentUser.email);
+        console.log('User name:', currentUser.name || '');
         console.log('Occasion:', selectedOccasion);
-        console.log('Types array:', types);
-        console.log('Files count:', types.length);
-        console.log('Uploaded files structure:', uploadedFiles);
+        console.log('Tops count:', uploadedFiles.tops.length);
+        console.log('Bottoms count:', uploadedFiles.bottoms.length);
+        console.log('Shoes count:', uploadedFiles.shoes.length);
         
         // Mostrar contenido del FormData
+        console.log('=== FORMDATA CONTENTS ===');
         for (let [key, value] of formData.entries()) {
-          console.log(`FormData[${key}]:`, value instanceof File ? `File: ${value.name}` : value);
+          if (value instanceof File) {
+            console.log(`FormData[${key}]: File - ${value.name} (${value.size} bytes)`);
+          } else {
+            console.log(`FormData[${key}]: ${value}`);
+          }
         }
         
         // Llamar al endpoint correcto
