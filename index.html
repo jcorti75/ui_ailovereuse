@@ -2567,22 +2567,22 @@
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
               <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
-                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
-                  ${topImage ? `<img src="${topImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
+                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                  ${topImage ? `<img src="${topImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
                 </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
               </div>
               <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
-                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
-                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
+                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
                 </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
               </div>
               <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
-                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
-                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👢</div>'}
+                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👢</div>'}
                 </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
               </div>
