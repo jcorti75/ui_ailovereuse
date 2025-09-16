@@ -2420,38 +2420,25 @@
           shoes: uploadedFiles.shoes.length
         });
         
-        // Crear FormData correctamente para el endpoint /api/recommend
         const formData = new FormData();
-        
-        // Agregar información básica
         formData.append('user_email', currentUser.email);
         formData.append('occasion', selectedOccasion);
         
-        // Crear arrays para enviar archivos en orden
-        let types = [];
-        
-        // Agregar archivos en orden: tops, bottoms, shoes
+        // CORREGIDO: Enviar archivos en campos separados como espera el backend
         uploadedFiles.tops.forEach((file, index) => {
-          formData.append('files', file);
-          types.push('top');
+          formData.append('tops', file);
           console.log(`Top ${index}: ${file.name} (${file.size} bytes)`);
         });
         
         uploadedFiles.bottoms.forEach((file, index) => {
-          formData.append('files', file);
-          types.push('bottom');
+          formData.append('bottoms', file);
           console.log(`Bottom ${index}: ${file.name} (${file.size} bytes)`);
         });
         
         uploadedFiles.shoes.forEach((file, index) => {
-          formData.append('files', file);
-          types.push('shoe');
+          formData.append('shoes', file);
           console.log(`Shoe ${index}: ${file.name} (${file.size} bytes)`);
         });
-        
-        // Agregar tipos como string separado por comas
-        formData.append('types', types.join(','));
-        console.log('Types string:', types.join(','));
         
         // DEBUG: Mostrar qué estamos enviando
         console.log('=== FORMDATA CONTENTS ===');
