@@ -96,6 +96,9 @@ async function handleGoogleSignIn(response) {
     isLoggedIn = true;
     updateAuthUI();
     
+    // NUEVO: Cargar datos del usuario para verificar si ya tiene perfil
+    const hasUserData = loadUserClosetData();
+    
     showWelcomeSection();
     showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
   } catch (e) {
@@ -143,6 +146,7 @@ function logout() {
   // Reset variables de autenticación
   isLoggedIn = false;
   currentUser = null;
+  profileCompleted = false;
   
   updateAuthUI();
   resetAllSections();
@@ -165,10 +169,27 @@ function updateAuthUI() {
   }
 }
 
-// Verificar perfil existente
+// CORREGIDA: Verificar perfil existente (ahora también verifica localStorage)
 async function checkExistingProfile(email) {
   try {
     console.log('🔍 Verificando perfil para:', email);
+    
+    // PRIMERO: Verificar en localStorage si ya completó el perfil
+    const localData = localStorage.getItem(`noshopia_user_${email}`);
+    if (localData) {
+      try {
+        const userData = JSON.parse(localData);
+        if (userData.profileCompleted) {
+          console.log('✅ Perfil completado encontrado en localStorage');
+          profileCompleted = true;
+          return true;
+        }
+      } catch (e) {
+        console.log('Error leyendo localStorage:', e);
+      }
+    }
+    
+    // SEGUNDO: Verificar en backend
     const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
       method: 'GET',
       headers: {
@@ -180,8 +201,18 @@ async function checkExistingProfile(email) {
     
     if (response.ok) {
       const data = await response.json();
-      console.log('Datos de verificación:', data);
-      return data.exists === true || data.profile_exists === true;
+      console.log('Datos de verificación del backend:', data);
+      
+      const hasProfile = data.exists === true || data.profile_exists === true;
+      if (hasProfile) {
+        profileCompleted = true;
+        // Guardar en localStorage para próximas visitas
+        const userData = JSON.parse(localData || '{}');
+        userData.profileCompleted = true;
+        localStorage.setItem(`noshopia_user_${email}`, JSON.stringify(userData));
+      }
+      
+      return hasProfile;
     } else {
       console.log('Error en response:', response.status);
       return false;
