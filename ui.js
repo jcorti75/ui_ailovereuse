@@ -70,7 +70,7 @@ function clearAllUserState() {
   userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
   savedRecommendations = [];
   
-  // Reset perfil
+  // Reset perfil (PERO NO resetear profileCompleted aquí para evitar repetición)
   userProfile = { skin_color: null, age_range: null, gender: null };
   
   // Ocultar resultados
@@ -94,16 +94,12 @@ function resetAllSections() {
   document.getElementById('result').style.display = 'none';
 }
 
-// Mostrar welcome section con verificación mejorada
+// CORREGIDA: Mostrar welcome section con verificación de perfil completado
 async function showWelcomeSection() {
-  console.log('🎉 Iniciando welcome section con limpieza de estado...');
+  console.log('🎉 Iniciando welcome section...');
   
-  // Limpiar estado al inicio (excepto datos de usuario actual)
-  const currentUserBackup = currentUser;
-  const isLoggedInBackup = isLoggedIn;
-  clearAllUserState();
-  currentUser = currentUserBackup;
-  isLoggedIn = isLoggedInBackup;
+  // Cargar datos del usuario si existen
+  const hasUserData = loadUserClosetData();
   
   resetAllSections();
   document.getElementById('welcomeSection').style.display = 'block';
@@ -114,6 +110,18 @@ async function showWelcomeSection() {
   }
 
   console.log('🔍 Verificando perfil para usuario:', currentUser.email);
+  console.log('📊 Estado actual - profileCompleted:', profileCompleted);
+  
+  // Si ya está marcado como completado en localStorage, ir directo a closet
+  if (profileCompleted) {
+    console.log('✅ Perfil ya completado (localStorage), saltando formulario');
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('closetQuestion').style.display = 'block';
+    showNotification('¡Bienvenido de vuelta!', 'success');
+    updateStatsDisplay();
+    scrollToSection('upload');
+    return;
+  }
   
   // Verificar si ya tiene perfil con retry
   let hasProfile = false;
@@ -132,8 +140,9 @@ async function showWelcomeSection() {
   }
   
   console.log('Resultado final - hasProfile:', hasProfile);
+  console.log('Resultado final - profileCompleted:', profileCompleted);
   
-  if (hasProfile) {
+  if (hasProfile || profileCompleted) {
     // Ya tiene perfil, ir directo a closet question
     console.log('✅ Usuario ya tiene perfil, saltando formulario');
     document.getElementById('profileForm').style.display = 'none';
@@ -141,7 +150,7 @@ async function showWelcomeSection() {
     showNotification('¡Bienvenido de vuelta!', 'success');
   } else {
     // Primera vez, mostrar formulario de perfil
-    console.log('📝 Primera vez, mostrando formulario de perfil');
+    console.log('🆕 Primera vez, mostrando formulario de perfil');
     document.getElementById('closetQuestion').style.display = 'none';
     document.getElementById('profileForm').style.display = 'block';
   }
@@ -151,13 +160,23 @@ async function showWelcomeSection() {
 }
 
 function updateStatsDisplay() {
-  document.getElementById('visitCounter').textContent = userStats.visits;
-  document.getElementById('recommendationCounter').textContent = userStats.recommendations;
-  document.getElementById('outfitCounter').textContent = userStats.savedOutfits;
+  // Actualizar contadores en welcome section
+  const visitCounter = document.getElementById('visitCounter');
+  const recommendationCounter = document.getElementById('recommendationCounter');
+  const outfitCounter = document.getElementById('outfitCounter');
   
-  document.getElementById('closetVisits').textContent = userStats.visits;
-  document.getElementById('closetRecommendations').textContent = userStats.recommendations;
-  document.getElementById('closetOutfits').textContent = userStats.savedOutfits;
+  if (visitCounter) visitCounter.textContent = userStats.visits;
+  if (recommendationCounter) recommendationCounter.textContent = userStats.recommendations;
+  if (outfitCounter) outfitCounter.textContent = userStats.savedOutfits;
+  
+  // Actualizar contadores en closet
+  const closetVisits = document.getElementById('closetVisits');
+  const closetRecommendations = document.getElementById('closetRecommendations');
+  const closetOutfits = document.getElementById('closetOutfits');
+  
+  if (closetVisits) closetVisits.textContent = userStats.visits;
+  if (closetRecommendations) closetRecommendations.textContent = userStats.recommendations;
+  if (closetOutfits) closetOutfits.textContent = userStats.savedOutfits;
 }
 
 // Función para limpiar resultados anteriores
