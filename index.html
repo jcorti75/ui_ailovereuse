@@ -1834,5 +1834,51 @@
   <script src="api.js"></script>
   <script src="recommendations.js"></script>
   <script src="main.js" defer></script>
-</body>
-</html>
+  <script>
+// Funciones básicas del closet
+  function showClosetTab(tabId) {
+    console.log('Cambiando a pestaña:', tabId);
+    
+    // Ocultar todas las pestañas
+    document.querySelectorAll('.closet-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    
+    // Remover clase active de todas las pestañas
+    document.querySelectorAll('.closet-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    // Mostrar pestaña seleccionada
+    const targetContent = document.getElementById(tabId);
+    if (targetContent) {
+      targetContent.style.display = 'block';
+    }
+    
+    // Activar botón de pestaña
+    const targetTab = document.querySelector(`[data-tab="${tabId}"]`);
+    if (targetTab) {
+      targetTab.classList.add('active');
+    }
+  }
+  
+  function enableCloset() {
+    document.getElementById('closetQuestion').style.display = 'none';
+    document.getElementById('closetContainer').style.display = 'block';
+  }
+  
+  function useDirectMode() {
+    document.getElementById('closetQuestion').style.display = 'none';
+    document.getElementById('occasionSelector').style.display = 'block';
+  }
+  
+  // Asignar a window para HTML
+  window.showClosetTab = showClosetTab;
+  window.enableCloset = enableCloset;
+  window.useDirectMode = useDirectMode;
+  
+  console.log('Funciones del closet cargadas correctamente');
+  </script>
+  </body>
+  </html>
+
