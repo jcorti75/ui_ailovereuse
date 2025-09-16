@@ -7,7 +7,8 @@ const CONFIG = {
     tops: 3, 
     bottoms: 3, 
     shoes: 5 
-  }
+  },
+  TOTAL_CLOSET_LIMIT: 15  // NUEVO: Límite total de prendas en el armario
 };
 
 // Variables globales de estado
@@ -21,11 +22,72 @@ let savedRecommendations = [];
 let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
 let processingStartTime = 0;
 let userProfile = { skin_color: null, age_range: null, gender: null };
+let profileCompleted = false; // NUEVO: Para evitar repetir perfilamiento
 
 // Variables para closet selection
 let closetSelectedItems = { tops: [], bottoms: [], shoes: [] };
 let closetItems = { tops: [], bottoms: [], shoes: [] };
 let closetSelectionMode = false;
+
+// NUEVO: Función para obtener total de prendas en closet
+function getTotalClosetItems() {
+  return closetItems.tops.length + closetItems.bottoms.length + closetItems.shoes.length;
+}
+
+// NUEVO: Función para obtener prendas restantes
+function getRemainingClosetSlots() {
+  const total = getTotalClosetItems();
+  return CONFIG.TOTAL_CLOSET_LIMIT - total;
+}
+
+// NUEVO: Funciones de persistencia
+function saveUserClosetData() {
+  if (!currentUser?.email) return;
+  
+  const userData = {
+    email: currentUser.email,
+    closetItems: closetItems,
+    uploadedFiles: uploadedFiles,
+    uploadedImages: uploadedImages,
+    userStats: userStats,
+    profileCompleted: profileCompleted,
+    userProfile: userProfile,
+    lastSaved: Date.now()
+  };
+  
+  localStorage.setItem(`noshopia_user_${currentUser.email}`, JSON.stringify(userData));
+  console.log('✅ Datos del usuario guardados localmente');
+}
+
+// NUEVO: Cargar datos del usuario
+function loadUserClosetData() {
+  if (!currentUser?.email) return false;
+  
+  try {
+    const savedData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
+    if (!savedData) return false;
+    
+    const userData = JSON.parse(savedData);
+    
+    // Restaurar datos
+    closetItems = userData.closetItems || { tops: [], bottoms: [], shoes: [] };
+    uploadedFiles = userData.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
+    uploadedImages = userData.uploadedImages || { tops: [], bottoms: [], shoes: [] };
+    userStats = userData.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
+    profileCompleted = userData.profileCompleted || false;
+    userProfile = userData.userProfile || { skin_color: null, age_range: null, gender: null };
+    
+    console.log('✅ Datos del usuario cargados:', {
+      totalItems: getTotalClosetItems(),
+      profileCompleted: profileCompleted
+    });
+    
+    return true;
+  } catch (e) {
+    console.error('Error cargando datos del usuario:', e);
+    return false;
+  }
+}
 
 // Función para cargar script de Google
 function loadGoogleScript() {
@@ -36,7 +98,7 @@ function loadGoogleScript() {
       return;
     }
     
-    console.log('📥 Cargando script de Google...');
+    console.log('🔥 Cargando script de Google...');
     console.log('🔍 URL del script:', 'https://accounts.google.com/gsi/client');
     console.log('🔍 User Agent:', navigator.userAgent);
     console.log('🔍 Protocolo:', window.location.protocol);
