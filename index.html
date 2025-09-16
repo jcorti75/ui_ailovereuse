@@ -102,6 +102,48 @@
       transform: translateY(-2px);
     }
 
+    /* Menú hamburguesa para móvil */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      padding: 2rem;
+      border-bottom: 1px solid var(--border);
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-nav.active {
+      transform: translateY(0);
+    }
+
+    .mobile-nav-item {
+      display: block;
+      padding: 1rem;
+      color: #000000;
+      text-decoration: none;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      transition: background 0.3s ease;
+    }
+
+    .mobile-nav-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
     .hero {
       min-height: 100vh;
       display: flex;
@@ -150,6 +192,12 @@
     .hero-button:hover {
       transform: translateY(-3px);
       box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+    }
+
+    .hero-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .stats {
@@ -428,17 +476,17 @@
     .google-login-btn {
       background: white;
       color: #333;
-      padding: 0.8rem 2rem;
+      padding: 1rem 2.5rem;
       border: 2px solid var(--primary);
       border-radius: 50px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 0.8rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      font-size: 0.9rem;
+      font-size: 1rem;
       margin: 1rem auto;
     }
 
@@ -446,6 +494,15 @@
       transform: translateY(-2px);
       background: var(--primary);
       color: white;
+    }
+
+    .welcome-section {
+      background: rgba(34, 197, 94, 0.05);
+      border: 2px solid rgba(34, 197, 94, 0.2);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+      text-align: center;
     }
 
     .closet-question {
@@ -508,6 +565,25 @@
       margin: 0;
       font-size: 1.5rem;
       font-weight: 700;
+    }
+
+    .closet-stats {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .closet-stat {
+      color: white;
+    }
+
+    .closet-stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: block;
     }
 
     .closet-tabs {
@@ -719,6 +795,53 @@
       justify-content: center;
     }
 
+    .generate-section {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(34, 197, 94, 0.05));
+      border-radius: 25px;
+      padding: 3rem 2rem;
+      margin: 3rem 0;
+      text-align: center;
+      border: 2px solid var(--border);
+    }
+
+    .generate-btn {
+      padding: 1.5rem 3rem;
+      background: linear-gradient(135deg, var(--success), #059669);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .processing-timer {
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 15px;
+      padding: 1rem 2rem;
+      margin: 1rem 0;
+      font-weight: 600;
+      color: var(--primary);
+      display: none;
+    }
+
     .team-section {
       background: var(--background);
     }
@@ -919,19 +1042,80 @@
       border: 2px solid var(--primary);
     }
 
+    .user-menu {
+      position: relative;
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+      min-width: 200px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: none;
+    }
+
+    .user-dropdown.active {
+      display: block;
+    }
+
     @media (max-width: 768px) {
-      .nav-pills { display: none; }
-      .stats { grid-template-columns: 1fr; }
-      .pricing-cards { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
-      .team-grid { grid-template-columns: 1fr; }
-      .occasion-grid { grid-template-columns: repeat(2, 1fr); }
-      .upload-grid { grid-template-columns: 1fr; }
-      .footer-content { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+      .nav-pills { 
+        display: none;
+      }
+      
+      .mobile-menu-toggle {
+        display: block;
+      }
+      
+      .mobile-nav {
+        display: block;
+      }
+      
+      .logo {
+        font-size: 2rem;
+      }
+      
+      .stats { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .pricing-cards { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .features-grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .team-grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .occasion-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+      }
+      
+      .upload-grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .footer-content { 
+        grid-template-columns: 1fr; 
+        text-align: center; 
+        gap: 2rem; 
+      }
     }
 
     @media (max-width: 480px) {
-      .occasion-grid { grid-template-columns: 1fr; }
+      .occasion-grid { 
+        grid-template-columns: 1fr; 
+      }
     }
   </style>
 </head>
@@ -955,6 +1139,10 @@
           <a href="#equipo" class="nav-pill" onclick="scrollToSection('equipo')">👥 Equipo</a>
         </div>
         
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+          <i class="fas fa-bars"></i>
+        </button>
+        
         <div class="auth-container">
           <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
@@ -964,6 +1152,15 @@
         </div>
       </div>
     </nav>
+    
+    <!-- Menú móvil -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#inicio" class="mobile-nav-item" onclick="scrollToSection('inicio'); toggleMobileMenu()">🏠 Inicio</a>
+      <a href="#impacto" class="mobile-nav-item" onclick="scrollToSection('impacto'); toggleMobileMenu()">🌍 Impacto Ambiental</a>
+      <a href="#precios" class="mobile-nav-item" onclick="scrollToSection('precios'); toggleMobileMenu()">💳 Precios</a>
+      <a href="#funcionamiento" class="mobile-nav-item" onclick="scrollToSection('funcionamiento'); toggleMobileMenu()">⚙️ Cómo funciona</a>
+      <a href="#equipo" class="mobile-nav-item" onclick="scrollToSection('equipo'); toggleMobileMenu()">👥 Equipo</a>
+    </div>
   </header>
 
   <!-- Hero Section -->
@@ -975,9 +1172,13 @@
       <p style="font-size: 1.1rem; color: #000000; opacity: 0.8; margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;">
         Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.
       </p>
-      <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">
-        🚀 Empezar Ahora - Es Gratis
-      </a>
+      
+      <!-- BOTÓN PRINCIPAL 1: LOGIN -->
+      <button id="mainLoginBtn" class="hero-button" onclick="handleMainLogin()" style="display: block;">
+        <i class="fab fa-google"></i>
+        Conectar con Google - ¡Es Gratis!
+      </button>
+      
       <div class="stats">
         <div class="stat-item">
           <span class="stat-number">15min</span>
@@ -1124,33 +1325,35 @@
           <p>Obtén recomendaciones personalizadas rankeadas por score de compatibilidad en menos de 10 segundos.</p>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 3rem;">
-        <a href="#upload" class="hero-button" onclick="handleStartNowClick(event)">
-          Ver Mis Combinaciones
-        </a>
-      </div>
     </div>
   </section>
 
   <!-- Upload Section -->
   <section id="upload" class="upload-section">
     <div class="section-container">
-      <h2 style="color: #000000;">✨ Termina con el Drama Matutino</h2>
-      <p style="color: #000000; opacity: 0.8;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
+      <h2 style="color: #000000;">✨ Tu Guardarropa Digital Personalizado</h2>
+      <p style="color: #000000; opacity: 0.8; margin-bottom: 2rem;">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
 
-      <!-- Login Required Message -->
-      <div id="loginRequired" class="login-required">
-        <h3 style="color: #000000;">🔐 Inicia sesión para continuar</h3>
-        <p style="color: #000000; opacity: 0.8;">Accede con Google para usar nuestro algoritmo de IA</p>
-        <button class="google-login-btn" onclick="loginWithGoogle()">
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <path fill="#4285F4" d="M17.64 9.20454546c0-.63818182-.05727273-1.25181818-.16363636-1.84090909H9v3.48090909h4.84378348c-.20892443.95363636-.84317059 1.76772727-1.68345427 2.31181818V15.52H14.88699909C16.67543111 13.84363636 17.64 11.7093333 17.64 9.20454546z"/>
-            <path fill="#34A853" d="M9 18c2.43 0 4.467-.80727273 5.95636364-2.18545455l-2.90909091-2.25818182c-.80636364.54-1.83727273.85909091-3.04727273.85909091-2.34545455 0-4.32818182-1.58545455-5.03636364-3.71818182L.68181818 12.5218182C2.24909091 15.5981818 5.48090909 18 9 18z"/>
-            <path fill="#FBBC05" d="M3.96363636 10.7109091c-.18-.54-.28363636-1.11818182-.28363636-1.7109091s.10363636-1.17090909.28363636-1.7109091V5.28181818L.68181818 5.28181818C.24727273 6.1418182 0 7.04727273 0 8s.24727273 1.8581818.68181818 2.7181818l3.28181818-1.27090909z"/>
-            <path fill="#EA4335" d="M9 3.57272727c1.32272727 0 2.50909091.45454545 3.44363636 1.34727273l2.58181818-2.58181818C13.46363636.89090909 11.42727273 0 9 0 5.48090909 0 2.24909091 2.40181818.68181818 5.28181818l3.28181818 1.27090909C4.67181818 5.15636364 6.65454545 3.57272727 9 3.57272727z"/>
-          </svg>
-          Acceder con Google
-        </button>
+      <!-- Bienvenida después del login -->
+      <div id="welcomeSection" class="welcome-section" style="display: none;">
+        <h3 style="color: #000000; margin-bottom: 1rem;">🎉 ¡Bienvenido a NoshopiA!</h3>
+        <p style="color: #000000; margin-bottom: 1rem; opacity: 0.8;">
+          Tu perfil ha sido creado exitosamente. ¡Ahora puedes comenzar a crear tu guardarropa digital!
+        </p>
+        <div class="closet-stats">
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="visitCounter">1</span>
+            <span>Visitas</span>
+          </div>
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="recommendationCounter">0</span>
+            <span>Recomendaciones</span>
+          </div>
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="outfitCounter">0</span>
+            <span>Outfits Guardados</span>
+          </div>
+        </div>
       </div>
 
       <!-- Closet Question -->
@@ -1179,7 +1382,25 @@
       <div id="closetContainer" class="closet-container">
         <div class="closet-header">
           <i class="fas fa-folder-open" style="font-size: 1.5rem;"></i>
-          <h2>Mi Closet Favorito</h2>
+          <div>
+            <h2>Mi Closet Favorito</h2>
+            <span id="userEmail" style="opacity: 0.8; font-size: 0.9rem;"></span>
+          </div>
+        </div>
+        
+        <div class="closet-stats">
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="closetVisits">1</span>
+            <span>Visitas</span>
+          </div>
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="closetRecommendations">0</span>
+            <span>Recomendaciones</span>
+          </div>
+          <div class="closet-stat">
+            <span class="closet-stat-number" id="closetOutfits">0</span>
+            <span>Outfits Guardados</span>
+          </div>
         </div>
         
         <div class="closet-tabs">
@@ -1362,9 +1583,20 @@
           </div>
         </div>
 
-        <button class="hero-button" onclick="getRecommendation()" style="margin-top: 2rem;" id="generateBtn" disabled>
-          🪄 Sube fotos de cada categoría para continuar
-        </button>
+        <!-- BOTÓN PRINCIPAL 2: GENERAR RECOMENDACIONES -->
+        <div class="generate-section">
+          <h3 style="color: #000000; margin-bottom: 1rem;">🚀 ¡Genera tus Recomendaciones!</h3>
+          <p style="color: #000000; opacity: 0.8; margin-bottom: 1rem;">
+            Nuestra IA analizará todas las combinaciones posibles
+          </p>
+          <div class="processing-timer" id="processingTimer">
+            ⏱️ Procesando... <span id="timerDisplay">0.0s</span>
+          </div>
+          <button class="generate-btn" onclick="getRecommendation()" id="generateBtn" disabled>
+            <i class="fas fa-magic"></i>
+            Sube fotos de cada categoría para continuar
+          </button>
+        </div>
 
         <div id="result" style="display: none; margin-top: 3rem;"></div>
       </div>
@@ -1410,12 +1642,6 @@
           <p style="color: #000000; opacity: 0.7;">Resultados en 10 segundos</p>
         </div>
       </div>
-      <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
-        <a href="#upload" class="btn-primary" onclick="handleStartNowClick(event)" style="padding: 1.2rem 3rem; font-size: 1.1rem;">
-          <i class="fas fa-play"></i>
-          Crear Mi Guardarropa Digital
-        </a>
-      </div>
     </div>
   </section>
 
@@ -1456,6 +1682,8 @@
     let selectedOccasion = null;
     let closetMode = false;
     let savedRecommendations = [];
+    let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+    let processingStartTime = 0;
 
     // FUNCIONES DE NAVEGACIÓN
     function scrollToSection(sectionId) {
@@ -1464,9 +1692,15 @@
         document.querySelectorAll('.nav-pill').forEach(pill => {
           pill.classList.remove('active');
         });
-        document.querySelector(`[onclick*="${sectionId}"]`).classList.add('active');
+        const activeLink = document.querySelector(`[onclick*="${sectionId}"]`);
+        if (activeLink) activeLink.classList.add('active');
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    }
+
+    function toggleMobileMenu() {
+      const mobileNav = document.getElementById('mobileNav');
+      mobileNav.classList.toggle('active');
     }
 
     // FUNCIONES DE AUTENTICACIÓN
@@ -1506,12 +1740,48 @@
         
         isLoggedIn = true;
         updateAuthUI();
-        showClosetQuestion();
+        
+        // Crear perfil de usuario
+        await createUserProfile();
+        
+        showWelcomeSection();
         showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
       } catch (e) {
         console.error('Error en login:', e);
         showNotification('Error al iniciar sesión', 'error');
       }
+    }
+
+    async function createUserProfile() {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: currentUser.email,
+            name: currentUser.name,
+            picture: currentUser.picture
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          console.log('Perfil creado exitosamente:', data);
+          userStats = {
+            visits: data.profile?.visits || 1,
+            recommendations: data.profile?.total_recommendations || 0,
+            savedOutfits: data.profile?.saved_outfits || 0
+          };
+        }
+      } catch (e) {
+        console.error('Error creando perfil:', e);
+      }
+    }
+
+    function handleMainLogin() {
+      loginWithGoogle();
     }
 
     function loginWithGoogle() {
@@ -1532,57 +1802,77 @@
       selectedOccasion = null;
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
       closetMode = false;
+      userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+      
       updateAuthUI();
-      hideAllSections();
-      document.getElementById('loginRequired').style.display = 'block';
+      resetAllSections();
       showNotification('Sesión cerrada', 'info');
     }
 
     function updateAuthUI() {
       const userInfo = document.getElementById('userInfo');
+      const mainLoginBtn = document.getElementById('mainLoginBtn');
+      
       if (isLoggedIn && currentUser) {
         userInfo.style.display = 'flex';
+        mainLoginBtn.style.display = 'none';
         document.getElementById('userName').textContent = currentUser.name;
         document.getElementById('userAvatar').src = currentUser.picture;
       } else {
         userInfo.style.display = 'none';
+        mainLoginBtn.style.display = 'inline-flex';
       }
     }
 
-    function handleStartNowClick(e) {
-      e.preventDefault();
-      scrollToSection('upload');
-      if (!isLoggedIn) {
-        document.getElementById('loginRequired').style.display = 'block';
-      } else {
-        showClosetQuestion();
-      }
-    }
-
-    // FUNCIONES DEL CLOSET
-    function hideAllSections() {
+    // FUNCIONES DE SECCIONES
+    function resetAllSections() {
+      document.getElementById('welcomeSection').style.display = 'none';
       document.getElementById('closetQuestion').style.display = 'none';
       document.getElementById('closetContainer').style.display = 'none';
       document.getElementById('occasionSelector').style.display = 'none';
       document.getElementById('uploadArea').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
+    }
+
+    function showWelcomeSection() {
+      resetAllSections();
+      document.getElementById('welcomeSection').style.display = 'block';
+      updateStatsDisplay();
+      
+      setTimeout(() => {
+        showClosetQuestion();
+      }, 3000);
     }
 
     function showClosetQuestion() {
-      hideAllSections();
-      document.getElementById('loginRequired').style.display = 'none';
+      document.getElementById('welcomeSection').style.display = 'none';
       document.getElementById('closetQuestion').style.display = 'block';
+      scrollToSection('upload');
     }
 
+    function updateStatsDisplay() {
+      document.getElementById('visitCounter').textContent = userStats.visits;
+      document.getElementById('recommendationCounter').textContent = userStats.recommendations;
+      document.getElementById('outfitCounter').textContent = userStats.savedOutfits;
+      
+      document.getElementById('closetVisits').textContent = userStats.visits;
+      document.getElementById('closetRecommendations').textContent = userStats.recommendations;
+      document.getElementById('closetOutfits').textContent = userStats.savedOutfits;
+    }
+
+    // FUNCIONES DEL CLOSET
     function enableCloset() {
       closetMode = true;
-      hideAllSections();
+      document.getElementById('closetQuestion').style.display = 'none';
       document.getElementById('closetContainer').style.display = 'block';
+      document.getElementById('userEmail').textContent = currentUser.email;
+      updateStatsDisplay();
       showNotification('¡Mi Closet Favorito activado! 👗', 'success');
     }
 
     function useDirectMode() {
       closetMode = false;
-      hideAllSections();
+      document.getElementById('closetQuestion').style.display = 'none';
       showOccasionSelector();
     }
 
@@ -1605,12 +1895,19 @@
 
     // FUNCIONES DE OCASIONES
     function setupEventListeners() {
+      // Limpiar listeners previos para evitar duplicados
+      document.querySelectorAll('.occasion-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+      });
+      
+      // Agregar nuevos listeners
       document.querySelectorAll('.occasion-btn').forEach(btn => {
         btn.addEventListener('click', handleOccasionSelect);
       });
     }
 
     function handleOccasionSelect(e) {
+      e.preventDefault();
       const btn = e.currentTarget;
       selectedOccasion = btn.dataset.occasion;
       
@@ -1640,6 +1937,16 @@
         return;
       }
       
+      // Validar tipos de archivo
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+      
+      if (invalidFiles.length > 0) {
+        showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
+        input.value = '';
+        return;
+      }
+      
       for (const file of files) {
         const preview = await createPreview(file, type);
         document.getElementById(`${type}-preview`).appendChild(preview);
@@ -1662,11 +1969,13 @@
           const img = document.createElement('img');
           img.src = e.target.result;
           img.className = 'preview-image';
+          img.alt = file.name;
           
           const removeBtn = document.createElement('button');
           removeBtn.className = 'remove-image';
           removeBtn.innerHTML = '×';
-          removeBtn.onclick = () => {
+          removeBtn.onclick = (e) => {
+            e.preventDefault();
             const index = Array.from(container.parentNode.children).indexOf(container);
             if (index !== -1) {
               uploadedFiles[type].splice(index, 1);
@@ -1709,12 +2018,12 @@
       
       if (hasAll && selectedOccasion) {
         const total = uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length;
-        btn.innerHTML = `🪄 Generar ${total} Recomendaciones con IA`;
+        btn.innerHTML = `<i class="fas fa-magic"></i> Generar ${total} Recomendaciones con IA`;
         btn.disabled = false;
         btn.style.opacity = '1';
         btn.style.cursor = 'pointer';
       } else {
-        btn.innerHTML = '🪄 Sube fotos de cada categoría para continuar';
+        btn.innerHTML = '<i class="fas fa-upload"></i> Sube fotos de cada categoría para continuar';
         btn.disabled = true;
         btn.style.opacity = '0.6';
         btn.style.cursor = 'not-allowed';
@@ -1728,74 +2037,91 @@
         return;
       }
       
+      if (!isLoggedIn) {
+        showNotification('Debes estar logueado', 'error');
+        return;
+      }
+      
       const btn = document.getElementById('generateBtn');
+      const timer = document.getElementById('processingTimer');
+      const timerDisplay = document.getElementById('timerDisplay');
+      
+      // Iniciar timer
+      processingStartTime = Date.now();
+      timer.style.display = 'block';
+      let timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - processingStartTime) / 1000;
+        timerDisplay.textContent = elapsed.toFixed(1) + 's';
+      }, 100);
+      
       btn.innerHTML = '<span class="loading"></span> Generando recomendaciones...';
       btn.disabled = true;
       
       try {
-        // FORMATO CORRECTO PARA EL BACKEND HÍBRIDO
+        // Crear FormData correctamente para el endpoint /api/recommend
         const formData = new FormData();
         
-        // Agregar información del usuario
+        // Agregar información básica
         formData.append('user_email', currentUser.email);
         formData.append('occasion', selectedOccasion);
         
-        // Crear arrays de tipos y archivos en el orden correcto
-        let allFiles = [];
+        // Crear arrays para enviar archivos en orden
         let types = [];
         
-        // Agregar tops
+        // Agregar archivos en orden: tops, bottoms, shoes
         uploadedFiles.tops.forEach(file => {
-          allFiles.push(file);
+          formData.append('files', file);
           types.push('top');
         });
         
-        // Agregar bottoms  
         uploadedFiles.bottoms.forEach(file => {
-          allFiles.push(file);
+          formData.append('files', file);
           types.push('bottom');
         });
         
-        // Agregar shoes
         uploadedFiles.shoes.forEach(file => {
-          allFiles.push(file);
+          formData.append('files', file);
           types.push('shoe');
         });
         
-        // Agregar archivos al FormData
-        allFiles.forEach(file => {
-          formData.append('files', file);
-        });
-        
-        // Agregar string de tipos separados por coma
+        // Agregar tipos como string separado por comas
         formData.append('types', types.join(','));
         
-        // Llamar al endpoint híbrido optimizado
-        const response = await fetch(`${CONFIG.API_BASE}/api/recommend-local`, {
+        // Llamar al endpoint correcto
+        const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
           method: 'POST',
           body: formData
         });
         
+        clearInterval(timerInterval);
+        const finalTime = (Date.now() - processingStartTime) / 1000;
+        timerDisplay.textContent = finalTime.toFixed(1) + 's';
+        
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || `Error ${response.status}: ${response.statusText}`);
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
         
         if (data.success) {
+          userStats.recommendations++;
+          updateStatsDisplay();
           renderRecommendations(data);
-          if (closetMode && data.results && data.results.length > 0) {
-            saveRecommendation(data.results[0]);
-          }
+          showNotification(`✅ Procesado en ${finalTime.toFixed(1)}s`, 'success');
         } else {
           throw new Error(data.message || 'Error generando recomendaciones');
         }
       } catch (e) {
-        console.error('Error:', e);
+        clearInterval(timerInterval);
+        console.error('Error completo:', e);
         showNotification(`Error: ${e.message}`, 'error');
       } finally {
-        btn.innerHTML = '🪄 Generar Nuevas Recomendaciones';
+        setTimeout(() => {
+          timer.style.display = 'none';
+        }, 2000);
+        btn.innerHTML = '<i class="fas fa-magic"></i> Generar Nuevas Recomendaciones';
         btn.disabled = false;
       }
     }
@@ -1804,11 +2130,17 @@
       const result = document.getElementById('result');
       const results = data.results || [];
       
-      // Encontrar la mejor recomendación (mayor final_score)
+      if (results.length === 0) {
+        result.innerHTML = '<p style="text-align: center; color: #000000;">No se encontraron recomendaciones.</p>';
+        result.style.display = 'block';
+        return;
+      }
+      
+      // Encontrar la mejor recomendación
       let bestIndex = 0;
       let highestScore = 0;
       results.forEach((item, index) => {
-        const score = item.final_score || 0.85;
+        const score = item.final_score || 0;
         if (score > highestScore) {
           highestScore = score;
           bestIndex = index;
@@ -1819,14 +2151,18 @@
         <div style="text-align: center; margin-bottom: 2rem;">
           <h2 style="color: #000000;">🪄 Tus Mejores Combinaciones</h2>
           <p style="color: #000000; opacity: 0.8;">
-            ${data.message || `Mostrando las mejores ${results.length} combinaciones`}
+            ${data.message || `Mostrando ${results.length} combinaciones generadas`}
           </p>
+          <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+            <strong>Estadísticas:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
+            ${data.detected_items ? Object.values(data.detected_items).flat().join(', ') : ''}
+          </div>
         </div>
         <div style="display: grid; gap: 2rem;">
       `;
       
       results.forEach((item, idx) => {
-        const scorePercent = Math.round((item.final_score || 0.85) * 100);
+        const scorePercent = Math.round((item.final_score || 0) * 100);
         const isBest = idx === bestIndex;
         
         html += `
@@ -1855,14 +2191,14 @@
             
             <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
               <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">
-                Armonía: ${item.harmony_type || 'Equilibrada'}
+                ${item.harmony_type || item.scores?.harmony?.type_display || 'Equilibrada'}
               </div>
               <div style="color: #000000; opacity: 0.8; font-size: 0.9rem;">
-                ${item.harmony_description || 'Combinación balanceada'}
+                ${item.harmony_description || item.scores?.harmony?.description || 'Combinación balanceada'}
               </div>
             </div>
             
-            ${closetMode ? `<button onclick="saveRecommendationToCloset(${JSON.stringify(item).replace(/"/g, '&quot;')})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Mi Closet</button>` : ''}
+            ${closetMode ? `<button onclick="saveRecommendationToCloset(${idx})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Mi Closet</button>` : ''}
           </div>
         `;
       });
@@ -1871,9 +2207,20 @@
       result.innerHTML = html;
       result.style.display = 'block';
       
+      // Guardar resultados globalmente para referencia
+      window.currentResults = results;
+      
       setTimeout(() => {
         result.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+    }
+
+    function saveRecommendationToCloset(index) {
+      if (!window.currentResults || !window.currentResults[index]) return;
+      
+      const recommendation = window.currentResults[index];
+      saveRecommendation(recommendation);
+      showNotification('Recomendación guardada en tu closet ⭐', 'success');
     }
 
     function saveRecommendation(recommendation) {
@@ -1885,16 +2232,13 @@
       };
       
       savedRecommendations.unshift(saved);
-      if (savedRecommendations.length > 10) {
-        savedRecommendations = savedRecommendations.slice(0, 10);
+      if (savedRecommendations.length > 20) {
+        savedRecommendations = savedRecommendations.slice(0, 20);
       }
       
+      userStats.savedOutfits = savedRecommendations.length;
+      updateStatsDisplay();
       updateSavedRecommendationsList();
-    }
-
-    function saveRecommendationToCloset(recommendation) {
-      saveRecommendation(recommendation);
-      showNotification('Recomendación guardada en tu closet ⭐', 'success');
     }
 
     function updateSavedRecommendationsList() {
@@ -1908,13 +2252,13 @@
 
       list.innerHTML = savedRecommendations.map((rec, index) => {
         const isBest = index === 0;
-        const score = Math.round((rec.final_score || 0.85) * 100);
+        const score = Math.round((rec.final_score || 0) * 100);
         
         return `
           <div style="background: var(--background); border: 1px solid var(--border); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; position: relative; ${isBest ? 'border-color: var(--gold); background: rgba(251, 191, 36, 0.05);' : ''}">
             ${isBest ? '<div style="position: absolute; top: -10px; right: -10px; background: var(--gold); color: #000000; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⭐</div>' : ''}
             <div style="flex: 1;">
-              <h4 style="margin: 0; color: #000000;">Combinación ${rec.occasion}</h4>
+              <h4 style="margin: 0; color: #000000;">Combinación para ${rec.occasion}</h4>
               <p style="margin: 0.5rem 0; color: #000000; opacity: 0.8; font-size: 0.9rem;">${rec.top?.detected_item || 'Superior'} + ${rec.bottom?.detected_item || 'Inferior'} + ${rec.shoe?.detected_item || 'Calzado'}</p>
               <small style="color: #000000; opacity: 0.7;">Guardada el ${rec.saved_date}</small>
             </div>
@@ -1942,21 +2286,26 @@
     function startFreePlan() {
       if (!isLoggedIn) {
         loginWithGoogle();
+        return;
       } else {
-        showNotification('¡Plan Gratis activado!', 'success');
+        showNotification('¡Plan Gratis ya activado!', 'success');
         scrollToSection('upload');
       }
     }
 
     function upgradeToPremium() {
-      showNotification('Próximamente: Sistema de pagos', 'info');
+      showNotification('Próximamente: Sistema de pagos Premium', 'info');
     }
 
     // INICIALIZACIÓN
     document.addEventListener('DOMContentLoaded', () => {
       updateAuthUI();
       checkGoogleAuth();
-      setupEventListeners();
+      
+      // Configurar event listeners una sola vez
+      setTimeout(() => {
+        setupEventListeners();
+      }, 1000);
       
       // Animar barras de impacto cuando se ven
       const observer = new IntersectionObserver((entries) => {
