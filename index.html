@@ -1958,6 +1958,9 @@
     function showManualEmailForm() {
       const email = prompt('Ingresa tu email para continuar:');
       if (email && email.includes('@')) {
+        // 🧹 LIMPIAR ESTADO ANTES DE NUEVO LOGIN
+        clearAllUserState();
+        
         currentUser = {
           name: email.split('@')[0],
           email: email,
@@ -2005,6 +2008,10 @@
       
       try {
         const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        
+        // 🧹 LIMPIAR ESTADO ANTES DE NUEVO LOGIN
+        clearAllUserState();
+        
         currentUser = {
           name: payload.name,
           email: payload.email,
@@ -2051,14 +2058,14 @@
     }
 
     function logout() {
+      console.log('🚪 Cerrando sesión y limpiando estado...');
+      
+      // 🧹 LIMPIAR TODO EL ESTADO
+      clearAllUserState();
+      
+      // Reset variables de autenticación
       isLoggedIn = false;
       currentUser = null;
-      selectedOccasion = null;
-      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-      uploadedImages = { tops: [], bottoms: [], shoes: [] };
-      closetMode = false;
-      userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
-      userProfile = { skin_color: null, age_range: null, gender: null };
       
       updateAuthUI();
       resetAllSections();
@@ -2080,19 +2087,94 @@
       }
     }
 
-    // ✅ FUNCIÓN CORREGIDA: Verificar perfil existente
+    // ✅ FUNCIÓN CORREGIDA: Verificar perfil existente con mejor manejo
     async function checkExistingProfile(email) {
       try {
-        const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`);
+        console.log('🔍 Verificando perfil para:', email);
+        const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
-          console.log('Verificación de perfil:', data);
-          return data.exists || false;
+          console.log('Datos de verificación:', data);
+          return data.exists === true || data.profile_exists === true;
+        } else {
+          console.log('Error en response:', response.status);
+          return false;
         }
       } catch (e) {
         console.error('Error verificando perfil:', e);
+        return false;
       }
-      return false;
+    }
+
+    // FUNCIONES DE LIMPIEZA DE ESTADO
+    function clearAllUserState() {
+      console.log('🧹 Limpiando todo el estado de usuario...');
+      
+      // Limpiar archivos subidos
+      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      uploadedImages = { tops: [], bottoms: [], shoes: [] };
+      
+      // Limpiar selecciones
+      selectedOccasion = null;
+      closetMode = false;
+      
+      // Limpiar resultados globales
+      window.currentResults = null;
+      
+      // Limpiar previews de imágenes
+      ['tops', 'bottoms', 'shoes'].forEach(type => {
+        const preview = document.getElementById(`${type}-preview`);
+        if (preview) preview.innerHTML = '';
+        
+        // Reset labels
+        const label = document.querySelector(`label[for="${type}-upload"]`);
+        if (label) {
+          const typeLabels = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
+          const max = CONFIG.FILE_LIMITS[type];
+          label.innerHTML = `📤 Subir ${typeLabels[type]} (máx ${max})`;
+        }
+        
+        // Reset file inputs
+        const input = document.getElementById(`${type}-upload`);
+        if (input) input.value = '';
+      });
+      
+      // Limpiar selecciones de ocasión
+      document.querySelectorAll('.occasion-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      
+      // Limpiar selecciones de perfil
+      document.querySelectorAll('.profile-option').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      
+      // Reset stats
+      userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+      savedRecommendations = [];
+      
+      // Reset perfil
+      userProfile = { skin_color: null, age_range: null, gender: null };
+      
+      // Ocultar resultados
+      const result = document.getElementById('result');
+      if (result) {
+        result.style.display = 'none';
+        result.innerHTML = '';
+      }
+      
+      // Reset botón de generar
+      updateGenerateButton();
+      
+      console.log('✅ Estado de usuario limpiado completamente');
     }
 
     // FUNCIONES DE SECCIONES
@@ -2106,8 +2188,17 @@
       document.getElementById('result').style.display = 'none';
     }
 
-    // ✅ FUNCIÓN CORREGIDA: Mostrar welcome section con verificación de perfil
+    // ✅ FUNCIÓN CORREGIDA: Mostrar welcome section con verificación mejorada y limpieza de estado
     async function showWelcomeSection() {
+      console.log('🎉 Iniciando welcome section con limpieza de estado...');
+      
+      // 🧹 LIMPIAR ESTADO AL INICIO (excepto datos de usuario actual)
+      const currentUserBackup = currentUser;
+      const isLoggedInBackup = isLoggedIn;
+      clearAllUserState();
+      currentUser = currentUserBackup;
+      isLoggedIn = isLoggedInBackup;
+      
       resetAllSections();
       document.getElementById('welcomeSection').style.display = 'block';
       
@@ -2116,15 +2207,36 @@
         return;
       }
 
-      // Verificar si ya tiene perfil
-      const hasProfile = await checkExistingProfile(currentUser.email);
+      console.log('🔍 Verificando perfil para usuario:', currentUser.email);
+      
+      // Verificar si ya tiene perfil con retry
+      let hasProfile = false;
+      let attempts = 0;
+      const maxAttempts = 2;
+      
+      while (!hasProfile && attempts < maxAttempts) {
+        attempts++;
+        console.log(`Intento ${attempts}/${maxAttempts} de verificación`);
+        hasProfile = await checkExistingProfile(currentUser.email);
+        
+        if (!hasProfile && attempts < maxAttempts) {
+          // Esperar un poco antes del siguiente intento
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      console.log('Resultado final - hasProfile:', hasProfile);
       
       if (hasProfile) {
         // Ya tiene perfil, ir directo a closet question
+        console.log('✅ Usuario ya tiene perfil, saltando formulario');
+        document.getElementById('profileForm').style.display = 'none';
         document.getElementById('closetQuestion').style.display = 'block';
         showNotification('¡Bienvenido de vuelta!', 'success');
       } else {
         // Primera vez, mostrar formulario de perfil
+        console.log('📝 Primera vez, mostrando formulario de perfil');
+        document.getElementById('closetQuestion').style.display = 'none';
         document.getElementById('profileForm').style.display = 'block';
       }
       
@@ -2240,15 +2352,25 @@
 
     // FUNCIONES DEL CLOSET
     function enableCloset() {
+      console.log('✨ Activando modo closet con limpieza de resultados...');
+      
+      // 🧹 LIMPIAR RESULTADOS ANTERIORES AL CAMBIAR MODO
+      clearPreviousResults();
+      
       closetMode = true;
       document.getElementById('closetQuestion').style.display = 'none';
       document.getElementById('closetContainer').style.display = 'block';
       document.getElementById('userEmail').textContent = currentUser.email;
       updateStatsDisplay();
-      showNotification('¡Mi Closet Favorito activado! 👗', 'success');
+      showNotification('Mi Closet Favorito activado', 'success');
     }
 
     function useDirectMode() {
+      console.log('⚡ Activando modo directo con limpieza de resultados...');
+      
+      // 🧹 LIMPIAR RESULTADOS ANTERIORES AL CAMBIAR MODO
+      clearPreviousResults();
+      
       closetMode = false;
       document.getElementById('closetQuestion').style.display = 'none';
       showOccasionSelector();
@@ -2559,7 +2681,29 @@
       }
     }
 
-    // ✅ FUNCIÓN CORREGIDA: Render recomendaciones con ocasión específica
+    // ✅ FUNCIÓN CORREGIDA: Mapeo correcto de imágenes
+    function getImageForCombination(type, item, combinationIndex) {
+      const images = uploadedImages[type];
+      if (!images || images.length === 0) return null;
+      
+      // Corregir el mapeo: usar índices secuenciales correctos
+      let imageIndex;
+      if (type === 'tops') {
+        imageIndex = Math.floor(combinationIndex / (uploadedFiles.bottoms.length * uploadedFiles.shoes.length));
+      } else if (type === 'bottoms') {
+        imageIndex = Math.floor((combinationIndex % (uploadedFiles.bottoms.length * uploadedFiles.shoes.length)) / uploadedFiles.shoes.length);
+      } else if (type === 'shoes') {
+        imageIndex = combinationIndex % uploadedFiles.shoes.length;
+      } else {
+        imageIndex = combinationIndex % images.length;
+      }
+      
+      // Asegurar que el índice esté dentro del rango
+      imageIndex = imageIndex % images.length;
+      return images[imageIndex];
+    }
+
+    // ✅ FUNCIÓN CORREGIDA: Render recomendaciones con ocasión específica y stats simplificadas
     function renderRecommendations(data) {
       const result = document.getElementById('result');
       const results = data.results || [];
@@ -2600,9 +2744,7 @@
             ${data.message || `${results.length} combinaciones optimizadas para esta ocasión`}
           </p>
           <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
-            <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
-            Cache: ${data.processing_stats?.cache_hit_rate || 'N/A'} |
-            Items: ${data.detected_items ? Object.values(data.detected_items).flat().join(', ') : ''}
+            <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'}
           </div>
         </div>
         <div style="display: grid; gap: 2rem;">
@@ -2676,14 +2818,6 @@
       setTimeout(() => {
         result.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
-    }
-
-    function getImageForCombination(type, item, combinationIndex) {
-      const images = uploadedImages[type];
-      if (!images || images.length === 0) return null;
-      
-      const imageIndex = combinationIndex % images.length;
-      return images[imageIndex];
     }
 
     function saveRecommendationToCloset(index) {
@@ -2778,7 +2912,12 @@
 
     // INICIALIZACIÓN
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('🚀 Inicializando aplicación...');
+      console.log('Inicializando aplicación...');
+      
+      // 🧹 LIMPIEZA INICIAL DE ESTADO AL CARGAR LA PÁGINA
+      console.log('Limpiando estado inicial...');
+      clearAllUserState();
+      
       updateAuthUI();
       checkGoogleAuth();
       
@@ -2805,6 +2944,8 @@
       if (impactSection) {
         observer.observe(impactSection);
       }
+      
+      console.log('Aplicación inicializada con estado limpio');
     });
   </script>
 </body>
