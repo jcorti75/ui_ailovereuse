@@ -1876,7 +1876,52 @@
   window.showClosetTab = showClosetTab;
   window.enableCloset = enableCloset;
   window.useDirectMode = useDirectMode;
+  // Funcionalidad para subcategorías del closet
+  function setupFolderClicks() {
+    document.querySelectorAll('.folder-item').forEach(folder => {
+      folder.addEventListener('click', function() {
+        const folderName = this.querySelector('.folder-name').textContent;
+        console.log('Clicked en:', folderName);
+        
+        // Por ahora solo mostrar notificación
+        showNotification(`Seleccionaste: ${folderName}`, 'info');
+        
+        // Aquí podrías agregar más funcionalidad como:
+        // - Mostrar fotos específicas de esa categoría
+        // - Filtrar items del closet
+        // - Abrir modal de selección
+      });
+    });
+  }
   
+  // Función simple de notificación
+  function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 2rem;
+      border-radius: 15px;
+      color: white;
+      font-weight: 600;
+      z-index: 10000;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 3000);
+  }
+  
+  // Configurar clicks cuando el DOM esté listo
+  setTimeout(setupFolderClicks, 1000);
   console.log('Funciones del closet cargadas correctamente');
   </script>
   </body>
