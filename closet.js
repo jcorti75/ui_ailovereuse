@@ -17,8 +17,10 @@ function enableCloset() {
   updateStatsDisplay();
   updateClosetDisplay();
   
-  // Configurar subida desde carpetas
-  setupClosetFolderUploads();
+  // Configurar subida desde carpetas SIEMPRE
+  setTimeout(() => {
+    setupClosetFolderUploads();
+  }, 500);
   
   showNotification('Mi Closet Favorito activado', 'success');
 }
@@ -48,11 +50,11 @@ function showClosetTab(tabId) {
   document.getElementById(tabId).style.display = 'block';
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
   
-  // Reconfigurar subida desde carpetas cada vez que cambia la pestaña
+  // SIEMPRE reconfigurar subida desde carpetas cada vez que cambia la pestaña
   setTimeout(() => {
     setupClosetFolderUploads();
     updateClosetDisplay();
-  }, 100);
+  }, 200);
   
   // Si está en modo selección, renderizar fotos para seleccionar
   if (closetSelectionMode && (tabId === 'superiores' || tabId === 'inferiores' || tabId === 'calzado')) {
@@ -145,18 +147,28 @@ function loadClosetItems() {
   });
 }
 
-// CORREGIDA: Configurar subida desde carpetas del closet con límite de 15
+// CORREGIDA: Configurar subida desde carpetas del closet - VERSIÓN ROBUSTA
 function setupClosetFolderUploads() {
-  console.log('🗂️ Configurando subida desde carpetas del closet...');
+  console.log('🗂️ Reconfigurar subida desde carpetas del closet...');
   
-  // Obtener todas las carpetas y reconfigurar event listeners
-  document.querySelectorAll('.folder-item').forEach(folder => {
-    // Remover listeners anteriores clonando el elemento
+  // Obtener todas las carpetas sin importar si están vacías o llenas
+  const allFolders = document.querySelectorAll('.folder-item');
+  console.log(`Encontradas ${allFolders.length} carpetas para configurar`);
+  
+  allFolders.forEach((folder, index) => {
+    // FORZAR reemplazo del elemento para limpiar listeners anteriores
     const newFolder = folder.cloneNode(true);
     folder.parentNode.replaceChild(newFolder, folder);
     
-    // Agregar nuevo listener
-    newFolder.addEventListener('click', function() {
+    console.log(`Configurando carpeta ${index + 1}: ${newFolder.querySelector('.folder-name')?.textContent}`);
+    
+    // Agregar nuevo listener SIEMPRE
+    newFolder.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('🖱️ Click detectado en carpeta');
+      
       if (!isLoggedIn) {
         showNotification('Debes iniciar sesión primero', 'error');
         return;
@@ -171,8 +183,8 @@ function setupClosetFolderUploads() {
         return;
       }
       
-      const folderName = this.querySelector('.folder-name').textContent;
-      console.log('📁 Click en carpeta:', folderName);
+      const folderName = this.querySelector('.folder-name')?.textContent || 'Carpeta';
+      console.log('📁 Procesando click en carpeta:', folderName);
       
       // Determinar tipo según la pestaña activa
       const activeTab = document.querySelector('.closet-tab.active');
@@ -194,6 +206,8 @@ function setupClosetFolderUploads() {
         return;
       }
       
+      console.log(`🎯 Tipo detectado: ${type} desde pestaña ${tabId}`);
+      
       // Crear input de archivo temporal
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -201,10 +215,18 @@ function setupClosetFolderUploads() {
       fileInput.multiple = true;
       fileInput.style.display = 'none';
       
+      console.log('📂 Input de archivo creado');
+      
       // Cuando se seleccionen archivos
       fileInput.onchange = async function(e) {
+        console.log('📁 Archivos seleccionados');
         const files = Array.from(e.target.files);
-        if (files.length === 0) return;
+        if (files.length === 0) {
+          console.log('❌ No se seleccionaron archivos');
+          return;
+        }
+        
+        console.log(`📷 ${files.length} archivos seleccionados`);
         
         // Verificar límite total otra vez
         const currentTotal = getTotalClosetItems();
@@ -231,17 +253,22 @@ function setupClosetFolderUploads() {
           clearPreviousResults();
         }
         
-        // Procesar cada archivo usando las funciones existentes
+        // Procesar cada archivo
         for (const file of files) {
           try {
+            console.log(`🔄 Procesando: ${file.name}`);
+            
+            // Obtener data URL
+            const imageUrl = await getImageDataUrl(file);
+            
             // Agregar a arrays globales
             uploadedFiles[type].push(file);
-            closetItems[type].push(await getImageDataUrl(file));
-            uploadedImages[type].push(await getImageDataUrl(file));
+            closetItems[type].push(imageUrl);
+            uploadedImages[type].push(imageUrl);
             
             console.log(`✅ Archivo procesado: ${file.name} para ${type}`);
           } catch (error) {
-            console.error('Error procesando archivo:', error);
+            console.error('❌ Error procesando archivo:', error);
             showNotification(`Error procesando ${file.name}`, 'error');
           }
         }
@@ -260,17 +287,39 @@ function setupClosetFolderUploads() {
         
         showNotification(`✅ ${files.length} foto(s) agregadas. Armario: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 'success');
         
+        // Reconfigurar carpetas después de subir
+        setTimeout(() => {
+          setupClosetFolderUploads();
+        }, 1000);
+        
         // Limpiar input
-        document.body.removeChild(fileInput);
+        if (document.body.contains(fileInput)) {
+          document.body.removeChild(fileInput);
+        }
       };
       
       // Agregar al DOM y hacer click
       document.body.appendChild(fileInput);
+      console.log('🖱️ Abriendo selector de archivos...');
       fileInput.click();
+    });
+    
+    // Agregar estilos hover para feedback visual
+    newFolder.style.cursor = 'pointer';
+    newFolder.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+      this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+      this.style.borderColor = 'var(--primary)';
+    });
+    
+    newFolder.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+      this.style.borderColor = 'var(--border)';
     });
   });
   
-  console.log('✅ Subida desde carpetas configurada correctamente');
+  console.log('✅ Todas las carpetas configuradas para subida');
 }
 
 // Activar modo selección del closet
@@ -329,6 +378,12 @@ function renderClosetTab(tabId) {
         <p style="font-size: 0.9rem; opacity: 0.7;">Haz click en las carpetas de abajo para subir fotos</p>
       </div>
     `;
+    
+    // IMPORTANTE: Reconfigurar carpetas después de mostrar mensaje vacío
+    setTimeout(() => {
+      setupClosetFolderUploads();
+    }, 500);
+    
     return;
   }
   
@@ -370,7 +425,7 @@ function renderClosetTab(tabId) {
           <div style="position: absolute; inset: 0; background: rgba(59, 130, 246, 0.3); border: 3px solid var(--primary);"></div>
         ` : ''}
         
-        <!-- NUEVO: Botón de eliminar -->
+        <!-- Botón de eliminar -->
         <div style="position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; opacity: 0.8;" 
              onclick="event.stopPropagation(); removeClosetItem('${type}', ${index})">
           ×
@@ -388,9 +443,11 @@ function renderClosetTab(tabId) {
   tabContent.innerHTML = html;
 }
 
-// NUEVA: Eliminar prenda del closet
+// CORREGIDA: Eliminar prenda del closet
 function removeClosetItem(type, index) {
   if (!confirm('¿Estás seguro de eliminar esta prenda del closet?')) return;
+  
+  console.log(`🗑️ Eliminando ${type}[${index}]`);
   
   // Eliminar de todos los arrays
   closetItems[type].splice(index, 1);
@@ -412,6 +469,7 @@ function removeClosetItem(type, index) {
   // Actualizar UI
   updateClosetDisplay();
   
+  // Re-renderizar pestaña actual
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
@@ -419,6 +477,11 @@ function removeClosetItem(type, index) {
   }
   
   updateClosetGenerateButton();
+  
+  // IMPORTANTE: Reconfigurar carpetas después de eliminar
+  setTimeout(() => {
+    setupClosetFolderUploads();
+  }, 500);
   
   const remaining = getRemainingClosetSlots();
   showNotification(`Prenda eliminada. ${remaining} espacios disponibles`, 'success');
