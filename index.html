@@ -2681,26 +2681,31 @@
       }
     }
 
-    // ✅ FUNCIÓN CORREGIDA: Mapeo correcto de imágenes
-    function getImageForCombination(type, item, combinationIndex) {
+    // ✅ FUNCIÓN SIMPLIFICADA: Usar índices directos del backend
+    function getImageForCombination(type, item) {
       const images = uploadedImages[type];
       if (!images || images.length === 0) return null;
       
-      // Corregir el mapeo: usar índices secuenciales correctos
-      let imageIndex;
+      // Usar directamente el índice que viene del backend
+      let backendIndex;
       if (type === 'tops') {
-        imageIndex = Math.floor(combinationIndex / (uploadedFiles.bottoms.length * uploadedFiles.shoes.length));
+        backendIndex = item.top?.index || 0;
       } else if (type === 'bottoms') {
-        imageIndex = Math.floor((combinationIndex % (uploadedFiles.bottoms.length * uploadedFiles.shoes.length)) / uploadedFiles.shoes.length);
+        backendIndex = item.bottom?.index || 0;
       } else if (type === 'shoes') {
-        imageIndex = combinationIndex % uploadedFiles.shoes.length;
+        backendIndex = item.shoe?.index || 0;
       } else {
-        imageIndex = combinationIndex % images.length;
+        return null;
       }
       
-      // Asegurar que el índice esté dentro del rango
-      imageIndex = imageIndex % images.length;
-      return images[imageIndex];
+      // Verificar que el índice esté dentro del rango
+      if (backendIndex >= 0 && backendIndex < images.length) {
+        console.log(`🖼️ ${type}: usando índice ${backendIndex} del backend`);
+        return images[backendIndex];
+      }
+      
+      console.warn(`⚠️ ${type}: índice ${backendIndex} fuera de rango [0-${images.length-1}]`);
+      return images[0]; // Fallback a primera imagen
     }
 
     // ✅ FUNCIÓN CORREGIDA: Render recomendaciones con ocasión específica y stats simplificadas
@@ -2754,9 +2759,9 @@
         const scorePercent = Math.round((item.final_score || 0) * 100);
         const isBest = idx === bestIndex;
         
-        const topImage = getImageForCombination('tops', item, idx);
-        const bottomImage = getImageForCombination('bottoms', item, idx);
-        const shoeImage = getImageForCombination('shoes', item, idx);
+        const topImage = getImageForCombination('tops', item);
+        const bottomImage = getImageForCombination('bottoms', item);
+        const shoeImage = getImageForCombination('shoes', item);
         
         html += `
           <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
