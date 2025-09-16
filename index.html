@@ -1904,13 +1904,13 @@
     let isLoggedIn = false;
     let currentUser = null;
     let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-    let uploadedImages = { tops: [], bottoms: [], shoes: [] }; // NUEVO: URLs de imágenes
+    let uploadedImages = { tops: [], bottoms: [], shoes: [] };
     let selectedOccasion = null;
     let closetMode = false;
     let savedRecommendations = [];
     let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
     let processingStartTime = 0;
-    let userProfile = { skin_color: null, age_range: null, gender: null }; // AÑADIDO
+    let userProfile = { skin_color: null, age_range: null, gender: null };
 
     // FUNCIONES DE NAVEGACIÓN
     function scrollToSection(sectionId) {
@@ -1951,7 +1951,6 @@
         mainBtn.onclick = () => {
           showManualEmailForm();
         };
-        // Mantener el mismo estilo del botón original
       }
       showNotification('Ingresa tu Gmail para continuar', 'info');
     }
@@ -1959,7 +1958,6 @@
     function showManualEmailForm() {
       const email = prompt('Ingresa tu email para continuar:');
       if (email && email.includes('@')) {
-        // Simular usuario logueado
         currentUser = {
           name: email.split('@')[0],
           email: email,
@@ -1990,7 +1988,6 @@
         
         console.log('✅ Google Auth inicializado correctamente');
         
-        // Actualizar UI para mostrar que está listo
         const mainBtn = document.getElementById('mainLoginBtn');
         if (mainBtn) {
           mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
@@ -2058,10 +2055,10 @@
       currentUser = null;
       selectedOccasion = null;
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-      uploadedImages = { tops: [], bottoms: [], shoes: [] }; // NUEVO: Limpiar imágenes
+      uploadedImages = { tops: [], bottoms: [], shoes: [] };
       closetMode = false;
       userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
-      userProfile = { skin_color: null, age_range: null, gender: null }; // AÑADIDO
+      userProfile = { skin_color: null, age_range: null, gender: null };
       
       updateAuthUI();
       resetAllSections();
@@ -2083,10 +2080,25 @@
       }
     }
 
+    // ✅ FUNCIÓN CORREGIDA: Verificar perfil existente
+    async function checkExistingProfile(email) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Verificación de perfil:', data);
+          return data.exists || false;
+        }
+      } catch (e) {
+        console.error('Error verificando perfil:', e);
+      }
+      return false;
+    }
+
     // FUNCIONES DE SECCIONES
     function resetAllSections() {
       document.getElementById('welcomeSection').style.display = 'none';
-      document.getElementById('profileForm').style.display = 'none'; // CORREGIDO
+      document.getElementById('profileForm').style.display = 'none';
       document.getElementById('closetQuestion').style.display = 'none';
       document.getElementById('closetContainer').style.display = 'none';
       document.getElementById('occasionSelector').style.display = 'none';
@@ -2094,10 +2106,28 @@
       document.getElementById('result').style.display = 'none';
     }
 
-    function showWelcomeSection() {
+    // ✅ FUNCIÓN CORREGIDA: Mostrar welcome section con verificación de perfil
+    async function showWelcomeSection() {
       resetAllSections();
       document.getElementById('welcomeSection').style.display = 'block';
-      document.getElementById('profileForm').style.display = 'block'; // AÑADIDO - MOSTRAR PERFIL
+      
+      if (!currentUser?.email) {
+        showNotification('Error: Usuario no válido', 'error');
+        return;
+      }
+
+      // Verificar si ya tiene perfil
+      const hasProfile = await checkExistingProfile(currentUser.email);
+      
+      if (hasProfile) {
+        // Ya tiene perfil, ir directo a closet question
+        document.getElementById('closetQuestion').style.display = 'block';
+        showNotification('¡Bienvenido de vuelta!', 'success');
+      } else {
+        // Primera vez, mostrar formulario de perfil
+        document.getElementById('profileForm').style.display = 'block';
+      }
+      
       updateStatsDisplay();
       scrollToSection('upload');
     }
@@ -2112,7 +2142,7 @@
       document.getElementById('closetOutfits').textContent = userStats.savedOutfits;
     }
 
-    // FUNCIONES DE PERFIL DE USUARIO - NUEVAS
+    // FUNCIONES DE PERFIL DE USUARIO
     function setupProfileListeners() {
       console.log('🎯 Configurando listeners de perfil...');
       
@@ -2172,12 +2202,6 @@
         formData.append('age_range', userProfile.age_range);
         formData.append('gender', userProfile.gender);
         
-        // DEBUG FormData
-        console.log('=== FORMDATA PROFILE ===');
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-        }
-
         const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
           method: 'POST',
           body: formData
@@ -2247,31 +2271,62 @@
       document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
     }
 
+    // ✅ NUEVA FUNCIÓN: Limpiar resultados anteriores
+    function clearPreviousResults() {
+      const result = document.getElementById('result');
+      if (result) {
+        result.style.display = 'none';
+        result.innerHTML = '';
+      }
+      
+      // Limpiar variables globales
+      window.currentResults = null;
+      
+      // Reset del botón
+      updateGenerateButton();
+    }
+
     // FUNCIONES DE OCASIONES
     function setupEventListeners() {
       // Configurar listeners de ocasiones
       document.querySelectorAll('.occasion-btn').forEach(btn => {
-        // Limpiar listeners previos para evitar duplicados
         btn.replaceWith(btn.cloneNode(true));
       });
       
-      // Agregar nuevos listeners
       document.querySelectorAll('.occasion-btn').forEach(btn => {
         btn.addEventListener('click', handleOccasionSelect);
       });
     }
 
+    // ✅ FUNCIÓN CORREGIDA: Handle ocasion select con limpieza de resultados
     function handleOccasionSelect(e) {
       e.preventDefault();
       const btn = e.currentTarget;
-      selectedOccasion = btn.dataset.occasion;
+      const newOccasion = btn.dataset.occasion;
+      
+      // Si cambió la ocasión, limpiar resultados anteriores
+      if (selectedOccasion && selectedOccasion !== newOccasion) {
+        clearPreviousResults();
+        showNotification('Ocasión cambiada - Los resultados se actualizarán con la nueva selección', 'info');
+      }
+      
+      selectedOccasion = newOccasion;
       
       document.querySelectorAll('.occasion-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       
       document.getElementById('uploadArea').style.display = 'block';
       updateGenerateButton();
-      showNotification(`Ocasión seleccionada: ${btn.textContent.trim()}`, 'info');
+      
+      const occasionNames = {
+        'oficina': 'Oficina/Trabajo',
+        'deportivo': 'Deportes/Gym',
+        'casual': 'Casual',
+        'formal': 'Formal', 
+        'matrimonio': 'Matrimonio'
+      };
+      
+      showNotification(`Ocasión seleccionada: ${occasionNames[newOccasion] || newOccasion}`, 'info');
     }
 
     // FUNCIONES DE ARCHIVOS
@@ -2302,14 +2357,17 @@
         return;
       }
       
+      // Limpiar resultados cuando se suben nuevas imágenes
+      if (window.currentResults) {
+        clearPreviousResults();
+      }
+      
       for (const file of files) {
         const preview = await createPreview(file, type);
         document.getElementById(`${type}-preview`).appendChild(preview);
         
-        // Guardar archivo Y URL de imagen
         uploadedFiles[type].push(file);
         
-        // NUEVO: Guardar URL de la imagen para mostrar en recomendaciones
         const imageUrl = await getImageDataUrl(file);
         uploadedImages[type].push(imageUrl);
       }
@@ -2319,7 +2377,6 @@
       input.value = '';
     }
 
-    // NUEVA FUNCIÓN: Obtener URL de datos de la imagen
     function getImageDataUrl(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -2349,8 +2406,13 @@
             const index = Array.from(container.parentNode.children).indexOf(container);
             if (index !== -1) {
               uploadedFiles[type].splice(index, 1);
+              uploadedImages[type].splice(index, 1);
               updateUploadLabel(type);
               updateGenerateButton();
+              // Limpiar resultados si se quitan imágenes
+              if (window.currentResults) {
+                clearPreviousResults();
+              }
             }
             container.remove();
           };
@@ -2441,7 +2503,6 @@
         formData.append('user_email', currentUser.email);
         formData.append('occasion', selectedOccasion);
         
-        // CORREGIDO: Enviar archivos en campos separados como espera el backend
         uploadedFiles.tops.forEach((file, index) => {
           formData.append('tops', file);
           console.log(`Top ${index}: ${file.name} (${file.size} bytes)`);
@@ -2457,24 +2518,12 @@
           console.log(`Shoe ${index}: ${file.name} (${file.size} bytes)`);
         });
         
-        // DEBUG: Mostrar qué estamos enviando
-        console.log('=== FORMDATA CONTENTS ===');
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
-          } else {
-            console.log(`${key}: ${value}`);
-          }
-        }
-        
-        // Llamar al endpoint correcto
         const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
           method: 'POST',
           body: formData
         });
         
         console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
         
         clearInterval(timerInterval);
         const finalTime = (Date.now() - processingStartTime) / 1000;
@@ -2510,6 +2559,7 @@
       }
     }
 
+    // ✅ FUNCIÓN CORREGIDA: Render recomendaciones con ocasión específica
     function renderRecommendations(data) {
       const result = document.getElementById('result');
       const results = data.results || [];
@@ -2531,11 +2581,23 @@
         }
       });
       
+      // Mapear ocasiones a texto legible
+      const occasionText = {
+        'oficina': 'Oficina/Trabajo',
+        'deportivo': 'Deportes/Gym', 
+        'casual': 'Casual',
+        'formal': 'Formal',
+        'matrimonio': 'Matrimonio'
+      };
+      
       let html = `
         <div style="text-align: center; margin-bottom: 2rem;">
-          <h2 style="color: #000000;">🪄 Tus Mejores Combinaciones</h2>
+          <h2 style="color: #000000;">🪄 Recomendaciones para ${occasionText[selectedOccasion] || selectedOccasion}</h2>
+          <div style="background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border-radius: 15px; padding: 1rem; margin: 1rem 0; display: inline-block;">
+            <strong>📍 Ocasión Actual: ${occasionText[selectedOccasion] || selectedOccasion}</strong>
+          </div>
           <p style="color: #000000; opacity: 0.8;">
-            ${data.message || `Mostrando ${results.length} combinaciones generadas`}
+            ${data.message || `${results.length} combinaciones optimizadas para esta ocasión`}
           </p>
           <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
             <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
@@ -2550,18 +2612,20 @@
         const scorePercent = Math.round((item.final_score || 0) * 100);
         const isBest = idx === bestIndex;
         
-        // NUEVO: Obtener imágenes para esta combinación
         const topImage = getImageForCombination('tops', item, idx);
         const bottomImage = getImageForCombination('bottoms', item, idx);
         const shoeImage = getImageForCombination('shoes', item, idx);
         
         html += `
           <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
-            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR COMBINACIÓN</div>' : ''}
+            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR PARA ' + (occasionText[selectedOccasion] || selectedOccasion).toUpperCase() + '</div>' : ''}
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
               <h3 style="color: #000000; margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
-              <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">${occasionText[selectedOccasion] || selectedOccasion}</span>
+                <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+              </div>
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
@@ -2614,13 +2678,10 @@
       }, 100);
     }
 
-    // NUEVA FUNCIÓN: Obtener imagen para una combinación específica
     function getImageForCombination(type, item, combinationIndex) {
-      // Estrategia simple: rotar entre las imágenes disponibles
       const images = uploadedImages[type];
       if (!images || images.length === 0) return null;
       
-      // Usar módulo para rotar entre imágenes disponibles
       const imageIndex = combinationIndex % images.length;
       return images[imageIndex];
     }
@@ -2660,6 +2721,14 @@
         return;
       }
 
+      const occasionNames = {
+        'oficina': 'Oficina/Trabajo',
+        'deportivo': 'Deportes/Gym',
+        'casual': 'Casual',
+        'formal': 'Formal', 
+        'matrimonio': 'Matrimonio'
+      };
+
       list.innerHTML = savedRecommendations.map((rec, index) => {
         const isBest = index === 0;
         const score = Math.round((rec.final_score || 0) * 100);
@@ -2668,7 +2737,7 @@
           <div style="background: var(--background); border: 1px solid var(--border); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; position: relative; ${isBest ? 'border-color: var(--gold); background: rgba(251, 191, 36, 0.05);' : ''}">
             ${isBest ? '<div style="position: absolute; top: -10px; right: -10px; background: var(--gold); color: #000000; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⭐</div>' : ''}
             <div style="flex: 1;">
-              <h4 style="margin: 0; color: #000000;">Combinación para ${rec.occasion}</h4>
+              <h4 style="margin: 0; color: #000000;">Combinación para ${occasionNames[rec.occasion] || rec.occasion}</h4>
               <p style="margin: 0.5rem 0; color: #000000; opacity: 0.8; font-size: 0.9rem;">${rec.top?.detected_item || 'Superior'} + ${rec.bottom?.detected_item || 'Inferior'} + ${rec.shoe?.detected_item || 'Calzado'}</p>
               <small style="color: #000000; opacity: 0.7;">Guardada el ${rec.saved_date}</small>
             </div>
@@ -2716,7 +2785,7 @@
       // Configurar event listeners con delay
       setTimeout(() => {
         setupEventListeners();
-        setupProfileListeners(); // AÑADIDO
+        setupProfileListeners();
       }, 1000);
       
       // Animar barras de impacto cuando se ven
