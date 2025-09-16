@@ -15,6 +15,10 @@ function enableCloset() {
   
   // Cargar items del closet
   loadClosetItems();
+  
+  // Configurar subida desde carpetas
+  setupClosetFolderUploads();
+  
   showNotification('Mi Closet Favorito activado', 'success');
 }
 
@@ -43,6 +47,11 @@ function showClosetTab(tabId) {
   document.getElementById(tabId).style.display = 'block';
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
   
+  // Reconfigurar subida desde carpetas cada vez que cambia la pestaña
+  setTimeout(() => {
+    setupClosetFolderUploads();
+  }, 100);
+  
   // Si está en modo selección, renderizar fotos para seleccionar
   if (closetSelectionMode && (tabId === 'superiores' || tabId === 'inferiores' || tabId === 'calzado')) {
     renderClosetTab(tabId);
@@ -61,6 +70,134 @@ function loadClosetItems() {
     bottoms: closetItems.bottoms.length,
     shoes: closetItems.shoes.length
   });
+}
+
+// NUEVA FUNCIÓN: Configurar subida desde carpetas del closet
+function setupClosetFolderUploads() {
+  console.log('🗂️ Configurando subida desde carpetas del closet...');
+  
+  // Obtener todas las carpetas y reconfigurar event listeners
+  document.querySelectorAll('.folder-item').forEach(folder => {
+    // Remover listeners anteriores clonando el elemento
+    const newFolder = folder.cloneNode(true);
+    folder.parentNode.replaceChild(newFolder, folder);
+    
+    // Agregar nuevo listener
+    newFolder.addEventListener('click', function() {
+      if (!isLoggedIn) {
+        showNotification('Debes iniciar sesión primero', 'error');
+        return;
+      }
+      
+      const folderName = this.querySelector('.folder-name').textContent;
+      console.log('📁 Click en carpeta:', folderName);
+      
+      // Determinar tipo según la pestaña activa
+      const activeTab = document.querySelector('.closet-tab.active');
+      if (!activeTab) {
+        showNotification('Error: No se pudo determinar la pestaña activa', 'error');
+        return;
+      }
+      
+      const tabId = activeTab.dataset.tab;
+      const typeMap = {
+        'superiores': 'tops',
+        'inferiores': 'bottoms',
+        'calzado': 'shoes'
+      };
+      
+      const type = typeMap[tabId];
+      if (!type) {
+        showNotification('Error: No se pudo determinar el tipo de prenda', 'error');
+        return;
+      }
+      
+      // Verificar límites actuales
+      const currentCount = uploadedFiles[type].length;
+      const maxCount = CONFIG.FILE_LIMITS[type];
+      
+      if (currentCount >= maxCount) {
+        showNotification(`Ya tienes el máximo de ${maxCount} prendas en ${type}`, 'error');
+        return;
+      }
+      
+      // Crear input de archivo temporal
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      fileInput.style.display = 'none';
+      
+      // Cuando se seleccionen archivos
+      fileInput.onchange = async function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        const remainingSlots = maxCount - currentCount;
+        if (files.length > remainingSlots) {
+          showNotification(`Solo puedes subir ${remainingSlots} fotos más en esta categoría`, 'error');
+          return;
+        }
+        
+        // Validar tipos de archivo
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+        
+        if (invalidFiles.length > 0) {
+          showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
+          return;
+        }
+        
+        showNotification(`Subiendo ${files.length} foto(s) a ${folderName}...`, 'info');
+        
+        // Limpiar resultados anteriores si existen
+        if (window.currentResults) {
+          clearPreviousResults();
+        }
+        
+        // Procesar cada archivo usando las funciones existentes
+        for (const file of files) {
+          try {
+            // Agregar a arrays globales
+            uploadedFiles[type].push(file);
+            
+            const imageUrl = await getImageDataUrl(file);
+            uploadedImages[type].push(imageUrl);
+            
+            console.log(`✅ Archivo procesado: ${file.name} para ${type}`);
+          } catch (error) {
+            console.error('Error procesando archivo:', error);
+            showNotification(`Error procesando ${file.name}`, 'error');
+          }
+        }
+        
+        // Actualizar UI usando funciones existentes
+        updateUploadLabel(type);
+        updateGenerateButton();
+        
+        // Actualizar closet
+        loadClosetItems();
+        
+        // Mostrar notificación de éxito
+        const typeNames = {
+          'tops': 'superiores',
+          'bottoms': 'inferiores', 
+          'shoes': 'calzado'
+        };
+        
+        showNotification(`✅ ${files.length} foto(s) agregadas a ${typeNames[type]}`, 'success');
+        
+        // Limpiar input
+        document.body.removeChild(fileInput);
+      };
+      
+      // Agregar al DOM y hacer click
+      document.body.appendChild(fileInput);
+      fileInput.click();
+    });
+  });
+  
+  console.log('✅ Subida desde carpetas configurada correctamente');
 }
 
 // Activar modo selección del closet
@@ -112,7 +249,7 @@ function renderClosetTab(tabId) {
       <div style="text-align: center; padding: 3rem; color: #666;">
         <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
         <p>No hay prendas en esta categoría</p>
-        <p style="font-size: 0.9rem; opacity: 0.7;">Sube fotos para comenzar</p>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Haz click en las carpetas de abajo para subir fotos</p>
       </div>
     `;
     return;
