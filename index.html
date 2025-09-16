@@ -10,8 +10,67 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+  <script>
+    // Cargar Google Script de forma más confiable
+    function loadGoogleScript() {
+      return new Promise((resolve, reject) => {
+        // Verificar si ya está cargado
+        if (typeof google !== 'undefined' && google.accounts?.id) {
+          resolve();
+          return;
+        }
+        
+        console.log('📥 Cargando script de Google...');
+        console.log('🔍 URL del script:', 'https://accounts.google.com/gsi/client');
+        console.log('🔍 User Agent:', navigator.userAgent);
+        console.log('🔍 Protocolo:', window.location.protocol);
+        
+        // Verificar conectividad básica
+        fetch('https://www.google.com', { mode: 'no-cors' })
+          .then(() => console.log('✅ Google.com accesible'))
+          .catch(() => console.log('❌ Google.com no accesible'));
+        
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        
+        let timeoutId = setTimeout(() => {
+          console.log('⏰ Timeout: Script tardó más de 10 segundos');
+          script.remove();
+          reject('Timeout cargando script');
+        }, 10000);
+        
+        script.onload = () => {
+          clearTimeout(timeoutId);
+          console.log('✅ Script de Google cargado');
+          
+          // Esperar inicialización
+          setTimeout(() => {
+            if (typeof google !== 'undefined' && google.accounts?.id) {
+              console.log('✅ Google Auth disponible');
+              resolve();
+            } else {
+              console.log('❌ Google Auth no disponible después de cargar');
+              reject('Google Auth no inicializado');
+            }
+          }, 1000);
+        };
+        
+        script.onerror = (error) => {
+          clearTimeout(timeoutId);
+          console.log('❌ Error cargando script de Google');
+          console.log('❌ Error details:', error);
+          console.log('❌ Script src:', script.src);
+          script.remove();
+          reject('Error cargando script');
+        };
+        
+        document.head.appendChild(script);
+        console.log('📤 Script agregado al DOM');
+      });
+    }
+  </script>
   <style>
     :root {
       --primary: #3b82f6;
@@ -1704,25 +1763,75 @@
     }
 
     // FUNCIONES DE AUTENTICACIÓN
-    function checkGoogleAuth() {
-      const checkInterval = setInterval(() => {
-        if (typeof google !== 'undefined' && google.accounts?.id) {
-          clearInterval(checkInterval);
-          initializeGoogleAuth();
-        }
-      }, 500);
+    async function checkGoogleAuth() {
+      console.log('🔍 Iniciando carga de Google Auth...');
+      
+      try {
+        await loadGoogleScript();
+        console.log('✅ Google Script cargado exitosamente');
+        initializeGoogleAuth();
+      } catch (error) {
+        console.error('❌ Error cargando Google Script:', error);
+        showAlternativeAuth();
+      }
+    }
+
+    function showAlternativeAuth() {
+      const mainBtn = document.getElementById('mainLoginBtn');
+      if (mainBtn) {
+        mainBtn.innerHTML = '⚠️ Google bloqueado - Usar email directo';
+        mainBtn.onclick = () => {
+          showManualEmailForm();
+        };
+      }
+      showNotification('Google Auth bloqueado. Usa email directo.', 'warning');
+    }
+
+    function showManualEmailForm() {
+      const email = prompt('Ingresa tu email para continuar:');
+      if (email && email.includes('@')) {
+        // Simular usuario logueado
+        currentUser = {
+          name: email.split('@')[0],
+          email: email,
+          picture: 'https://via.placeholder.com/40',
+          token: 'manual_' + Date.now()
+        };
+        
+        isLoggedIn = true;
+        updateAuthUI();
+        createUserProfile();
+        showWelcomeSection();
+        showNotification(`Bienvenido ${currentUser.name}!`, 'success');
+      } else {
+        showNotification('Email inválido', 'error');
+      }
     }
 
     function initializeGoogleAuth() {
       try {
+        console.log('🚀 Inicializando Google Auth...');
+        console.log('Client ID:', CONFIG.GOOGLE_CLIENT_ID);
+        
         google.accounts.id.initialize({
           client_id: CONFIG.GOOGLE_CLIENT_ID,
           callback: handleGoogleSignIn,
           auto_select: false,
           ux_mode: 'popup'
         });
+        
+        console.log('✅ Google Auth inicializado correctamente');
+        
+        // Actualizar UI para mostrar que está listo
+        const mainBtn = document.getElementById('mainLoginBtn');
+        if (mainBtn) {
+          mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+          mainBtn.onclick = handleMainLogin;
+        }
+        
       } catch (e) {
-        console.error('Error inicializando Google Auth:', e);
+        console.error('❌ Error inicializando Google Auth:', e);
+        showNotification('Error configurando Google Auth', 'error');
       }
     }
 
@@ -1754,6 +1863,14 @@
 
     async function createUserProfile() {
       try {
+        console.log('=== CREANDO USER PROFILE ===');
+        console.log('Enviando a:', `${CONFIG.API_BASE}/api/profile/create`);
+        console.log('Data:', {
+          email: currentUser.email,
+          name: currentUser.name,
+          picture: currentUser.picture
+        });
+
         const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
           method: 'POST',
           headers: {
@@ -1766,17 +1883,27 @@
           })
         });
 
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Profile response:', data);
+        
         if (data.success) {
-          console.log('Perfil creado exitosamente:', data);
+          console.log('✅ Perfil creado exitosamente:', data);
           userStats = {
             visits: data.profile?.visits || 1,
             recommendations: data.profile?.total_recommendations || 0,
             savedOutfits: data.profile?.saved_outfits || 0
           };
+          
+          // Mostrar notificación de perfil creado
+          showNotification('Perfil creado exitosamente!', 'success');
+        } else {
+          console.log('❌ Error en respuesta:', data);
+          showNotification('Error creando perfil: ' + (data.message || 'Unknown'), 'error');
         }
       } catch (e) {
-        console.error('Error creando perfil:', e);
+        console.error('❌ Error creando perfil:', e);
+        showNotification('Error de conexión al crear perfil', 'error');
       }
     }
 
@@ -1785,14 +1912,25 @@
     }
 
     function loginWithGoogle() {
+      console.log('🔑 Intentando login con Google...');
+      
+      if (typeof google === 'undefined' || !google.accounts?.id) {
+        console.log('❌ Google Auth no está disponible');
+        showNotification('Google Auth no está cargado. Recarga la página.', 'error');
+        return;
+      }
+      
       try {
-        if (typeof google !== 'undefined' && google.accounts?.id) {
-          google.accounts.id.prompt();
-        } else {
-          showNotification('Google Auth no está listo', 'error');
-        }
+        console.log('✅ Llamando google.accounts.id.prompt()');
+        google.accounts.id.prompt((notification) => {
+          console.log('Google prompt result:', notification);
+          if (notification.isNotDisplayed()) {
+            showNotification('Para continuar, debes autorizar el popup de Google', 'info');
+          }
+        });
       } catch (e) {
-        showNotification('Error: ' + e.message, 'error');
+        console.error('❌ Error en login:', e);
+        showNotification('Error en login: ' + e.message, 'error');
       }
     }
 
@@ -2087,6 +2225,20 @@
         // Agregar tipos como string separado por comas
         formData.append('types', types.join(','));
         
+        // DEBUG: Mostrar qué estamos enviando
+        console.log('=== DEBUG REQUEST ===');
+        console.log('Endpoint:', `${CONFIG.API_BASE}/api/recommend`);
+        console.log('User email:', currentUser.email);
+        console.log('Occasion:', selectedOccasion);
+        console.log('Types array:', types);
+        console.log('Files count:', types.length);
+        console.log('Uploaded files structure:', uploadedFiles);
+        
+        // Mostrar contenido del FormData
+        for (let [key, value] of formData.entries()) {
+          console.log(`FormData[${key}]:`, value instanceof File ? `File: ${value.name}` : value);
+        }
+        
         // Llamar al endpoint correcto
         const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
           method: 'POST',
@@ -2154,8 +2306,9 @@
             ${data.message || `Mostrando ${results.length} combinaciones generadas`}
           </p>
           <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
-            <strong>Estadísticas:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
-            ${data.detected_items ? Object.values(data.detected_items).flat().join(', ') : ''}
+            <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
+            Cache: ${data.processing_stats?.cache_hit_rate || 'N/A'} |
+            Items: ${data.detected_items ? Object.values(data.detected_items).flat().join(', ') : ''}
           </div>
         </div>
         <div style="display: grid; gap: 2rem;">
