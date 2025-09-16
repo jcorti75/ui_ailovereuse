@@ -246,6 +246,13 @@
       gap: 0.8rem;
       margin-bottom: 4rem;
       text-decoration: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .hero-button:before,
+    .hero-button:after {
+      content: none;
     }
 
     .hero-button:hover {
@@ -1089,9 +1096,15 @@
     }
 
     .user-info {
-      display: none;
+      display: none !important;
       align-items: center;
       gap: 1rem;
+    }
+
+    .auth-container {
+      display: flex;
+      align-items: center;
+      margin-left: 1rem;
     }
 
     .user-avatar {
@@ -1121,6 +1134,68 @@
 
     .user-dropdown.active {
       display: block;
+    }
+
+    /* ESTILOS PARA FORMULARIO DE PERFIL - CORRIGIDOS */
+    .profile-section {
+      background: rgba(59, 130, 246, 0.05);
+      border: 2px solid rgba(59, 130, 246, 0.2);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+      display: none;
+    }
+
+    .profile-field {
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .profile-field label {
+      display: block;
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .profile-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .profile-option {
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: 15px;
+      padding: 1rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #000000;
+      text-align: center;
+      min-height: 80px;
+      justify-content: center;
+    }
+
+    .profile-option:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .profile-option.selected {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
     }
 
     @media (max-width: 768px) {
@@ -1169,6 +1244,10 @@
         text-align: center; 
         gap: 2rem; 
       }
+
+      .profile-options {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1193,7 +1272,7 @@
         <div class="nav-pills">
           <a href="#inicio" class="nav-pill active" onclick="scrollToSection('inicio')">🏠 Inicio</a>
           <a href="#impacto" class="nav-pill" onclick="scrollToSection('impacto')">🌍 Impacto Ambiental</a>
-          <a href="#precios" class="nav-pill" onclick="scrollToSection('precios')">💳 Precios</a>
+          <a href="#precios" class="nav-pill" onclick="scrollToSection('precios')">$ Precios</a>
           <a href="#funcionamiento" class="nav-pill" onclick="scrollToSection('funcionamiento')">⚙️ Cómo funciona</a>
           <a href="#equipo" class="nav-pill" onclick="scrollToSection('equipo')">👥 Equipo</a>
         </div>
@@ -1203,7 +1282,7 @@
         </button>
         
         <div class="auth-container">
-          <div class="user-info" id="userInfo" style="display: none;">
+          <div class="user-info" id="userInfo" style="display: none !important;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
             <span id="userName" style="color: #000000;"></span>
             <button onclick="logout()" style="background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;">Salir</button>
@@ -1216,7 +1295,7 @@
     <div class="mobile-nav" id="mobileNav">
       <a href="#inicio" class="mobile-nav-item" onclick="scrollToSection('inicio'); toggleMobileMenu()">🏠 Inicio</a>
       <a href="#impacto" class="mobile-nav-item" onclick="scrollToSection('impacto'); toggleMobileMenu()">🌍 Impacto Ambiental</a>
-      <a href="#precios" class="mobile-nav-item" onclick="scrollToSection('precios'); toggleMobileMenu()">💳 Precios</a>
+      <a href="#precios" class="mobile-nav-item" onclick="scrollToSection('precios'); toggleMobileMenu()">$ Precios</a>
       <a href="#funcionamiento" class="mobile-nav-item" onclick="scrollToSection('funcionamiento'); toggleMobileMenu()">⚙️ Cómo funciona</a>
       <a href="#equipo" class="mobile-nav-item" onclick="scrollToSection('equipo'); toggleMobileMenu()">👥 Equipo</a>
     </div>
@@ -1319,7 +1398,7 @@
   <section id="precios" class="pricing-section">
     <div class="section-container">
       <div class="section-title">
-        <h2>💳 Precios Simples y Claros</h2>
+        <h2>$ Precios Simples y Claros</h2>
         <p class="section-subtitle">Elige el plan que mejor se adapte a tu estilo de vida</p>
       </div>
       <div class="pricing-cards">
@@ -1397,7 +1476,7 @@
       <div id="welcomeSection" class="welcome-section" style="display: none;">
         <h3 style="color: #000000; margin-bottom: 1rem;">🎉 ¡Bienvenido a NoshopiA!</h3>
         <p style="color: #000000; margin-bottom: 1rem; opacity: 0.8;">
-          Tu perfil ha sido creado exitosamente. ¡Ahora puedes comenzar a crear tu guardarropa digital!
+          Tu perfil ha sido creado exitosamente. Para darte mejores recomendaciones, necesitamos conocerte un poco más.
         </p>
         <div class="closet-stats">
           <div class="closet-stat">
@@ -1415,20 +1494,18 @@
         </div>
       </div>
 
-      <!-- Formulario de Perfil de Usuario -->
-      <div id="profileForm" class="closet-question" style="display: none;">
-        <h3 style="color: #000000; margin-bottom: 1rem;">👤 Completa tu Perfil</h3>
-        <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
-          Para darte mejores recomendaciones, necesitamos conocerte un poco más
+      <!-- Formulario de Perfil de Usuario - CORREGIDO -->
+      <div id="profileForm" class="profile-section">
+        <h3 style="color: #000000; margin-bottom: 1rem; text-align: center;">👤 Completa tu Perfil</h3>
+        <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8; text-align: center;">
+          Para darte mejores recomendaciones, selecciona tus características
         </p>
         
-        <div style="display: grid; gap: 2rem; max-width: 600px; margin: 0 auto;">
+        <div style="max-width: 600px; margin: 0 auto;">
           <!-- Color de piel -->
-          <div>
-            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
-              Color de piel:
-            </label>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <div class="profile-field">
+            <label>Color de piel:</label>
+            <div class="profile-options">
               <button type="button" class="profile-option" data-field="skin_color" data-value="claro">
                 <div style="background: #F5DEB3; width: 30px; height: 30px; border-radius: 50%; margin: 0 auto 0.5rem;"></div>
                 Claro
@@ -1445,56 +1522,66 @@
           </div>
           
           <!-- Rango de edad -->
-          <div>
-            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
-              Rango de edad:
-            </label>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <div class="profile-field">
+            <label>Rango de edad:</label>
+            <div class="profile-options">
               <button type="button" class="profile-option" data-field="age_range" data-value="menor_18">
+                <i class="fas fa-child" style="font-size: 1.5rem; color: var(--primary);"></i>
                 Menor 18
               </button>
               <button type="button" class="profile-option" data-field="age_range" data-value="18-24">
+                <i class="fas fa-user-graduate" style="font-size: 1.5rem; color: var(--primary);"></i>
                 18-24
               </button>
               <button type="button" class="profile-option" data-field="age_range" data-value="25-34">
+                <i class="fas fa-user-tie" style="font-size: 1.5rem; color: var(--primary);"></i>
                 25-34
               </button>
+            </div>
+            <div class="profile-options">
               <button type="button" class="profile-option" data-field="age_range" data-value="35-44">
+                <i class="fas fa-user" style="font-size: 1.5rem; color: var(--primary);"></i>
                 35-44
               </button>
               <button type="button" class="profile-option" data-field="age_range" data-value="45-54">
+                <i class="fas fa-user-check" style="font-size: 1.5rem; color: var(--primary);"></i>
                 45-54
               </button>
               <button type="button" class="profile-option" data-field="age_range" data-value="mas_54">
+                <i class="fas fa-user-clock" style="font-size: 1.5rem; color: var(--primary);"></i>
                 Más de 54
               </button>
             </div>
           </div>
           
           <!-- Género -->
-          <div>
-            <label style="display: block; font-weight: 600; color: #000000; margin-bottom: 1rem;">
-              Género:
-            </label>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <div class="profile-field">
+            <label>Género:</label>
+            <div class="profile-options">
               <button type="button" class="profile-option" data-field="gender" data-value="hombre">
-                👨 Hombre
+                <i class="fas fa-mars" style="font-size: 1.5rem; color: var(--primary);"></i>
+                Hombre
               </button>
               <button type="button" class="profile-option" data-field="gender" data-value="mujer">
-                👩 Mujer
+                <i class="fas fa-venus" style="font-size: 1.5rem; color: var(--primary);"></i>
+                Mujer
               </button>
               <button type="button" class="profile-option" data-field="gender" data-value="no_binario">
-                🧑 No binario
+                <i class="fas fa-genderless" style="font-size: 1.5rem; color: var(--primary);"></i>
+                No binario
               </button>
             </div>
           </div>
         </div>
         
-        <button id="createProfileBtn" class="hero-button" onclick="submitUserProfile()" disabled style="margin-top: 2rem;">
-          <i class="fas fa-user-plus"></i>
-          Completar Perfil
-        </button>
+        <div style="text-align: center; margin-top: 2rem;">
+          <button id="createProfileBtn" class="hero-button" onclick="submitUserProfile()" disabled style="opacity: 0.6;">
+            <i class="fas fa-user-plus"></i>
+            Selecciona todas las opciones
+          </button>
+        </div>
       </div>
+
       <div id="closetQuestion" class="closet-question" style="display: none;">
         <h3 style="color: #000000; margin-bottom: 1rem;">👗 ¿Quieres armar tu Closet Favorito?</h3>
         <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
@@ -1822,6 +1909,7 @@
     let savedRecommendations = [];
     let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
     let processingStartTime = 0;
+    let userProfile = { skin_color: null, age_range: null, gender: null }; // AÑADIDO
 
     // FUNCIONES DE NAVEGACIÓN
     function scrollToSection(sectionId) {
@@ -1858,12 +1946,13 @@
     function showAlternativeAuth() {
       const mainBtn = document.getElementById('mainLoginBtn');
       if (mainBtn) {
-        mainBtn.innerHTML = '⚠️ Google bloqueado - Usar email directo';
+        mainBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Gmail';
         mainBtn.onclick = () => {
           showManualEmailForm();
         };
+        // Mantener el mismo estilo del botón original
       }
-      showNotification('Google Auth bloqueado. Usa email directo.', 'warning');
+      showNotification('Ingresa tu Gmail para continuar', 'info');
     }
 
     function showManualEmailForm() {
@@ -1879,7 +1968,6 @@
         
         isLoggedIn = true;
         updateAuthUI();
-        createUserProfile();
         showWelcomeSection();
         showNotification(`Bienvenido ${currentUser.name}!`, 'success');
       } else {
@@ -1929,76 +2017,11 @@
         isLoggedIn = true;
         updateAuthUI();
         
-        // Crear perfil de usuario
-        await createUserProfile();
-        
         showWelcomeSection();
         showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
       } catch (e) {
         console.error('Error en login:', e);
         showNotification('Error al iniciar sesión', 'error');
-      }
-    }
-
-    async function createUserProfile() {
-      try {
-        console.log('=== CREANDO USER PROFILE ===');
-        console.log('Enviando a:', `${CONFIG.API_BASE}/api/profile/create`);
-        
-        // El backend espera FormData, no JSON
-        const formData = new FormData();
-        formData.append('email', currentUser.email);
-        formData.append('skin_color', 'medio');  // Valor por defecto
-        formData.append('age_range', '25-34');   // Valor por defecto
-        formData.append('gender', 'no_binario'); // Valor por defecto
-        
-        console.log('FormData que se envía:');
-        for (let [key, value] of formData.entries()) {
-          console.log(`  ${key}: ${value}`);
-        }
-
-        const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
-          method: 'POST',
-          body: formData  // Sin Content-Type header, FormData lo maneja automáticamente
-        });
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-        
-        const responseText = await response.text();
-        console.log('Response text RAW:', responseText);
-        
-        let data;
-        try {
-          data = JSON.parse(responseText);
-          console.log('Response JSON:', data);
-        } catch (e) {
-          console.log('❌ Response no es JSON válido:', responseText);
-          throw new Error('Response no es JSON: ' + responseText);
-        }
-        
-        if (response.status === 422) {
-          console.log('❌ ERROR 422 - Detalles:', data);
-          showNotification('Error 422: ' + JSON.stringify(data), 'error');
-          return;
-        }
-        
-        if (data.success) {
-          console.log('✅ Perfil creado exitosamente:', data);
-          userStats = {
-            visits: 1,
-            recommendations: 0,
-            savedOutfits: 0
-          };
-          
-          showNotification('¡Perfil creado exitosamente!', 'success');
-        } else {
-          console.log('❌ Error en respuesta:', data);
-          showNotification('Error creando perfil: ' + (data.message || 'Unknown'), 'error');
-        }
-      } catch (e) {
-        console.error('❌ Error creando perfil:', e);
-        showNotification('Error de conexión al crear perfil', 'error');
       }
     }
 
@@ -2036,6 +2059,7 @@
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
       closetMode = false;
       userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+      userProfile = { skin_color: null, age_range: null, gender: null }; // AÑADIDO
       
       updateAuthUI();
       resetAllSections();
@@ -2060,6 +2084,7 @@
     // FUNCIONES DE SECCIONES
     function resetAllSections() {
       document.getElementById('welcomeSection').style.display = 'none';
+      document.getElementById('profileForm').style.display = 'none'; // CORREGIDO
       document.getElementById('closetQuestion').style.display = 'none';
       document.getElementById('closetContainer').style.display = 'none';
       document.getElementById('occasionSelector').style.display = 'none';
@@ -2070,16 +2095,8 @@
     function showWelcomeSection() {
       resetAllSections();
       document.getElementById('welcomeSection').style.display = 'block';
+      document.getElementById('profileForm').style.display = 'block'; // AÑADIDO - MOSTRAR PERFIL
       updateStatsDisplay();
-      
-      setTimeout(() => {
-        showClosetQuestion();
-      }, 3000);
-    }
-
-    function showClosetQuestion() {
-      document.getElementById('welcomeSection').style.display = 'none';
-      document.getElementById('closetQuestion').style.display = 'block';
       scrollToSection('upload');
     }
 
@@ -2091,6 +2108,108 @@
       document.getElementById('closetVisits').textContent = userStats.visits;
       document.getElementById('closetRecommendations').textContent = userStats.recommendations;
       document.getElementById('closetOutfits').textContent = userStats.savedOutfits;
+    }
+
+    // FUNCIONES DE PERFIL DE USUARIO - NUEVAS
+    function setupProfileListeners() {
+      console.log('🎯 Configurando listeners de perfil...');
+      
+      document.querySelectorAll('.profile-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const field = this.dataset.field;
+          const value = this.dataset.value;
+          
+          // Deseleccionar otros botones del mismo campo
+          document.querySelectorAll(`[data-field="${field}"]`).forEach(b => {
+            b.classList.remove('selected');
+          });
+          
+          // Seleccionar este botón
+          this.classList.add('selected');
+          userProfile[field] = value;
+          
+          console.log('Perfil actualizado:', userProfile);
+          updateCreateProfileButton();
+        });
+      });
+    }
+
+    function updateCreateProfileButton() {
+      const btn = document.getElementById('createProfileBtn');
+      const isComplete = userProfile.skin_color && userProfile.age_range && userProfile.gender;
+      
+      btn.disabled = !isComplete;
+      
+      if (isComplete) {
+        btn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
+        btn.style.opacity = '1';
+      } else {
+        btn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+        btn.style.opacity = '0.6';
+      }
+    }
+
+    async function submitUserProfile() {
+      if (!currentUser || !userProfile.skin_color || !userProfile.age_range || !userProfile.gender) {
+        showNotification('Por favor completa todos los campos', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('createProfileBtn');
+      btn.innerHTML = '<span class="loading"></span> Creando perfil...';
+      btn.disabled = true;
+      
+      try {
+        console.log('=== ENVIANDO PERFIL ===');
+        console.log('Usuario:', currentUser.email);
+        console.log('Perfil:', userProfile);
+        
+        const formData = new FormData();
+        formData.append('email', currentUser.email);
+        formData.append('skin_color', userProfile.skin_color);
+        formData.append('age_range', userProfile.age_range);
+        formData.append('gender', userProfile.gender);
+        
+        // DEBUG FormData
+        console.log('=== FORMDATA PROFILE ===');
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+
+        const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
+          method: 'POST',
+          body: formData
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Perfil creado:', data);
+        
+        if (data.success) {
+          showNotification('¡Perfil creado exitosamente!', 'success');
+          
+          // Ocultar perfil y mostrar siguiente paso
+          document.getElementById('profileForm').style.display = 'none';
+          document.getElementById('closetQuestion').style.display = 'block';
+          
+        } else {
+          throw new Error(data.message || 'Error desconocido');
+        }
+        
+      } catch (e) {
+        console.error('❌ Error creando perfil:', e);
+        showNotification('Error creando perfil: ' + e.message, 'error');
+      } finally {
+        btn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
+        btn.disabled = false;
+      }
     }
 
     // FUNCIONES DEL CLOSET
@@ -2128,8 +2247,9 @@
 
     // FUNCIONES DE OCASIONES
     function setupEventListeners() {
-      // Limpiar listeners previos para evitar duplicados
+      // Configurar listeners de ocasiones
       document.querySelectorAll('.occasion-btn').forEach(btn => {
+        // Limpiar listeners previos para evitar duplicados
         btn.replaceWith(btn.cloneNode(true));
       });
       
@@ -2291,6 +2411,15 @@
       btn.disabled = true;
       
       try {
+        console.log('=== ENVIANDO RECOMENDACIÓN ===');
+        console.log('Usuario:', currentUser.email);
+        console.log('Ocasión:', selectedOccasion);
+        console.log('Archivos:', {
+          tops: uploadedFiles.tops.length,
+          bottoms: uploadedFiles.bottoms.length,
+          shoes: uploadedFiles.shoes.length
+        });
+        
         // Crear FormData correctamente para el endpoint /api/recommend
         const formData = new FormData();
         
@@ -2302,41 +2431,35 @@
         let types = [];
         
         // Agregar archivos en orden: tops, bottoms, shoes
-        uploadedFiles.tops.forEach(file => {
+        uploadedFiles.tops.forEach((file, index) => {
           formData.append('files', file);
           types.push('top');
+          console.log(`Top ${index}: ${file.name} (${file.size} bytes)`);
         });
         
-        uploadedFiles.bottoms.forEach(file => {
+        uploadedFiles.bottoms.forEach((file, index) => {
           formData.append('files', file);
           types.push('bottom');
+          console.log(`Bottom ${index}: ${file.name} (${file.size} bytes)`);
         });
         
-        uploadedFiles.shoes.forEach(file => {
+        uploadedFiles.shoes.forEach((file, index) => {
           formData.append('files', file);
           types.push('shoe');
+          console.log(`Shoe ${index}: ${file.name} (${file.size} bytes)`);
         });
         
         // Agregar tipos como string separado por comas
         formData.append('types', types.join(','));
+        console.log('Types string:', types.join(','));
         
         // DEBUG: Mostrar qué estamos enviando
-        console.log('=== DEBUG REQUEST ===');
-        console.log('Endpoint:', `${CONFIG.API_BASE}/api/recommend`);
-        console.log('User email:', currentUser.email);
-        console.log('User name:', currentUser.name || '');
-        console.log('Occasion:', selectedOccasion);
-        console.log('Tops count:', uploadedFiles.tops.length);
-        console.log('Bottoms count:', uploadedFiles.bottoms.length);
-        console.log('Shoes count:', uploadedFiles.shoes.length);
-        
-        // Mostrar contenido del FormData
         console.log('=== FORMDATA CONTENTS ===');
         for (let [key, value] of formData.entries()) {
           if (value instanceof File) {
-            console.log(`FormData[${key}]: File - ${value.name} (${value.size} bytes)`);
+            console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
           } else {
-            console.log(`FormData[${key}]: ${value}`);
+            console.log(`${key}: ${value}`);
           }
         }
         
@@ -2346,6 +2469,9 @@
           body: formData
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
         clearInterval(timerInterval);
         const finalTime = (Date.now() - processingStartTime) / 1000;
         timerDisplay.textContent = finalTime.toFixed(1) + 's';
@@ -2353,10 +2479,11 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Error response:', errorText);
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
+          throw new Error(`Error ${response.status}: ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (data.success) {
           userStats.recommendations++;
@@ -2553,12 +2680,14 @@
 
     // INICIALIZACIÓN
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Inicializando aplicación...');
       updateAuthUI();
       checkGoogleAuth();
       
-      // Configurar event listeners una sola vez
+      // Configurar event listeners con delay
       setTimeout(() => {
         setupEventListeners();
+        setupProfileListeners(); // AÑADIDO
       }, 1000);
       
       // Animar barras de impacto cuando se ven
