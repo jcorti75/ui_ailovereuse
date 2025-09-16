@@ -1496,9 +1496,9 @@
 
       <!-- Formulario de Perfil de Usuario - CORREGIDO -->
       <div id="profileForm" class="profile-section">
-        <h3 style="color: #000000; margin-bottom: 1rem; text-align: center;">👤 Completa tu Perfil</h3>
+        <h3 style="color: #000000; margin-bottom: 1rem; text-align: center;">👤 Completa tu Perfil (Solo una vez)</h3>
         <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8; text-align: center;">
-          Para darte mejores recomendaciones, selecciona tus características
+          Para personalizar mejor tus recomendaciones futuras
         </p>
         
         <div style="max-width: 600px; margin: 0 auto;">
@@ -1904,6 +1904,7 @@
     let isLoggedIn = false;
     let currentUser = null;
     let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+    let uploadedImages = { tops: [], bottoms: [], shoes: [] }; // NUEVO: URLs de imágenes
     let selectedOccasion = null;
     let closetMode = false;
     let savedRecommendations = [];
@@ -2057,6 +2058,7 @@
       currentUser = null;
       selectedOccasion = null;
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      uploadedImages = { tops: [], bottoms: [], shoes: [] }; // NUEVO: Limpiar imágenes
       closetMode = false;
       userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
       userProfile = { skin_color: null, age_range: null, gender: null }; // AÑADIDO
@@ -2303,12 +2305,27 @@
       for (const file of files) {
         const preview = await createPreview(file, type);
         document.getElementById(`${type}-preview`).appendChild(preview);
+        
+        // Guardar archivo Y URL de imagen
         uploadedFiles[type].push(file);
+        
+        // NUEVO: Guardar URL de la imagen para mostrar en recomendaciones
+        const imageUrl = await getImageDataUrl(file);
+        uploadedImages[type].push(imageUrl);
       }
       
       updateUploadLabel(type);
       updateGenerateButton();
       input.value = '';
+    }
+
+    // NUEVA FUNCIÓN: Obtener URL de datos de la imagen
+    function getImageDataUrl(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
     }
 
     function createPreview(file, type) {
@@ -2533,6 +2550,11 @@
         const scorePercent = Math.round((item.final_score || 0) * 100);
         const isBest = idx === bestIndex;
         
+        // NUEVO: Obtener imágenes para esta combinación
+        const topImage = getImageForCombination('tops', item, idx);
+        const bottomImage = getImageForCombination('bottoms', item, idx);
+        const shoeImage = getImageForCombination('shoes', item, idx);
+        
         html += `
           <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
             ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR COMBINACIÓN</div>' : ''}
@@ -2542,17 +2564,26 @@
               <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center;">
-              <div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+              <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
+                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
+                  ${topImage ? `<img src="${topImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
+                </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
               </div>
-              <div>
+              <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
+                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
+                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
+                </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
               </div>
-              <div>
+              <div style="text-align: center;">
                 <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
+                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 15px; padding: 1rem; min-height: 120px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 2px solid var(--border);">
+                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 80px; max-height: 80px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👢</div>'}
+                </div>
                 <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
               </div>
             </div>
@@ -2581,6 +2612,17 @@
       setTimeout(() => {
         result.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+    }
+
+    // NUEVA FUNCIÓN: Obtener imagen para una combinación específica
+    function getImageForCombination(type, item, combinationIndex) {
+      // Estrategia simple: rotar entre las imágenes disponibles
+      const images = uploadedImages[type];
+      if (!images || images.length === 0) return null;
+      
+      // Usar módulo para rotar entre imágenes disponibles
+      const imageIndex = combinationIndex % images.length;
+      return images[imageIndex];
     }
 
     function saveRecommendationToCloset(index) {
