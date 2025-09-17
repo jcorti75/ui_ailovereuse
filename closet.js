@@ -1,10 +1,8 @@
-// closet.js - Funciones del Closet y Selección
+// closet.js - Funciones del Closet CORREGIDAS para ambos límites
 
-// Activar modo closet
 function enableCloset() {
   console.log('✨ Activando modo closet...');
   
-  // Limpiar resultados anteriores al cambiar modo
   clearPreviousResults();
   
   closetMode = true;
@@ -12,12 +10,10 @@ function enableCloset() {
   document.getElementById('closetContainer').style.display = 'block';
   document.getElementById('userEmail').textContent = currentUser.email;
   
-  // Cargar datos del usuario si existen
   loadUserClosetData();
   updateStatsDisplay();
   updateClosetDisplay();
   
-  // Configurar subida desde carpetas SIEMPRE
   setTimeout(() => {
     setupClosetFolderUploads();
   }, 500);
@@ -25,11 +21,9 @@ function enableCloset() {
   showNotification('Mi Closet Favorito activado', 'success');
 }
 
-// Usar modo directo
 function useDirectMode() {
   console.log('⚡ Activando modo directo...');
   
-  // Limpiar resultados anteriores al cambiar modo
   clearPreviousResults();
   
   closetMode = false;
@@ -37,7 +31,6 @@ function useDirectMode() {
   showOccasionSelector();
 }
 
-// Mostrar pestaña del closet
 function showClosetTab(tabId) {
   document.querySelectorAll('.closet-tab-content').forEach(content => {
     content.style.display = 'none';
@@ -50,30 +43,26 @@ function showClosetTab(tabId) {
   document.getElementById(tabId).style.display = 'block';
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
   
-  // SIEMPRE reconfigurar subida desde carpetas cada vez que cambia la pestaña
   setTimeout(() => {
     setupClosetFolderUploads();
     updateClosetDisplay();
   }, 200);
   
-  // Si está en modo selección, renderizar fotos para seleccionar
   if (closetSelectionMode && (tabId === 'superiores' || tabId === 'inferiores' || tabId === 'calzado')) {
     renderClosetTab(tabId);
   }
 }
 
-// NUEVA: Actualizar display del closet con contador
+// CORREGIDA: Display del closet con ambos límites claramente diferenciados
 function updateClosetDisplay() {
-  const totalItems = getTotalClosetItems();
-  const remaining = getRemainingClosetSlots();
+  const closetTotal = getTotalClosetItems();
   
-  // Actualizar header del closet con contador
+  // Actualizar header con información del closet total
   const closetHeader = document.querySelector('.closet-header h2');
   if (closetHeader) {
-    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${totalItems}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas)</span>`;
+    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${closetTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas total)</span>`;
   }
   
-  // Mostrar contador en cada pestaña
   ['superiores', 'inferiores', 'calzado'].forEach(tabId => {
     const tabContent = document.getElementById(tabId);
     if (tabContent) {
@@ -81,10 +70,10 @@ function updateClosetDisplay() {
     }
   });
   
-  console.log(`📊 Closet: ${totalItems}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas, ${remaining} espacios restantes`);
+  console.log(`📊 Closet total: ${closetTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`);
 }
 
-// NUEVA: Actualizar contador en pestaña
+// CORREGIDA: Contador de pestaña con información clara de ambos límites
 function updateTabCounter(tabId) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -98,10 +87,16 @@ function updateTabCounter(tabId) {
   const type = typeMap[tabId];
   if (!type) return;
   
-  const itemCount = closetItems[type]?.length || 0;
-  const remaining = getRemainingClosetSlots();
+  // Datos para recomendaciones (FILE_LIMITS)
+  const recommendationCount = uploadedFiles[type] ? uploadedFiles[type].length : 0;
+  const recommendationLimit = CONFIG.FILE_LIMITS[type];
+  const recommendationAvailable = recommendationLimit - recommendationCount;
   
-  // Buscar o crear header de contador
+  // Datos del closet total
+  const closetCount = closetItems[type] ? closetItems[type].length : 0;
+  const closetTotal = getTotalClosetItems();
+  const closetAvailable = getRemainingClosetSlots();
+  
   let counterHeader = tabContent.querySelector('.tab-counter-header');
   if (!counterHeader) {
     counterHeader = document.createElement('div');
@@ -115,54 +110,73 @@ function updateTabCounter(tabId) {
       border: 2px solid rgba(59, 130, 246, 0.2);
     `;
     
-    // Insertar al principio del contenido
     const firstChild = tabContent.firstChild;
     tabContent.insertBefore(counterHeader, firstChild);
   }
   
   const typeNames = {
     'tops': 'Superiores',
-    'bottoms': 'Inferiores',
+    'bottoms': 'Inferiores', 
     'shoes': 'Calzado'
   };
   
   counterHeader.innerHTML = `
-    <div style="font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">
-      ${typeNames[type]}: ${itemCount} prendas subidas
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+      <div style="background: rgba(34, 197, 94, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.3);">
+        <div style="font-weight: 600; color: var(--success); margin-bottom: 0.3rem;">
+          Para Recomendaciones
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: var(--success);">
+          ${recommendationCount}/${recommendationLimit}
+        </div>
+        <div style="font-size: 0.8rem; color: #666;">
+          ${recommendationAvailable > 0 ? `${recommendationAvailable} disponibles` : '✅ Completo'}
+        </div>
+      </div>
+      
+      <div style="background: rgba(59, 130, 246, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.3);">
+        <div style="font-weight: 600; color: var(--primary); margin-bottom: 0.3rem;">
+          En Mi Closet
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">
+          ${closetCount} prendas
+        </div>
+        <div style="font-size: 0.8rem; color: #666;">
+          Total: ${closetTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} ${closetAvailable > 0 ? `(${closetAvailable} libres)` : '(lleno)'}
+        </div>
+      </div>
     </div>
-    <div style="font-size: 0.9rem; color: #666;">
-      ${remaining > 0 ? `${remaining} espacios restantes en el armario total` : '⚠️ Armario lleno (15/15)'}
+    
+    <div style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3);">
+      <div style="font-size: 0.9rem; color: #92400e; font-weight: 500;">
+        💡 ${typeNames[type]}: Puedes tener muchas en tu closet, pero máximo ${recommendationLimit} para generar recomendaciones por sesión
+      </div>
     </div>
   `;
 }
 
-// Cargar items del closet
 function loadClosetItems() {
-  // Los datos ya se cargan desde loadUserClosetData()
-  console.log('📁 Items en closet:', {
-    tops: closetItems.tops.length,
-    bottoms: closetItems.bottoms.length,
-    shoes: closetItems.shoes.length,
+  console.log('🔍 Items en closet:', {
+    tops: closetItems.tops ? closetItems.tops.length : 0,
+    bottoms: closetItems.bottoms ? closetItems.bottoms.length : 0,
+    shoes: closetItems.shoes ? closetItems.shoes.length : 0,
     total: getTotalClosetItems()
   });
 }
 
-// CORREGIDA: Configurar subida desde carpetas del closet - VERSIÓN ROBUSTA
+// CORREGIDA: Setup de carpetas con validación de AMBOS límites
 function setupClosetFolderUploads() {
-  console.log('🗂️ Reconfigurar subida desde carpetas del closet...');
+  console.log('🗂️ Configurando subida desde carpetas...');
   
-  // Obtener todas las carpetas sin importar si están vacías o llenas
   const allFolders = document.querySelectorAll('.folder-item');
   console.log(`Encontradas ${allFolders.length} carpetas para configurar`);
   
   allFolders.forEach((folder, index) => {
-    // FORZAR reemplazo del elemento para limpiar listeners anteriores
     const newFolder = folder.cloneNode(true);
     folder.parentNode.replaceChild(newFolder, folder);
     
     console.log(`Configurando carpeta ${index + 1}: ${newFolder.querySelector('.folder-name')?.textContent}`);
     
-    // Agregar nuevo listener SIEMPRE
     newFolder.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -171,15 +185,6 @@ function setupClosetFolderUploads() {
       
       if (!isLoggedIn) {
         showNotification('Debes iniciar sesión primero', 'error');
-        return;
-      }
-      
-      // Verificar límite total ANTES de permitir subir
-      const totalItems = getTotalClosetItems();
-      const remaining = getRemainingClosetSlots();
-      
-      if (remaining <= 0) {
-        showNotification(`⚠️ Armario lleno (${totalItems}/${CONFIG.TOTAL_CLOSET_LIMIT}). Elimina prendas para agregar nuevas.`, 'error');
         return;
       }
       
@@ -208,6 +213,34 @@ function setupClosetFolderUploads() {
       
       console.log(`🎯 Tipo detectado: ${type} desde pestaña ${tabId}`);
       
+      // VALIDACIÓN COMBINADA: Verificar AMBOS límites
+      const closetStatus = canUploadToCloset(1);
+      const recommendationStatus = canUploadForRecommendations(type, 1);
+      
+      // Priorizar el límite más restrictivo
+      let canUpload = false;
+      let errorMessage = '';
+      
+      if (!closetStatus.canUpload) {
+        errorMessage = `⚠️ Closet lleno: ${closetStatus.current}/${closetStatus.limit} prendas. Elimina algunas para subir nuevas.`;
+      } else if (!recommendationStatus.canUpload) {
+        errorMessage = `⚠️ Límite de recomendaciones alcanzado para ${type}: ${recommendationStatus.current}/${recommendationStatus.limit}. Puedes tenerlas en el closet pero no usarlas para recomendaciones hasta eliminar otras.`;
+        // Permitir subir al closet aunque no se puedan usar para recomendaciones
+        canUpload = true;
+      } else {
+        canUpload = true;
+      }
+      
+      if (!canUpload) {
+        showNotification(errorMessage, 'error');
+        return;
+      }
+      
+      if (errorMessage) {
+        // Advertir pero permitir subir
+        showNotification(errorMessage, 'warning');
+      }
+      
       // Crear input de archivo temporal
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
@@ -217,94 +250,107 @@ function setupClosetFolderUploads() {
       
       console.log('📂 Input de archivo creado');
       
-      // Cuando se seleccionen archivos
       fileInput.onchange = async function(e) {
         console.log('📁 Archivos seleccionados');
         const files = Array.from(e.target.files);
-        if (files.length === 0) {
-          console.log('❌ No se seleccionaron archivos');
-          return;
-        }
+        if (files.length === 0) return;
         
         console.log(`📷 ${files.length} archivos seleccionados`);
         
-        // Verificar límite total otra vez
-        const currentTotal = getTotalClosetItems();
-        const currentRemaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
-        
-        if (files.length > currentRemaining) {
-          showNotification(`Solo puedes subir ${currentRemaining} fotos más. Armario: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+        // Validar límite del closet total
+        const finalClosetStatus = canUploadToCloset(files.length);
+        if (!finalClosetStatus.canUpload) {
+          showNotification(
+            `Solo puedes subir ${finalClosetStatus.available} archivos más al closet. Total permitido: ${finalClosetStatus.limit}`,
+            'error'
+          );
           return;
         }
         
-        // Validar tipos de archivo
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        const invalidFiles = files.filter(file => !validTypes.includes(file.type));
-        
+        // Validar tipos y tamaño
+        const invalidFiles = files.filter(file => !CONFIG.ALLOWED_TYPES.includes(file.type));
         if (invalidFiles.length > 0) {
           showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
           return;
         }
         
-        showNotification(`Subiendo ${files.length} foto(s) a ${folderName}...`, 'info');
+        const oversizedFiles = files.filter(file => file.size > CONFIG.MAX_FILE_SIZE);
+        if (oversizedFiles.length > 0) {
+          showNotification(`Archivos muy grandes. Máximo ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB por archivo`, 'error');
+          return;
+        }
         
-        // Limpiar resultados anteriores si existen
+        showNotification(`📤 Subiendo ${files.length} foto(s) a ${folderName}...`, 'info');
+        
         if (window.currentResults) {
           clearPreviousResults();
         }
         
-        // Procesar cada archivo
-        for (const file of files) {
-          try {
-            console.log(`🔄 Procesando: ${file.name}`);
+        try {
+          // Procesar cada archivo manteniendo integridad
+          for (const file of files) {
+            console.log(`📄 Procesando: ${file.name}`);
+            console.log(`🔍 Verificando tipo de archivo:`, file.constructor.name, file instanceof File);
             
-            // Obtener data URL
             const imageUrl = await getImageDataUrl(file);
             
-            // Agregar a arrays globales
-            uploadedFiles[type].push(file);
+            // Determinar si se puede agregar para recomendaciones
+            const canAddForRecommendations = canUploadForRecommendations(type, 1);
+            
+            if (canAddForRecommendations.canUpload) {
+              // Agregar tanto al closet como para recomendaciones
+              uploadedFiles[type].push(file);
+              uploadedImages[type].push(imageUrl);
+              console.log(`✅ Agregado para recomendaciones: ${file.name}`);
+            } else {
+              console.log(`⚠️ Solo agregado al closet (límite de recomendaciones alcanzado): ${file.name}`);
+            }
+            
+            // Siempre agregar al closet
             closetItems[type].push(imageUrl);
-            uploadedImages[type].push(imageUrl);
             
             console.log(`✅ Archivo procesado: ${file.name} para ${type}`);
-          } catch (error) {
-            console.error('❌ Error procesando archivo:', error);
-            showNotification(`Error procesando ${file.name}`, 'error');
           }
+          
+          // Guardar datos del usuario
+          saveUserClosetData();
+          
+          // Actualizar UI
+          updateUploadLabel(type);
+          updateGenerateButton();
+          updateClosetDisplay();
+          
+          // Mensaje informativo sobre el estado
+          const recommendationCount = uploadedFiles[type].length;
+          const recommendationLimit = CONFIG.FILE_LIMITS[type];
+          const closetCount = closetItems[type].length;
+          const closetTotal = getTotalClosetItems();
+          const closetRemaining = getRemainingClosetSlots();
+          
+          let message = `✅ ${files.length} foto(s) agregadas. `;
+          message += `Closet: ${closetTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${closetRemaining} libres) • `;
+          message += `Recomendaciones ${type}: ${recommendationCount}/${recommendationLimit}`;
+          
+          showNotification(message, 'success');
+          
+          setTimeout(setupClosetFolderUploads, 1000);
+          
+        } catch (error) {
+          console.error('❌ Error procesando archivos:', error);
+          showNotification('Error procesando algunos archivos', 'error');
         }
         
-        // Guardar datos del usuario
-        saveUserClosetData();
-        
-        // Actualizar UI
-        updateUploadLabel(type);
-        updateGenerateButton();
-        updateClosetDisplay();
-        
-        // Mostrar notificación de éxito
-        const newTotal = getTotalClosetItems();
-        const newRemaining = getRemainingClosetSlots();
-        
-        showNotification(`✅ ${files.length} foto(s) agregadas. Armario: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 'success');
-        
-        // Reconfigurar carpetas después de subir
-        setTimeout(() => {
-          setupClosetFolderUploads();
-        }, 1000);
-        
-        // Limpiar input
         if (document.body.contains(fileInput)) {
           document.body.removeChild(fileInput);
         }
       };
       
-      // Agregar al DOM y hacer click
       document.body.appendChild(fileInput);
       console.log('🖱️ Abriendo selector de archivos...');
       fileInput.click();
     });
     
-    // Agregar estilos hover para feedback visual
+    // Agregar estilos hover
     newFolder.style.cursor = 'pointer';
     newFolder.addEventListener('mouseenter', function() {
       this.style.transform = 'translateY(-5px)';
@@ -322,24 +368,19 @@ function setupClosetFolderUploads() {
   console.log('✅ Todas las carpetas configuradas para subida');
 }
 
-// Activar modo selección del closet
+// Resto de funciones sin cambios mayores
 function activateClosetSelectionMode() {
   console.log('✨ Activando modo selección del closet...');
   
   closetSelectionMode = true;
-  
-  // Limpiar selecciones anteriores
   closetSelectedItems = { tops: [], bottoms: [], shoes: [] };
   
-  // Mostrar botón de generar
   showClosetGenerateSection();
   
-  // Mostrar ocasiones si no hay una seleccionada
   if (!selectedOccasion) {
     document.getElementById('occasionSelector').style.display = 'block';
   }
   
-  // Renderizar la pestaña activa
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
@@ -349,7 +390,6 @@ function activateClosetSelectionMode() {
   }
 }
 
-// Renderizar fotos en pestaña del closet
 function renderClosetTab(tabId) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -363,11 +403,10 @@ function renderClosetTab(tabId) {
   const type = typeMap[tabId];
   if (!type) return;
   
-  const items = closetItems[type];
-  const selected = closetSelectedItems[type];
+  const items = closetItems[type] || [];
+  const selected = closetSelectedItems[type] || [];
   
   if (items.length === 0) {
-    // Preservar el header de contador
     const counterHeader = tabContent.querySelector('.tab-counter-header');
     const counterHTML = counterHeader ? counterHeader.outerHTML : '';
     
@@ -379,15 +418,10 @@ function renderClosetTab(tabId) {
       </div>
     `;
     
-    // IMPORTANTE: Reconfigurar carpetas después de mostrar mensaje vacío
-    setTimeout(() => {
-      setupClosetFolderUploads();
-    }, 500);
-    
+    setTimeout(setupClosetFolderUploads, 500);
     return;
   }
   
-  // Preservar el header de contador
   const counterHeader = tabContent.querySelector('.tab-counter-header');
   const counterHTML = counterHeader ? counterHeader.outerHTML : '';
   
@@ -425,7 +459,6 @@ function renderClosetTab(tabId) {
           <div style="position: absolute; inset: 0; background: rgba(59, 130, 246, 0.3); border: 3px solid var(--primary);"></div>
         ` : ''}
         
-        <!-- Botón de eliminar -->
         <div style="position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; opacity: 0.8;" 
              onclick="event.stopPropagation(); removeClosetItem('${type}', ${index})">
           ×
@@ -439,37 +472,36 @@ function renderClosetTab(tabId) {
   });
   
   html += '</div>';
-  
   tabContent.innerHTML = html;
 }
 
-// CORREGIDA: Eliminar prenda del closet
+// CORREGIDA: Eliminar con gestión correcta de ambos arrays
 function removeClosetItem(type, index) {
   if (!confirm('¿Estás seguro de eliminar esta prenda del closet?')) return;
   
   console.log(`🗑️ Eliminando ${type}[${index}]`);
   
-  // Eliminar de todos los arrays
+  // Eliminar del closet
   closetItems[type].splice(index, 1);
-  uploadedFiles[type].splice(index, 1);
-  uploadedImages[type].splice(index, 1);
   
-  // Si estaba seleccionada, quitar de selección
+  // Si también estaba en recomendaciones, eliminar de ahí
+  const recommendationIndex = index; // Asumir mismo índice inicialmente
+  if (recommendationIndex < uploadedFiles[type].length) {
+    uploadedFiles[type].splice(recommendationIndex, 1);
+    uploadedImages[type].splice(recommendationIndex, 1);
+  }
+  
+  // Actualizar selecciones
   const selectedIndex = closetSelectedItems[type].indexOf(index);
   if (selectedIndex !== -1) {
     closetSelectedItems[type].splice(selectedIndex, 1);
   }
   
-  // Ajustar índices de selecciones mayores
   closetSelectedItems[type] = closetSelectedItems[type].map(idx => idx > index ? idx - 1 : idx);
   
-  // Guardar cambios
   saveUserClosetData();
-  
-  // Actualizar UI
   updateClosetDisplay();
   
-  // Re-renderizar pestaña actual
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
@@ -477,29 +509,24 @@ function removeClosetItem(type, index) {
   }
   
   updateClosetGenerateButton();
+  setTimeout(setupClosetFolderUploads, 500);
   
-  // IMPORTANTE: Reconfigurar carpetas después de eliminar
-  setTimeout(() => {
-    setupClosetFolderUploads();
-  }, 500);
+  const closetRemaining = getRemainingClosetSlots();
+  const recommendationRemaining = CONFIG.FILE_LIMITS[type] - uploadedFiles[type].length;
   
-  const remaining = getRemainingClosetSlots();
-  showNotification(`Prenda eliminada. ${remaining} espacios disponibles`, 'success');
+  showNotification(`Prenda eliminada. Closet: ${closetRemaining} espacios • Recomendaciones ${type}: ${recommendationRemaining} disponibles`, 'success');
 }
 
-// CORREGIDA: Manejar click en foto del closet (permitir deselección)
 function handleClosetPhotoClick(type, index) {
   const maxLimit = CONFIG.FILE_LIMITS[type];
   const currentSelected = closetSelectedItems[type];
   const isSelected = currentSelected.includes(index);
   
   if (isSelected) {
-    // DESELECCIONAR - CORREGIDO
     const indexToRemove = currentSelected.indexOf(index);
     closetSelectedItems[type].splice(indexToRemove, 1);
     showNotification(`${type === 'tops' ? 'Superior' : type === 'bottoms' ? 'Inferior' : 'Calzado'} deseleccionado`, 'info');
   } else {
-    // Seleccionar si no se excede el límite
     if (currentSelected.length >= maxLimit) {
       showNotification(`Máximo ${maxLimit} ${type === 'tops' ? 'superiores' : type === 'bottoms' ? 'inferiores' : 'zapatos'} para recomendaciones`, 'error');
       return;
@@ -509,22 +536,18 @@ function handleClosetPhotoClick(type, index) {
     showNotification(`${type === 'tops' ? 'Superior' : type === 'bottoms' ? 'Inferior' : 'Calzado'} seleccionado`, 'success');
   }
   
-  // Re-renderizar la pestaña actual
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
     renderClosetTab(tabId);
   }
   
-  // Actualizar botón de generar
   updateClosetGenerateButton();
 }
 
-// Mostrar sección de generar del closet
 function showClosetGenerateSection() {
   const closetContent = document.querySelector('.closet-content');
   
-  // Verificar si ya existe la sección
   let generateSection = document.getElementById('closetGenerateSection');
   if (!generateSection) {
     generateSection = document.createElement('div');
@@ -538,7 +561,6 @@ function showClosetGenerateSection() {
   updateClosetGenerateButton();
 }
 
-// Actualizar botón de generar del closet
 function updateClosetGenerateButton() {
   const generateSection = document.getElementById('closetGenerateSection');
   if (!generateSection) return;
@@ -551,15 +573,15 @@ function updateClosetGenerateButton() {
     <h3 style="color: #000000; margin-bottom: 1rem;">🚀 Generar desde Mi Closet</h3>
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center;">
       <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 10px;">
-        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.tops.length}/3</div>
+        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.tops.length}/${CONFIG.FILE_LIMITS.tops}</div>
         <div style="font-size: 0.9rem; color: #666;">Superiores</div>
       </div>
       <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 10px;">
-        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.bottoms.length}/3</div>
+        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.bottoms.length}/${CONFIG.FILE_LIMITS.bottoms}</div>
         <div style="font-size: 0.9rem; color: #666;">Inferiores</div>
       </div>
       <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 10px;">
-        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.shoes.length}/5</div>
+        <div style="font-weight: 600; color: var(--primary);">${closetSelectedItems.shoes.length}/${CONFIG.FILE_LIMITS.shoes}</div>
         <div style="font-size: 0.9rem; color: #666;">Calzado</div>
       </div>
     </div>
@@ -592,7 +614,6 @@ function updateClosetGenerateButton() {
   generateSection.innerHTML = html;
 }
 
-// Generar recomendaciones desde closet
 async function generateFromCloset() {
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
@@ -604,7 +625,6 @@ async function generateFromCloset() {
     return;
   }
   
-  // Verificar que hay selecciones
   const hasAll = closetSelectedItems.tops.length > 0 && 
                  closetSelectedItems.bottoms.length > 0 && 
                  closetSelectedItems.shoes.length > 0;
@@ -614,18 +634,15 @@ async function generateFromCloset() {
     return;
   }
   
-  // Preparar archivos seleccionados del closet
   const selectedFiles = {
     tops: closetSelectedItems.tops.map(index => uploadedFiles.tops[index]).filter(Boolean),
     bottoms: closetSelectedItems.bottoms.map(index => uploadedFiles.bottoms[index]).filter(Boolean),
     shoes: closetSelectedItems.shoes.map(index => uploadedFiles.shoes[index]).filter(Boolean)
   };
   
-  // Usar la función de generación existente con archivos seleccionados
   await generateRecommendationsWithFiles(selectedFiles);
 }
 
-// Guardar recomendación en closet
 function saveRecommendationToCloset(index) {
   if (!window.currentResults || !window.currentResults[index]) return;
   
@@ -634,7 +651,6 @@ function saveRecommendationToCloset(index) {
   showNotification('Recomendación guardada en tu closet ⭐', 'success');
 }
 
-// Guardar recomendación
 function saveRecommendation(recommendation) {
   const saved = {
     id: Date.now(),
@@ -654,7 +670,6 @@ function saveRecommendation(recommendation) {
   saveUserClosetData();
 }
 
-// Actualizar lista de recomendaciones guardadas
 function updateSavedRecommendationsList() {
   const list = document.getElementById('savedRecommendationsList');
   if (!list || savedRecommendations.length === 0) {
