@@ -277,20 +277,113 @@ function loginWithGoogle() {
 
 // Logout
 function logout() {
-  console.log('🚪 Cerrando sesión y limpiando estado...');
+  console.log('🚪 Cerrando sesión y limpiando estado completo...');
   
-  // Limpiar todo el estado
-  clearAllUserState();
-  
-  // Reset variables de autenticación
-  isLoggedIn = false;
-  currentUser = null;
-  profileCompleted = false;
-  closetMode = false; // Reset closetMode también
-  
-  updateAuthUI();
-  resetAllSections();
-  showNotification('Sesión cerrada', 'info');
+  try {
+    // Limpiar cache de verificación de perfil
+    clearProfileCheckCache();
+    
+    // Intentar desconectar de Google Auth
+    if (typeof google !== 'undefined' && google.accounts?.id) {
+      try {
+        google.accounts.id.disableAutoSelect();
+        console.log('✅ Google Auth auto-select deshabilitado');
+      } catch (e) {
+        console.log('⚠️ Error deshabilitando Google Auth:', e.message);
+      }
+    }
+    
+    // Limpiar todo el estado de la aplicación
+    if (typeof clearAllUserState === 'function') {
+      clearAllUserState();
+    }
+    
+    // Reset TODAS las variables globales de autenticación
+    isLoggedIn = false;
+    currentUser = null;
+    profileCompleted = false;
+    closetMode = false;
+    
+    // Reset variables de closet si existen
+    if (typeof closetItems !== 'undefined') {
+      closetItems = { tops: [], bottoms: [], shoes: [] };
+    }
+    if (typeof uploadedFiles !== 'undefined') {
+      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+    }
+    if (typeof uploadedImages !== 'undefined') {
+      uploadedImages = { tops: [], bottoms: [], shoes: [] };
+    }
+    if (typeof savedRecommendations !== 'undefined') {
+      savedRecommendations = [];
+    }
+    
+    // Reset UI de autenticación
+    updateAuthUI();
+    
+    // Reset todas las secciones
+    if (typeof resetAllSections === 'function') {
+      resetAllSections();
+    } else {
+      // Fallback manual si la función no existe
+      resetSectionsManually();
+    }
+    
+    // Limpiar resultados si existen
+    if (typeof clearPreviousResults === 'function') {
+      clearPreviousResults();
+    }
+    
+    showNotification('Sesión cerrada correctamente', 'success');
+    
+    console.log('✅ Logout completado - listo para nuevo login');
+    
+  } catch (error) {
+    console.error('❌ Error durante logout:', error);
+    // Forzar refresh si hay problemas graves
+    location.reload();
+  }
+}
+
+// ✅ NUEVA: Reset manual de secciones si la función principal no existe
+function resetSectionsManually() {
+  try {
+    // Ocultar todas las secciones post-login
+    const sectionsToHide = [
+      'welcomeSection',
+      'profileForm', 
+      'closetQuestion',
+      'closetContainer',
+      'occasionSelector',
+      'uploadArea'
+    ];
+    
+    sectionsToHide.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.style.display = 'none';
+      }
+    });
+    
+    // Limpiar contenido dinámico
+    const elementsToClean = [
+      'result',
+      'savedRecommendationsList'
+    ];
+    
+    elementsToClean.forEach(elementId => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.innerHTML = '';
+        element.style.display = 'none';
+      }
+    });
+    
+    console.log('✅ Secciones reseteadas manualmente');
+    
+  } catch (e) {
+    console.log('⚠️ Error en reset manual:', e.message);
+  }
 }
 
 // ✅ CORREGIDA: Actualizar UI de autenticación
