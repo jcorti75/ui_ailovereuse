@@ -42,7 +42,7 @@ function showManualEmailForm() {
     
     isLoggedIn = true;
     updateAuthUI();
-    showWelcomeSection();
+    handlePostLogin();
     showNotification(`Bienvenido ${currentUser.name}!`, 'success');
   } else {
     showNotification('Email inválido', 'error');
@@ -96,14 +96,78 @@ async function handleGoogleSignIn(response) {
     isLoggedIn = true;
     updateAuthUI();
     
-    // NUEVO: Cargar datos del usuario para verificar si ya tiene perfil
-    const hasUserData = loadUserClosetData();
-    
-    showWelcomeSection();
+    // Manejar el flujo post-login
+    await handlePostLogin();
     showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
   } catch (e) {
     console.error('Error en login:', e);
     showNotification('Error al iniciar sesión', 'error');
+  }
+}
+
+// ✅ NUEVA FUNCIÓN: Manejar flujo después del login
+async function handlePostLogin() {
+  console.log('🔍 Verificando estado del usuario...');
+  
+  // Verificar si el perfil ya está completado
+  const hasProfile = await checkExistingProfile(currentUser.email);
+  
+  if (hasProfile) {
+    console.log('✅ Usuario ya tiene perfil completado');
+    profileCompleted = true;
+    
+    // Cargar configuración del usuario (incluyendo closetMode)
+    loadUserConfiguration();
+    
+    // Mostrar mensaje de bienvenida para usuario existente
+    showWelcomeSection();
+    
+    // Decidir qué mostrar basado en closetMode
+    if (closetMode) {
+      console.log('✅ Closet mode activo - mostrando closet');
+      showClosetContainer();
+    } else {
+      console.log('✅ Modo directo - mostrando upload area');
+      showDirectUploadMode();
+    }
+  } else {
+    console.log('📝 Usuario nuevo - mostrando formulario de perfil');
+    profileCompleted = false;
+    showWelcomeSection();
+    showProfileForm();
+  }
+  
+  // Actualizar UI del botón Mi Closet
+  updateMiClosetButton();
+}
+
+// ✅ NUEVA FUNCIÓN: Cargar configuración del usuario
+function loadUserConfiguration() {
+  try {
+    const userData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
+    if (userData) {
+      const config = JSON.parse(userData);
+      closetMode = config.closetMode || false;
+      console.log('Configuración cargada - closetMode:', closetMode);
+    }
+  } catch (e) {
+    console.error('Error cargando configuración:', e);
+    closetMode = false;
+  }
+}
+
+// ✅ NUEVA FUNCIÓN: Actualizar botón Mi Closet condicionalmente
+function updateMiClosetButton() {
+  const miClosetBtn = document.querySelector('.mi-closet-btn');
+  
+  if (miClosetBtn) {
+    if (isLoggedIn && closetMode) {
+      miClosetBtn.style.display = 'flex';
+      console.log('✅ Botón Mi Closet mostrado - closetMode activo');
+    } else {
+      miClosetBtn.style.display = 'none';
+      console.log('❌ Botón Mi Closet oculto - closetMode inactivo');
+    }
   }
 }
 
@@ -147,13 +211,14 @@ function logout() {
   isLoggedIn = false;
   currentUser = null;
   profileCompleted = false;
+  closetMode = false; // Reset closetMode también
   
   updateAuthUI();
   resetAllSections();
   showNotification('Sesión cerrada', 'info');
 }
 
-// Actualizar UI de autenticación
+// ✅ CORREGIDA: Actualizar UI de autenticación
 function updateAuthUI() {
   const userInfo = document.getElementById('userInfo');
   const mainLoginBtn = document.getElementById('mainLoginBtn');
@@ -163,64 +228,186 @@ function updateAuthUI() {
     mainLoginBtn.style.display = 'none';
     document.getElementById('userName').textContent = currentUser.name;
     document.getElementById('userAvatar').src = currentUser.picture;
+    
+    // Actualizar botón Mi Closet según closetMode
+    updateMiClosetButton();
   } else {
     userInfo.style.display = 'none';
     mainLoginBtn.style.display = 'inline-flex';
+    
+    // Ocultar botón Mi Closet si no está loggeado
+    const miClosetBtn = document.querySelector('.mi-closet-btn');
+    if (miClosetBtn) {
+      miClosetBtn.style.display = 'none';
+    }
   }
 }
 
-// CORREGIDA: Verificar perfil existente (ahora también verifica localStorage)
+// ✅ MEJORADA: Verificar perfil existente
 async function checkExistingProfile(email) {
   try {
     console.log('🔍 Verificando perfil para:', email);
     
-    // PRIMERO: Verificar en localStorage si ya completó el perfil
-    const localData = localStorage.getItem(`noshopia_user_${email}`);
+    // PRIMERO: Verificar en localStorage con más detalle
+    const localStorageKey = `noshopia_user_${email}`;
+    const localData = localStorage.getItem(localStorageKey);
+    
     if (localData) {
       try {
         const userData = JSON.parse(localData);
-        if (userData.profileCompleted) {
-          console.log('✅ Perfil completado encontrado en localStorage');
-          profileCompleted = true;
+        console.log('Datos locales encontrados:', userData);
+        
+        // Verificar que tenga todos los campos del perfil completos
+        if (userData.profileCompleted === true &&
+            userData.profile &&
+            userData.profile.skin_color &&
+            userData.profile.age_range &&
+            userData.profile.gender) {
+          console.log('✅ Perfil completo encontrado en localStorage');
           return true;
+        } else {
+          console.log('⚠️ Perfil incompleto en localStorage');
         }
       } catch (e) {
         console.log('Error leyendo localStorage:', e);
+        localStorage.removeItem(localStorageKey); // Limpiar datos corruptos
       }
     }
     
     // SEGUNDO: Verificar en backend
-    const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('Response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Datos de verificación del backend:', data);
+    try {
+      const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
-      const hasProfile = data.exists === true || data.profile_exists === true;
-      if (hasProfile) {
-        profileCompleted = true;
-        // Guardar en localStorage para próximas visitas
-        const userData = JSON.parse(localData || '{}');
-        userData.profileCompleted = true;
-        localStorage.setItem(`noshopia_user_${email}`, JSON.stringify(userData));
-      }
+      console.log('Response status:', response.status);
       
-      return hasProfile;
-    } else {
-      console.log('Error en response:', response.status);
-      return false;
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Datos de verificación del backend:', data);
+        
+        const hasProfile = data.exists === true || data.profile_exists === true;
+        
+        if (hasProfile) {
+          // Actualizar localStorage con confirmación del backend
+          const userData = {
+            email: email,
+            profileCompleted: true,
+            profile: data.profile || {},
+            closetMode: data.closetMode || false,
+            lastVerified: Date.now()
+          };
+          localStorage.setItem(localStorageKey, JSON.stringify(userData));
+          return true;
+        }
+      } else {
+        console.log('Error en response del backend:', response.status);
+      }
+    } catch (apiError) {
+      console.log('Error conectando con API:', apiError);
+      // Continuar con flujo local
     }
+    
+    console.log('❌ No se encontró perfil completo');
+    return false;
+    
   } catch (e) {
     console.error('Error verificando perfil:', e);
     return false;
   }
+}
+
+// ✅ NUEVA FUNCIÓN: Activar closet mode (llamada desde closet.js)
+function activateClosetMode() {
+  console.log('✅ Activando closet mode...');
+  closetMode = true;
+  
+  // Guardar en localStorage
+  if (currentUser) {
+    const userData = JSON.parse(localStorage.getItem(`noshopia_user_${currentUser.email}`) || '{}');
+    userData.closetMode = true;
+    localStorage.setItem(`noshopia_user_${currentUser.email}`, JSON.stringify(userData));
+  }
+  
+  // Mostrar botón Mi Closet
+  updateMiClosetButton();
+}
+
+// ✅ NUEVA FUNCIÓN: Desactivar closet mode (modo directo)
+function deactivateClosetMode() {
+  console.log('❌ Desactivando closet mode (modo directo)...');
+  closetMode = false;
+  
+  // Guardar en localStorage
+  if (currentUser) {
+    const userData = JSON.parse(localStorage.getItem(`noshopia_user_${currentUser.email}`) || '{}');
+    userData.closetMode = false;
+    localStorage.setItem(`noshopia_user_${currentUser.email}`, JSON.stringify(userData));
+  }
+  
+  // Ocultar botón Mi Closet
+  updateMiClosetButton();
+}
+
+// ✅ NUEVA FUNCIÓN: Marcar perfil como completado (llamada desde profile.js)
+function markProfileAsCompleted(profileData) {
+  console.log('✅ Marcando perfil como completado:', profileData);
+  
+  profileCompleted = true;
+  
+  if (currentUser) {
+    const userData = {
+      email: currentUser.email,
+      name: currentUser.name,
+      profileCompleted: true,
+      profile: profileData,
+      closetMode: false, // Por defecto, se decidirá después
+      completedAt: Date.now(),
+      lastLogin: Date.now()
+    };
+    
+    const storageKey = `noshopia_user_${currentUser.email}`;
+    localStorage.setItem(storageKey, JSON.stringify(userData));
+    
+    console.log('✅ Perfil guardado en localStorage:', userData);
+  }
+  
+  // Ocultar formulario de perfil
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    profileForm.style.display = 'none';
+  }
+  
+  // Mostrar pregunta del closet
+  const closetQuestion = document.getElementById('closetQuestion');
+  if (closetQuestion) {
+    closetQuestion.style.display = 'block';
+  }
+}
+
+// ✅ NUEVA FUNCIÓN: Verificar si el perfil está realmente completo
+function isProfileComplete() {
+  return profileCompleted === true;
+}
+
+// ✅ NUEVA FUNCIÓN: Obtener datos del perfil guardado
+function getUserProfileData() {
+  if (!currentUser) return null;
+  
+  try {
+    const userData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      return parsed.profile || null;
+    }
+  } catch (e) {
+    console.error('Error obteniendo datos del perfil:', e);
+  }
+  
+  return null;
 }
 
 // Funciones de precios
