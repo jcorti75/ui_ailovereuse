@@ -8,7 +8,7 @@ const CONFIG = {
     bottoms: 3, 
     shoes: 5 
   },
-  TOTAL_CLOSET_LIMIT: 6  // NUEVO: Límite total de prendas en el armario
+  TOTAL_CLOSET_LIMIT: 15  // NUEVO: Límite total de prendas en el armario
 };
 
 // Variables globales de estado
