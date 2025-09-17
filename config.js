@@ -1,16 +1,13 @@
 // config.js - Configuración Global de NoShopiA
 
 const CONFIG = {
-  GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
-  API_BASE: "https://noshopia-production.up.railway.app",
-  FILE_LIMITS: { 
-    tops: 3, 
-    bottoms: 3, 
-    shoes: 5 
-  },
-  TOTAL_CLOSET_LIMIT: 15  // NUEVO: Límite total de prendas en el armario
-};
-
+  TOTAL_CLOSET_LIMIT: 6,        // Máximo en el closet
+  FILE_LIMITS: {
+    tops: 3,      // Máximo seleccionables para recomendación
+    bottoms: 3,   // Máximo seleccionables para recomendación  
+    shoes: 5      // Máximo seleccionables para recomendación
+  }
+}
 // Variables globales de estado
 let isLoggedIn = false;
 let currentUser = null;
