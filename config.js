@@ -1,13 +1,47 @@
 // config.js - Configuración Global de NoShopiA
 
+// config.js - Configuración Global
+
 const CONFIG = {
-  TOTAL_CLOSET_LIMIT: 6,        // Máximo en el closet
+  // API Configuration
+  API_BASE: 'https://noshopia-production.up.railway.app',
+  
+  // Google OAuth - TU CLIENT ID CORRECTO
+  GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
+  
+  // Límite total del closet - CORREGIDO A 6
+  TOTAL_CLOSET_LIMIT: 6,
+  
+  // File upload limits per type
   FILE_LIMITS: {
-    tops: 3,      // Máximo seleccionables para recomendación
-    bottoms: 3,   // Máximo seleccionables para recomendación  
-    shoes: 5      // Máximo seleccionables para recomendación
+    tops: 3,     // Máximo 3 superiores seleccionables para recomendación
+    bottoms: 3,  // Máximo 3 inferiores seleccionables para recomendación  
+    shoes: 5     // Máximo 5 zapatos seleccionables para recomendación
+  },
+  
+  // Supported file types
+  SUPPORTED_FORMATS: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  
+  // Maximum file size (5MB)
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  
+  // Performance settings
+  MAX_COMBINATIONS: 100,
+  PROCESSING_TIMEOUT: 30000,
+  
+  // UI Settings
+  ANIMATION_DURATION: 300,
+  NOTIFICATION_DURATION: 3000,
+  
+  // Feature flags
+  FEATURES: {
+    CLOSET_MODE: true,
+    DIRECT_MODE: true,
+    SAVE_RECOMMENDATIONS: true,
+    USER_PROFILES: true
   }
-}
+};
+
 // Variables globales de estado
 let isLoggedIn = false;
 let currentUser = null;
