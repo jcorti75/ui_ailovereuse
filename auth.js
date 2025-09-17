@@ -105,40 +105,115 @@ async function handleGoogleSignIn(response) {
   }
 }
 
-// ✅ NUEVA FUNCIÓN: Manejar flujo después del login
+// ✅ NUEVA FUNCIÓN: Manejar flujo después del login - VERSIÓN DEFENSIVA
 async function handlePostLogin() {
-  console.log('🔍 Verificando estado del usuario...');
-  
-  // Verificar si el perfil ya está completado
-  const hasProfile = await checkExistingProfile(currentUser.email);
-  
-  if (hasProfile) {
-    console.log('✅ Usuario ya tiene perfil completado');
-    profileCompleted = true;
+  try {
+    console.log('🔍 Verificando estado del usuario...');
     
-    // Cargar configuración del usuario (incluyendo closetMode)
-    loadUserConfiguration();
-    
-    // Mostrar mensaje de bienvenida para usuario existente
-    showWelcomeSection();
-    
-    // Decidir qué mostrar basado en closetMode
-    if (closetMode) {
-      console.log('✅ Closet mode activo - mostrando closet');
-      showClosetContainer();
-    } else {
-      console.log('✅ Modo directo - mostrando upload area');
-      showDirectUploadMode();
+    if (!currentUser || !currentUser.email) {
+      throw new Error('Usuario no válido');
     }
-  } else {
-    console.log('📝 Usuario nuevo - mostrando formulario de perfil');
-    profileCompleted = false;
-    showWelcomeSection();
-    showProfileForm();
+    
+    // Verificar si el perfil ya está completado
+    let hasProfile = false;
+    try {
+      hasProfile = await checkExistingProfile(currentUser.email);
+    } catch (profileError) {
+      console.log('⚠️ Error verificando perfil:', profileError.message);
+      hasProfile = false; // Asumir que no tiene perfil si hay error
+    }
+    
+    if (hasProfile) {
+      console.log('✅ Usuario ya tiene perfil completado');
+      profileCompleted = true;
+      
+      // Cargar configuración del usuario (incluyendo closetMode)
+      try {
+        loadUserConfiguration();
+      } catch (configError) {
+        console.log('⚠️ Error cargando configuración:', configError.message);
+        closetMode = false; // Valor por defecto
+      }
+      
+      // Mostrar mensaje de bienvenida para usuario existente
+      try {
+        showWelcomeSection();
+      } catch (welcomeError) {
+        console.log('⚠️ Error mostrando bienvenida:', welcomeError.message);
+      }
+      
+      // Decidir qué mostrar basado en closetMode
+      if (closetMode) {
+        console.log('✅ Closet mode activo - mostrando closet');
+        try {
+          if (typeof showClosetContainer === 'function') {
+            showClosetContainer();
+          } else {
+            console.log('⚠️ showClosetContainer no existe, saltando');
+          }
+        } catch (closetError) {
+          console.log('⚠️ Error mostrando closet:', closetError.message);
+        }
+      } else {
+        console.log('✅ Modo directo - mostrando upload area');
+        try {
+          if (typeof showDirectUploadMode === 'function') {
+            showDirectUploadMode();
+          } else {
+            console.log('⚠️ showDirectUploadMode no existe, saltando');
+          }
+        } catch (directError) {
+          console.log('⚠️ Error mostrando modo directo:', directError.message);
+        }
+      }
+    } else {
+      console.log('📝 Usuario nuevo - mostrando formulario de perfil');
+      profileCompleted = false;
+      
+      try {
+        showWelcomeSection();
+      } catch (welcomeError) {
+        console.log('⚠️ Error mostrando bienvenida:', welcomeError.message);
+      }
+      
+      try {
+        // Mostrar formulario de perfil
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+          profileForm.style.display = 'block';
+        } else {
+          console.log('⚠️ Elemento profileForm no encontrado');
+        }
+      } catch (formError) {
+        console.log('⚠️ Error mostrando formulario:', formError.message);
+      }
+    }
+    
+    // Actualizar UI del botón Mi Closet
+    try {
+      updateMiClosetButton();
+    } catch (buttonError) {
+      console.log('⚠️ Error actualizando botón Mi Closet:', buttonError.message);
+    }
+    
+    console.log('✅ handlePostLogin completado exitosamente');
+    
+  } catch (error) {
+    console.error('❌ Error en handlePostLogin:', error);
+    
+    // En caso de error grave, al menos mostrar mensaje de bienvenida
+    try {
+      showWelcomeSection();
+      const profileForm = document.getElementById('profileForm');
+      if (profileForm) {
+        profileForm.style.display = 'block';
+      }
+    } catch (fallbackError) {
+      console.error('❌ Error incluso en fallback:', fallbackError);
+    }
+    
+    // NO relanzar el error para evitar que aparezca "Error al iniciar sesión"
   }
-  
-  // Actualizar UI del botón Mi Closet
-  updateMiClosetButton();
 }
 
 // ✅ NUEVA FUNCIÓN: Cargar configuración del usuario
