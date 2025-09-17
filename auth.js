@@ -410,6 +410,125 @@ function getUserProfileData() {
   return null;
 }
 
+// ✅ FUNCIÓN FALTANTE: Enviar formulario de perfil de usuario
+function submitUserProfile() {
+  console.log('📝 Enviando formulario de perfil...');
+  
+  if (!isLoggedIn || !currentUser) {
+    showNotification('Debes estar logueado', 'error');
+    return;
+  }
+  
+  // Recopilar datos del formulario
+  const profileData = {};
+  let isComplete = true;
+  
+  // Obtener selecciones de color de piel
+  const skinColorSelected = document.querySelector('.profile-option[data-field="skin_color"].selected');
+  if (skinColorSelected) {
+    profileData.skin_color = skinColorSelected.dataset.value;
+  } else {
+    isComplete = false;
+  }
+  
+  // Obtener selecciones de rango de edad
+  const ageRangeSelected = document.querySelector('.profile-option[data-field="age_range"].selected');
+  if (ageRangeSelected) {
+    profileData.age_range = ageRangeSelected.dataset.value;
+  } else {
+    isComplete = false;
+  }
+  
+  // Obtener selecciones de género
+  const genderSelected = document.querySelector('.profile-option[data-field="gender"].selected');
+  if (genderSelected) {
+    profileData.gender = genderSelected.dataset.value;
+  } else {
+    isComplete = false;
+  }
+  
+  if (!isComplete) {
+    showNotification('Por favor completa todos los campos del perfil', 'error');
+    return;
+  }
+  
+  console.log('Datos del perfil recopilados:', profileData);
+  
+  // Marcar perfil como completado
+  markProfileAsCompleted(profileData);
+  
+  showNotification('Perfil completado exitosamente', 'success');
+  
+  // También intentar enviar al backend (opcional, puede fallar)
+  try {
+    sendProfileToBackend(profileData);
+  } catch (e) {
+    console.log('No se pudo enviar al backend, pero se guardó localmente');
+  }
+}
+
+// ✅ Función auxiliar para manejar clicks en opciones del perfil
+function handleProfileOptionClick(element) {
+  const field = element.dataset.field;
+  
+  // Remover selección anterior del mismo campo
+  document.querySelectorAll(`.profile-option[data-field="${field}"]`).forEach(option => {
+    option.classList.remove('selected');
+  });
+  
+  // Agregar selección a la opción clickeada
+  element.classList.add('selected');
+  
+  // Verificar si todas las opciones están seleccionadas
+  const selectedOptions = document.querySelectorAll('.profile-option.selected');
+  const createBtn = document.getElementById('createProfileBtn');
+  
+  if (selectedOptions.length >= 3) { // 3 campos requeridos
+    createBtn.disabled = false;
+    createBtn.style.opacity = '1';
+    createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Mi Perfil';
+  } else {
+    createBtn.disabled = true;
+    createBtn.style.opacity = '0.6';
+    createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+  }
+}
+
+// ✅ Enviar datos al backend (opcional)
+async function sendProfileToBackend(profileData) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: currentUser.email,
+        name: currentUser.name,
+        profile: profileData
+      })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Perfil enviado al backend exitosamente');
+    } else {
+      console.log('⚠️ Error enviando al backend, pero guardado localmente');
+    }
+  } catch (e) {
+    console.log('⚠️ No se pudo conectar al backend, pero guardado localmente');
+  }
+}
+
+// ✅ Inicializar listeners del formulario de perfil
+function initializeProfileForm() {
+  // Agregar event listeners a todas las opciones del perfil
+  document.querySelectorAll('.profile-option').forEach(option => {
+    option.addEventListener('click', function() {
+      handleProfileOptionClick(this);
+    });
+  });
+}
+
 // Funciones de precios
 function startFreePlan() {
   if (!isLoggedIn) {
