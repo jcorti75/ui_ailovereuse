@@ -7,7 +7,7 @@ const CONFIG = {
   GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
   
   // Límite total del closet - CORREGIDO A 6
-  TOTAL_CLOSET_LIMIT: 6,
+  TOTAL_CLOSET_LIMIT: 11,
   
   // File upload limits per type
   FILE_LIMITS: {
