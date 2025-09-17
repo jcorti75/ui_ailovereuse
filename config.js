@@ -1,5 +1,4 @@
 // config.js - Configuración Global de NoShopiA
-
 const CONFIG = {
   // API Configuration
   API_BASE: 'https://noshopia-production.up.railway.app',
