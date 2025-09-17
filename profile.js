@@ -66,7 +66,6 @@ async function submitUserProfile() {
       method: 'POST',
       body: formData
     });
-
     console.log('Response status:', response.status);
     
     if (!response.ok) {
@@ -80,6 +79,9 @@ async function submitUserProfile() {
     
     if (data.success) {
       showNotification('¡Perfil creado exitosamente!', 'success');
+      
+      // ✅ CRÍTICO: Marcar perfil como completado localmente
+      markProfileAsCompleted(userProfile);
       
       // Ocultar perfil y mostrar siguiente paso
       document.getElementById('profileForm').style.display = 'none';
