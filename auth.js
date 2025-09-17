@@ -623,22 +623,6 @@ function getUserProfileData() {
   return null;
 }
 
-// Funciones de precios
-function startFreePlan() {
-  if (!isLoggedIn) {
-    loginWithGoogle();
-    return;
-  } else {
-    showNotification('¡Plan Gratis ya activado!', 'success');
-    scrollToSection('upload');
-  }
-}
-
-function upgradeToPremium() {
-  showNotification('Próximamente: Sistema de pagos Premium', 'info');
-}
-
-// Funciones de precios
 function startFreePlan() {
   if (!isLoggedIn) {
     loginWithGoogle();
