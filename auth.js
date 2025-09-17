@@ -243,38 +243,45 @@ function updateAuthUI() {
   }
 }
 
-// ✅ MEJORADA: Verificar perfil existente
+// ✅ MEJORADA: Verificar perfil existente - VERSIÓN MÁS ROBUSTA
 async function checkExistingProfile(email) {
   try {
     console.log('🔍 Verificando perfil para:', email);
     
-    // PRIMERO: Verificar en localStorage con más detalle
+    // PRIMERO: Verificar en localStorage con verificación más flexible
     const localStorageKey = `noshopia_user_${email}`;
     const localData = localStorage.getItem(localStorageKey);
     
     if (localData) {
       try {
         const userData = JSON.parse(localData);
-        console.log('Datos locales encontrados:', userData);
+        console.log('📋 Datos locales encontrados:', userData);
         
-        // Verificar que tenga todos los campos del perfil completos
-        if (userData.profileCompleted === true &&
-            userData.profile &&
-            userData.profile.skin_color &&
-            userData.profile.age_range &&
-            userData.profile.gender) {
-          console.log('✅ Perfil completo encontrado en localStorage');
-          return true;
+        // VERIFICACIÓN MÁS FLEXIBLE - Solo requiere que esté marcado como completado
+        if (userData.profileCompleted === true) {
+          console.log('✅ Perfil marcado como completado en localStorage');
+          
+          // Verificar que tenga al menos algo en profile (más flexible)
+          if (userData.profile && Object.keys(userData.profile).length > 0) {
+            console.log('✅ Perfil tiene datos válidos');
+            return true;
+          } else {
+            console.log('⚠️ Perfil completado pero sin datos - aceptando');
+            return true; // Aceptar incluso sin datos detallados
+          }
         } else {
-          console.log('⚠️ Perfil incompleto en localStorage');
+          console.log('❌ Perfil NO marcado como completado en localStorage');
         }
       } catch (e) {
         console.log('Error leyendo localStorage:', e);
         localStorage.removeItem(localStorageKey); // Limpiar datos corruptos
       }
+    } else {
+      console.log('❌ No hay datos en localStorage para:', localStorageKey);
     }
     
-    // SEGUNDO: Verificar en backend
+    // SEGUNDO: Solo verificar backend si localStorage no tiene nada
+    console.log('🌐 Verificando en backend...');
     try {
       const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
         method: 'GET',
@@ -283,39 +290,57 @@ async function checkExistingProfile(email) {
         }
       });
       
-      console.log('Response status:', response.status);
+      console.log('📡 Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Datos de verificación del backend:', data);
+        console.log('📊 Datos de verificación del backend:', data);
         
         const hasProfile = data.exists === true || data.profile_exists === true;
         
         if (hasProfile) {
+          console.log('✅ Backend confirma que el perfil existe');
           // Actualizar localStorage con confirmación del backend
           const userData = {
             email: email,
             profileCompleted: true,
-            profile: data.profile || {},
+            profile: data.profile || { completed: true },
             closetMode: data.closetMode || false,
-            lastVerified: Date.now()
+            lastVerified: Date.now(),
+            source: 'backend'
           };
           localStorage.setItem(localStorageKey, JSON.stringify(userData));
           return true;
+        } else {
+          console.log('❌ Backend dice que no existe el perfil');
         }
+      } else if (response.status === 404) {
+        console.log('❌ Backend devuelve 404 - perfil no existe en backend');
       } else {
-        console.log('Error en response del backend:', response.status);
+        console.log('⚠️ Error en response del backend:', response.status);
       }
     } catch (apiError) {
-      console.log('Error conectando con API:', apiError);
-      // Continuar con flujo local
+      console.log('🔌 Error conectando con API (normal si está offline):', apiError.message);
+      
+      // Si no podemos conectar al backend, ser más permisivo con localStorage
+      if (localData) {
+        try {
+          const userData = JSON.parse(localData);
+          if (userData.profileCompleted === true) {
+            console.log('✅ Aceptando perfil local debido a error de conectividad');
+            return true;
+          }
+        } catch (e) {
+          // Ignorar errores de parsing
+        }
+      }
     }
     
-    console.log('❌ No se encontró perfil completo');
+    console.log('❌ No se encontró perfil válido en localStorage ni backend');
     return false;
     
   } catch (e) {
-    console.error('Error verificando perfil:', e);
+    console.error('Error general verificando perfil:', e);
     return false;
   }
 }
