@@ -1,8 +1,8 @@
-// upload.js - Funciones de Subida con Mensajes Amigables
+// upload.js - Funciones de Subida CORREGIDAS (sin errores de codificación)
 
-// FUNCIÓN SILENCIOSA: Limpiar automáticamente sin mostrar errores técnicos
+// Función silenciosa para corregir archivos automáticamente
 function silentlyFixFiles() {
-  console.log('🔧 Auto-corrigiendo contadores...');
+  console.log('Auto-corrigiendo contadores...');
   
   let needsUpdate = false;
   
@@ -22,7 +22,7 @@ function silentlyFixFiles() {
     
     if (before !== after) {
       needsUpdate = true;
-      console.log(`🔧 ${type}: Corregido de ${before} a ${after} archivos`);
+      console.log(`${type}: Corregido de ${before} a ${after} archivos`);
     }
   });
   
@@ -42,7 +42,7 @@ function silentlyFixFiles() {
   return needsUpdate;
 }
 
-// CORREGIDA: Manejar subida con auto-corrección silenciosa
+// Manejar subida con auto-corrección silenciosa
 async function handleFileUpload(type, input) {
   // Auto-corregir silenciosamente antes de cualquier operación
   silentlyFixFiles();
@@ -56,7 +56,7 @@ async function handleFileUpload(type, input) {
   const files = Array.from(input.files);
   if (files.length === 0) return;
   
-  console.log(`📁 Subiendo ${files.length} archivos para ${type}`);
+  console.log(`Subiendo ${files.length} archivos para ${type}`);
   
   // Conteo real de archivos válidos
   const currentValidFiles = uploadedFiles[type].filter(f => f instanceof File).length;
@@ -100,10 +100,13 @@ async function handleFileUpload(type, input) {
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log(`📷 Procesando: ${file.name}`);
+      console.log(`Procesando: ${file.name}`);
       
       const preview = await createPreview(file, type);
-      document.getElementById(`${type}-preview`).appendChild(preview);
+      const previewContainer = document.getElementById(`${type}-preview`);
+      if (previewContainer) {
+        previewContainer.appendChild(preview);
+      }
       
       // Guardar archivo original
       uploadedFiles[type].push(file);
@@ -192,7 +195,7 @@ function createPreview(file, type) {
         
         const index = Array.from(container.parentNode.children).indexOf(container);
         if (index !== -1) {
-          console.log(`🗑️ Eliminando imagen ${index} de ${type}`);
+          console.log(`Eliminando imagen ${index} de ${type}`);
           
           // Eliminar de ambos arrays
           uploadedFiles[type].splice(index, 1);
@@ -241,7 +244,7 @@ function createPreview(file, type) {
   });
 }
 
-// CORREGIDA: Labels con conteo real y mensajes claros
+// Labels con conteo real y mensajes claros
 function updateUploadLabel(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
   if (!label) return;
@@ -258,7 +261,6 @@ function updateUploadLabel(type) {
     shoes: { name: 'Zapatos', max: 5 }
   };
   const typeInfo = labels[type];
-  const limit = CONFIG.FILE_LIMITS[type];
   
   if (count === 0) {
     label.innerHTML = `📤 Subir ${typeInfo.name} (mín 1, máx ${limit})`;
@@ -277,7 +279,7 @@ function updateUploadLabel(type) {
   label.title = `${typeInfo.name}: ${count} de ${limit} fotos subidas. Mínimo 1 para generar recomendaciones.`;
 }
 
-// CORREGIDA: Botón con auto-corrección silenciosa y mensajes amigables
+// Botón con auto-corrección silenciosa y mensajes amigables
 function updateGenerateButton() {
   const btn = document.getElementById('generateBtn');
   if (!btn) return;
@@ -357,7 +359,7 @@ function updateGenerateButton() {
   }
 }
 
-// NUEVA: Función para limpiar todo si el usuario lo pide (opcional)
+// Función para limpiar todo si el usuario lo pide
 function resetAllUploads() {
   uploadedFiles = { tops: [], bottoms: [], shoes: [] };
   uploadedImages = { tops: [], bottoms: [], shoes: [] };
@@ -377,5 +379,5 @@ function resetAllUploads() {
   showNotification('Todas las fotos han sido eliminadas', 'info');
 }
 
-// Exponer función de reset globalmente si se necesita
+// Exponer función de reset globalmente
 window.resetAllUploads = resetAllUploads;
