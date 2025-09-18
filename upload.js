@@ -1,383 +1,182 @@
-// upload.js - Funciones de Subida CORREGIDAS (sin errores de codificación)
+// config.js - Configuración completa consolidada
 
-// Función silenciosa para corregir archivos automáticamente
-function silentlyFixFiles() {
-  console.log('Auto-corrigiendo contadores...');
+const CONFIG = {
+  GOOGLE_CLIENT_ID: "326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com",
+  API_BASE: "https://noshopia-production.up.railway.app",
   
-  let needsUpdate = false;
+  // LÍMITES DIFERENCIADOS
+  RECOMMENDATION_LIMITS: { tops: 3, bottoms: 3, shoes: 5 },  // Sin closet
+  CLOSET_MAX_TOTAL: 15,                                      // Closet total
+  MIN_REQUIRED: { tops: 1, bottoms: 1, shoes: 1 },         // Mínimos obligatorios
   
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const before = uploadedFiles[type].length;
-    
-    // Filtrar solo archivos válidos silenciosamente
-    uploadedFiles[type] = uploadedFiles[type].filter(file => file instanceof File);
-    uploadedImages[type] = uploadedImages[type].filter(img => typeof img === 'string' && img.startsWith('data:'));
-    
-    // Sincronizar longitudes
-    const minLength = Math.min(uploadedFiles[type].length, uploadedImages[type].length);
-    uploadedFiles[type] = uploadedFiles[type].slice(0, minLength);
-    uploadedImages[type] = uploadedImages[type].slice(0, minLength);
-    
-    const after = uploadedFiles[type].length;
-    
-    if (before !== after) {
-      needsUpdate = true;
-      console.log(`${type}: Corregido de ${before} a ${after} archivos`);
-    }
-  });
-  
-  if (needsUpdate) {
-    // Actualizar UI silenciosamente
-    ['tops', 'bottoms', 'shoes'].forEach(type => {
-      updateUploadLabel(type);
-    });
-    updateGenerateButton();
-    
-    // Guardar estado corregido
-    if (closetMode) {
-      saveUserClosetData();
-    }
-  }
-  
-  return needsUpdate;
-}
+  // Configuración técnica
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  ALLOWED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+};
 
-// Manejar subida con auto-corrección silenciosa
-async function handleFileUpload(type, input) {
-  // Auto-corregir silenciosamente antes de cualquier operación
-  silentlyFixFiles();
-  
-  if (!isLoggedIn) {
-    showNotification('Debes iniciar sesión primero', 'error');
-    input.value = '';
-    return;
-  }
-  
-  const files = Array.from(input.files);
-  if (files.length === 0) return;
-  
-  console.log(`Subiendo ${files.length} archivos para ${type}`);
-  
-  // Conteo real de archivos válidos
-  const currentValidFiles = uploadedFiles[type].filter(f => f instanceof File).length;
-  const recommendationLimit = CONFIG.FILE_LIMITS[type];
-  const available = recommendationLimit - currentValidFiles;
-  
-  if (available < files.length) {
-    const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
-    const typeName = typeNames[type];
-    const message = available === 0 
-      ? `Ya tienes el máximo de ${typeName} (${recommendationLimit}). Elimina algunas fotos para subir nuevas.`
-      : `Solo puedes subir ${available} foto${available > 1 ? 's' : ''} más de ${typeName}. Máximo: ${recommendationLimit}`;
-    
-    showNotification(message, 'error');
-    input.value = '';
-    return;
-  }
-  
-  // Validaciones básicas
-  const invalidFiles = files.filter(file => !CONFIG.ALLOWED_TYPES.includes(file.type));
-  if (invalidFiles.length > 0) {
-    showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
-    input.value = '';
-    return;
-  }
-  
-  const oversizedFiles = files.filter(file => file.size > CONFIG.MAX_FILE_SIZE);
-  if (oversizedFiles.length > 0) {
-    showNotification(`Las imágenes son muy grandes. Máximo ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB por archivo`, 'error');
-    input.value = '';
-    return;
-  }
-  
-  // Limpiar resultados anteriores
-  if (window.currentResults) {
-    clearPreviousResults();
-  }
-  
-  try {
-    showNotification(`Subiendo ${files.length} foto${files.length > 1 ? 's' : ''}...`, 'info');
-    
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      console.log(`Procesando: ${file.name}`);
-      
-      const preview = await createPreview(file, type);
-      const previewContainer = document.getElementById(`${type}-preview`);
-      if (previewContainer) {
-        previewContainer.appendChild(preview);
-      }
-      
-      // Guardar archivo original
-      uploadedFiles[type].push(file);
-      
-      const imageUrl = await getImageDataUrl(file);
-      uploadedImages[type].push(imageUrl);
-      
-      if (closetMode) {
-        closetItems[type].push(imageUrl);
-      }
-    }
-    
-    // Actualizar UI
-    updateUploadLabel(type);
-    updateGenerateButton();
-    
-    if (closetMode) {
-      saveUserClosetData();
-      loadClosetItems();
-    }
-    
-    const finalCount = uploadedFiles[type].filter(f => f instanceof File).length;
-    const remaining = CONFIG.FILE_LIMITS[type] - finalCount;
-    
-    const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
-    const typeName = typeNames[type];
-    
-    let message = `${files.length} foto${files.length > 1 ? 's' : ''} subida${files.length > 1 ? 's' : ''}`;
-    if (remaining > 0) {
-      message += `. Puedes subir ${remaining} ${typeName} más`;
-    } else {
-      message += `. Ya tienes el máximo de ${typeName}`;
-    }
-    
-    showNotification(message, 'success');
-    
-  } catch (error) {
-    console.error('Error procesando archivos:', error);
-    showNotification('Hubo un problema subiendo algunas fotos. Intenta de nuevo.', 'error');
-  }
-  
-  input.value = '';
-}
+// Variables globales
+window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+window.closetItems = { tops: [], bottoms: [], shoes: [] };
+window.closetMode = false;
+window.selectedOccasion = null;  // ⭐ CRÍTICO: Variable de ocasión
+window.isLoggedIn = false;
+window.currentUser = null;
+window.currentResults = null;
 
-function getImageDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    if (!(file instanceof File)) {
-      reject(new Error('Archivo inválido'));
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result);
-    reader.onerror = (e) => reject(e);
-    reader.readAsDataURL(file);
-  });
-}
+// OCASIONES DISPONIBLES (según tu backend)
+const AVAILABLE_OCCASIONS = [
+  'casual',
+  'oficina', 
+  'deportivo',
+  'formal',
+  'matrimonio'
+];
 
-function createPreview(file, type) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const container = document.createElement('div');
-      container.style.position = 'relative';
-      container.style.display = 'inline-block';
-      container.style.margin = '0.5rem';
-      
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.className = 'preview-image';
-      img.alt = file.name;
-      img.title = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
-      
-      img.onerror = () => {
-        console.error('Error cargando imagen:', file.name);
-        container.innerHTML = '<div style="width: 120px; height: 120px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; border-radius: 15px; color: #666;">Error</div>';
-      };
-      
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-image';
-      removeBtn.innerHTML = '×';
-      removeBtn.title = 'Eliminar imagen';
-      removeBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const index = Array.from(container.parentNode.children).indexOf(container);
-        if (index !== -1) {
-          console.log(`Eliminando imagen ${index} de ${type}`);
-          
-          // Eliminar de ambos arrays
-          uploadedFiles[type].splice(index, 1);
-          uploadedImages[type].splice(index, 1);
-          
-          if (closetMode && closetItems[type]) {
-            closetItems[type].splice(index, 1);
-            saveUserClosetData();
-          }
-          
-          updateUploadLabel(type);
-          updateGenerateButton();
-          
-          if (window.currentResults) {
-            clearPreviousResults();
-          }
-          
-          if (closetMode) {
-            loadClosetItems();
-          }
-          
-          const remaining = CONFIG.FILE_LIMITS[type] - uploadedFiles[type].filter(f => f instanceof File).length;
-          const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
-          const typeName = typeNames[type];
-          
-          if (remaining > 0) {
-            showNotification(`Imagen eliminada. Puedes subir ${remaining} ${typeName} más`, 'info');
-          } else {
-            showNotification(`Imagen eliminada. Ya tienes el máximo de ${typeName}`, 'info');
-          }
-        }
-        container.remove();
-      };
-      
-      container.appendChild(img);
-      container.appendChild(removeBtn);
-      resolve(container);
-    };
-    
-    reader.onerror = (e) => {
-      console.error('Error leyendo archivo:', file.name, e);
-      reject(e);
-    };
-    
-    reader.readAsDataURL(file);
-  });
-}
-
-// Labels con conteo real y mensajes claros
-function updateUploadLabel(type) {
-  const label = document.querySelector(`label[for="${type}-upload"]`);
-  if (!label) return;
+// Función para manejar cambio de ocasión ⭐ CRÍTICO
+window.setSelectedOccasion = function(occasion) {
+  console.log('Ocasión seleccionada:', occasion);
+  window.selectedOccasion = occasion;
   
-  // Contar solo archivos válidos
-  const validFiles = uploadedFiles[type].filter(file => file instanceof File);
-  const count = validFiles.length;
-  const limit = CONFIG.FILE_LIMITS[type];
-  const remaining = limit - count;
-  
-  const labels = { 
-    tops: { name: 'Superiores', max: 3 }, 
-    bottoms: { name: 'Inferiores', max: 3 }, 
-    shoes: { name: 'Zapatos', max: 5 }
-  };
-  const typeInfo = labels[type];
-  
-  if (count === 0) {
-    label.innerHTML = `📤 Subir ${typeInfo.name} (mín 1, máx ${limit})`;
-    label.style.background = 'var(--primary)';
-    label.style.color = 'white';
-  } else if (remaining > 0) {
-    label.innerHTML = `${count}/${limit} - Subir ${remaining} más`;
-    label.style.background = 'var(--success)';
-    label.style.color = 'white';
-  } else {
-    label.innerHTML = `${count}/${limit} - ¡Máximo alcanzado!`;
-    label.style.background = 'var(--gold)';
-    label.style.color = '#000000';
-  }
-  
-  label.title = `${typeInfo.name}: ${count} de ${limit} fotos subidas. Mínimo 1 para generar recomendaciones.`;
-}
-
-// Botón con auto-corrección silenciosa y mensajes amigables
-function updateGenerateButton() {
-  const btn = document.getElementById('generateBtn');
-  if (!btn) return;
-  
-  // Auto-corregir silenciosamente si es necesario
-  const wasFixed = silentlyFixFiles();
-  
-  // Contar archivos válidos
-  const validTops = uploadedFiles.tops.filter(file => file instanceof File);
-  const validBottoms = uploadedFiles.bottoms.filter(file => file instanceof File);
-  const validShoes = uploadedFiles.shoes.filter(file => file instanceof File);
-  
-  const hasAll = validTops.length > 0 && validBottoms.length > 0 && validShoes.length > 0;
-  
-  // Verificación final: si algo sigue mal, mostrar mensaje simple
-  const totalExpected = validTops.length + validBottoms.length + validShoes.length;
-  const totalInArrays = uploadedFiles.tops.length + uploadedFiles.bottoms.length + uploadedFiles.shoes.length;
-  
-  if (totalInArrays > totalExpected && !wasFixed) {
-    // Algo todavía está mal, mostrar mensaje simple y resolver
-    btn.innerHTML = `<i class="fas fa-sync"></i> Actualizando...`;
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.background = '#6b7280';
-    
-    // Intentar corregir una vez más y actualizar en 1 segundo
-    setTimeout(() => {
-      silentlyFixFiles();
-      updateGenerateButton();
-    }, 1000);
-    
-    return;
-  }
-  
-  if (hasAll && selectedOccasion) {
-    const totalCombinations = validTops.length * validBottoms.length * validShoes.length;
-    
-    // Consistente con backend: máximo 3 recomendaciones, mínimo 1
-    let buttonText;
-    let expectedRecommendations;
-    
-    if (totalCombinations === 1) {
-      expectedRecommendations = 1;
-      buttonText = `<i class="fas fa-magic"></i> Generar 1 Recomendación`;
-    } else if (totalCombinations === 2) {
-      expectedRecommendations = 2;
-      buttonText = `<i class="fas fa-magic"></i> Generar 2 Recomendaciones`;
-    } else {
-      // 3 o más combinaciones = máximo 3 recomendaciones del backend
-      expectedRecommendations = 3;
-      buttonText = `<i class="fas fa-magic"></i> Generar 3 Recomendaciones`;
-    }
-    
-    btn.innerHTML = buttonText;
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
-    btn.onclick = getRecommendation;
-  } else if (!selectedOccasion) {
-    btn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
-    btn.style.background = '#6b7280';
-  } else {
-    const missing = [];
-    if (validTops.length === 0) missing.push('superiores');
-    if (validBottoms.length === 0) missing.push('inferiores');  
-    if (validShoes.length === 0) missing.push('zapatos');
-    
-    btn.innerHTML = `<i class="fas fa-upload"></i> Falta subir: ${missing.join(', ')}`;
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
-    btn.style.background = '#6b7280';
-  }
-}
-
-// Función para limpiar todo si el usuario lo pide
-function resetAllUploads() {
-  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  uploadedImages = { tops: [], bottoms: [], shoes: [] };
-  
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const preview = document.getElementById(`${type}-preview`);
-    if (preview) preview.innerHTML = '';
-    updateUploadLabel(type);
-  });
-  
+  // Actualizar UI cuando cambie la ocasión
   updateGenerateButton();
   
-  if (closetMode) {
-    saveUserClosetData();
+  // Mostrar feedback visual
+  const occasionSelect = document.getElementById('occasion-select') || document.querySelector('select[name="occasion"]');
+  if (occasionSelect) {
+    occasionSelect.value = occasion;
   }
   
-  showNotification('Todas las fotos han sido eliminadas', 'info');
-}
+  showNotification(`Ocasión "${occasion}" seleccionada`, 'info');
+};
 
-// Exponer función de reset globalmente
-window.resetAllUploads = resetAllUploads;
+// Función para inicializar el selector de ocasión ⭐ CRÍTICO
+window.initializeOccasionSelector = function() {
+  const occasionSelect = document.getElementById('occasion-select') || document.querySelector('select[name="occasion"]');
+  
+  if (occasionSelect) {
+    // Agregar event listener para detectar cambios
+    occasionSelect.addEventListener('change', function(e) {
+      const selectedValue = e.target.value;
+      if (selectedValue && selectedValue !== '') {
+        setSelectedOccasion(selectedValue);
+      } else {
+        window.selectedOccasion = null;
+        updateGenerateButton();
+        showNotification('Selecciona una ocasión para continuar', 'warning');
+      }
+    });
+    
+    console.log('Selector de ocasión inicializado');
+  } else {
+    console.warn('No se encontró el selector de ocasión (#occasion-select)');
+  }
+};
+
+// Funciones auxiliares consolidadas
+window.getTypeName = function(type) {
+  const names = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
+  return names[type] || type;
+};
+
+window.getTotalClosetItems = function() {
+  if (!closetMode || !closetItems) return 0;
+  const tops = (closetItems.tops || []).length;
+  const bottoms = (closetItems.bottoms || []).length;
+  const shoes = (closetItems.shoes || []).length;
+  return tops + bottoms + shoes;
+};
+
+window.validateUploadLimits = function(type, filesToAdd) {
+  if (closetMode) {
+    // CLOSET: 15 total
+    const currentTotal = getTotalClosetItems();
+    const remaining = CONFIG.CLOSET_MAX_TOTAL - currentTotal;
+    
+    if (remaining < filesToAdd) {
+      return {
+        valid: false,
+        message: remaining === 0 
+          ? "Tu closet está lleno (15/15). Elimina prendas para subir nuevas."
+          : `Solo puedes subir ${remaining} más. Te quedan ${remaining} espacios.`
+      };
+    }
+    return { valid: true, remainingAfter: remaining - filesToAdd };
+  } else {
+    // RECOMENDACIONES: Por tipo
+    const current = uploadedFiles[type].filter(f => f instanceof File).length;
+    const max = CONFIG.RECOMMENDATION_LIMITS[type];
+    const available = max - current;
+    
+    if (available < filesToAdd) {
+      return {
+        valid: false,
+        message: available === 0 
+          ? `Máximo de ${getTypeName(type)} alcanzado (${max}). Cambia a closet para más espacio.`
+          : `Solo puedes subir ${available} ${getTypeName(type)} más.`
+      };
+    }
+    return { valid: true, remainingForType: available - filesToAdd };
+  }
+};
+
+window.generateSuccessMessage = function(type, filesCount) {
+  const typeName = getTypeName(type);
+  const plural = filesCount > 1;
+  let message = `${filesCount} foto${plural ? 's' : ''} subida${plural ? 's' : ''}`;
+  
+  if (closetMode) {
+    const total = getTotalClosetItems();
+    const remaining = CONFIG.CLOSET_MAX_TOTAL - total;
+    message += remaining > 0 
+      ? `. Te quedan ${remaining} por subir (${total}/15)`
+      : `. ¡Closet completo! (15/15)`;
+  } else {
+    const current = uploadedFiles[type].filter(f => f instanceof File).length;
+    const max = CONFIG.RECOMMENDATION_LIMITS[type];
+    const remaining = max - current;
+    message += remaining > 0 
+      ? `. Puedes subir ${remaining} ${typeName} más (${current}/${max})`
+      : `. Máximo alcanzado (${max}/${max})`;
+  }
+  
+  return message;
+};
+
+window.showNotification = function(message, type = 'info') {
+  console.log(`[${type.toUpperCase()}] ${message}`);
+  
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.style.cssText = `
+      position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+      border-radius: 8px; color: white; font-weight: 500; z-index: 9999;
+      max-width: 300px; transform: translateX(400px);
+      transition: transform 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+  }
+  
+  const colors = { success: '#10b981', error: '#ef4444', info: '#3b82f6', warning: '#f59e0b' };
+  notification.style.backgroundColor = colors[type] || colors.info;
+  notification.textContent = message;
+  notification.style.transform = 'translateX(0)';
+  
+  setTimeout(() => notification.style.transform = 'translateX(400px)', 4000);
+};
+
+console.log('Config.js cargado - Sistema consolidado listo');
+
+// Auto-inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Inicializando sistema de ocasiones...');
+  
+  // Inicializar selector de ocasión
+  setTimeout(() => {
+    initializeOccasionSelector();
+  }, 100);
+  
+  console.log('Ocasiones disponibles:', AVAILABLE_OCCASIONS);
+});
