@@ -1,138 +1,121 @@
-// config.js - Configuración Global COMPLETA
+// config.js - Configuración completa consolidada
 
 const CONFIG = {
-  GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
+  GOOGLE_CLIENT_ID: "326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com",
   API_BASE: "https://noshopia-production.up.railway.app",
-  FILE_LIMITS: { 
-    tops: 3, 
-    bottoms: 3, 
-    shoes: 5 
-  },
-  TOTAL_CLOSET_LIMIT: 15  // Límite total de prendas en el armario
+  
+  // LÍMITES DIFERENCIADOS
+  RECOMMENDATION_LIMITS: { tops: 3, bottoms: 3, shoes: 5 },  // Sin closet
+  CLOSET_MAX_TOTAL: 15,                                      // Closet total
+  MIN_REQUIRED: { tops: 1, bottoms: 1, shoes: 1 },         // Mínimos obligatorios
+  
+  // Configuración técnica
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  ALLOWED_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 };
 
-// Variables globales de estado
-let isLoggedIn = false;
-let currentUser = null;
-let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-let uploadedImages = { tops: [], bottoms: [], shoes: [] };
-let selectedOccasion = null;
-let closetMode = false;
-let savedRecommendations = [];
-let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
-let processingStartTime = 0;
-let userProfile = { skin_color: null, age_range: null, gender: null };
-let profileCompleted = false;
+// Variables globales
+window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+window.closetItems = { tops: [], bottoms: [], shoes: [] };
+window.closetMode = false;
+window.selectedOccasion = null;
+window.isLoggedIn = false;
+window.currentUser = null;
+window.currentResults = null;
 
-// Variables para closet selection
-let closetSelectedItems = { tops: [], bottoms: [], shoes: [] };
-let closetItems = { tops: [], bottoms: [], shoes: [] };
-let closetSelectionMode = false;
+// Funciones auxiliares consolidadas
+window.getTypeName = function(type) {
+  const names = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
+  return names[type] || type;
+};
 
-// Función para obtener total de prendas en closet
-function getTotalClosetItems() {
-  return closetItems.tops.length + closetItems.bottoms.length + closetItems.shoes.length;
-}
+window.getTotalClosetItems = function() {
+  if (!closetMode || !closetItems) return 0;
+  const tops = (closetItems.tops || []).length;
+  const bottoms = (closetItems.bottoms || []).length;
+  const shoes = (closetItems.shoes || []).length;
+  return tops + bottoms + shoes;
+};
 
-// Función para obtener prendas restantes
-function getRemainingClosetSlots() {
-  const total = getTotalClosetItems();
-  return CONFIG.TOTAL_CLOSET_LIMIT - total;
-}
-
-// Funciones de persistencia
-function saveUserClosetData() {
-  if (!currentUser?.email) return;
-  
-  const userData = {
-    email: currentUser.email,
-    closetItems: closetItems,
-    uploadedFiles: uploadedFiles,
-    uploadedImages: uploadedImages,
-    userStats: userStats,
-    profileCompleted: profileCompleted,
-    userProfile: userProfile,
-    lastSaved: Date.now()
-  };
-  
-  localStorage.setItem(`noshopia_user_${currentUser.email}`, JSON.stringify(userData));
-  console.log('Datos del usuario guardados localmente');
-}
-
-// Cargar datos del usuario
-function loadUserClosetData() {
-  if (!currentUser?.email) return false;
-  
-  try {
-    const savedData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
-    if (!savedData) return false;
+window.validateUploadLimits = function(type, filesToAdd) {
+  if (closetMode) {
+    // CLOSET: 15 total
+    const currentTotal = getTotalClosetItems();
+    const remaining = CONFIG.CLOSET_MAX_TOTAL - currentTotal;
     
-    const userData = JSON.parse(savedData);
-    
-    // Restaurar datos
-    closetItems = userData.closetItems || { tops: [], bottoms: [], shoes: [] };
-    uploadedFiles = userData.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
-    uploadedImages = userData.uploadedImages || { tops: [], bottoms: [], shoes: [] };
-    userStats = userData.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
-    profileCompleted = userData.profileCompleted || false;
-    userProfile = userData.userProfile || { skin_color: null, age_range: null, gender: null };
-    
-    console.log('Datos del usuario cargados:', {
-      totalItems: getTotalClosetItems(),
-      profileCompleted: profileCompleted
-    });
-    
-    return true;
-  } catch (e) {
-    console.error('Error cargando datos del usuario:', e);
-    return false;
-  }
-}
-
-// Función para cargar script de Google
-function loadGoogleScript() {
-  return new Promise((resolve, reject) => {
-    // Verificar si ya está cargado
-    if (typeof google !== 'undefined' && google.accounts?.id) {
-      resolve();
-      return;
+    if (remaining < filesToAdd) {
+      return {
+        valid: false,
+        message: remaining === 0 
+          ? "Tu closet está lleno (15/15). Elimina prendas para subir nuevas."
+          : `Solo puedes subir ${remaining} más. Te quedan ${remaining} espacios.`
+      };
     }
+    return { valid: true, remainingAfter: remaining - filesToAdd };
+  } else {
+    // RECOMENDACIONES: Por tipo
+    const current = uploadedFiles[type].filter(f => f instanceof File).length;
+    const max = CONFIG.RECOMMENDATION_LIMITS[type];
+    const available = max - current;
     
-    console.log('Cargando script de Google...');
-    
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    
-    let timeoutId = setTimeout(() => {
-      console.log('Timeout: Script tardó más de 10 segundos');
-      script.remove();
-      reject('Timeout cargando script');
-    }, 10000);
-    
-    script.onload = () => {
-      clearTimeout(timeoutId);
-      console.log('Script de Google cargado');
-      
-      setTimeout(() => {
-        if (typeof google !== 'undefined' && google.accounts?.id) {
-          console.log('Google Auth disponible');
-          resolve();
-        } else {
-          console.log('Google Auth no disponible después de cargar');
-          reject('Google Auth no inicializado');
-        }
-      }, 1000);
-    };
-    
-    script.onerror = (error) => {
-      clearTimeout(timeoutId);
-      console.log('Error cargando script de Google');
-      script.remove();
-      reject('Error cargando script');
-    };
-    
-    document.head.appendChild(script);
-  });
-}
+    if (available < filesToAdd) {
+      return {
+        valid: false,
+        message: available === 0 
+          ? `Máximo de ${getTypeName(type)} alcanzado (${max}). Cambia a closet para más espacio.`
+          : `Solo puedes subir ${available} ${getTypeName(type)} más.`
+      };
+    }
+    return { valid: true, remainingForType: available - filesToAdd };
+  }
+};
+
+window.generateSuccessMessage = function(type, filesCount) {
+  const typeName = getTypeName(type);
+  const plural = filesCount > 1;
+  let message = `${filesCount} foto${plural ? 's' : ''} subida${plural ? 's' : ''}`;
+  
+  if (closetMode) {
+    const total = getTotalClosetItems();
+    const remaining = CONFIG.CLOSET_MAX_TOTAL - total;
+    message += remaining > 0 
+      ? `. Te quedan ${remaining} por subir (${total}/15)`
+      : `. ¡Closet completo! (15/15)`;
+  } else {
+    const current = uploadedFiles[type].filter(f => f instanceof File).length;
+    const max = CONFIG.RECOMMENDATION_LIMITS[type];
+    const remaining = max - current;
+    message += remaining > 0 
+      ? `. Puedes subir ${remaining} ${typeName} más (${current}/${max})`
+      : `. Máximo alcanzado (${max}/${max})`;
+  }
+  
+  return message;
+};
+
+window.showNotification = function(message, type = 'info') {
+  console.log(`[${type.toUpperCase()}] ${message}`);
+  
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.style.cssText = `
+      position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+      border-radius: 8px; color: white; font-weight: 500; z-index: 9999;
+      max-width: 300px; transform: translateX(400px);
+      transition: transform 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+  }
+  
+  const colors = { success: '#10b981', error: '#ef4444', info: '#3b82f6', warning: '#f59e0b' };
+  notification.style.backgroundColor = colors[type] || colors.info;
+  notification.textContent = message;
+  notification.style.transform = 'translateX(0)';
+  
+  setTimeout(() => notification.style.transform = 'translateX(400px)', 4000);
+};
+
+console.log('Config.js cargado - Sistema consolidado listo');
