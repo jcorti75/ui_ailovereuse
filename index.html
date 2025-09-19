@@ -1351,7 +1351,14 @@
         
         generateBtn.disabled = false;
         generateBtn.style.opacity = '1';
-        generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar ${recommendationsToShow} Recomendación${recommendationsToShow > 1 ? 'es' : ''}`;
+        
+        // Cambiar texto del botón según el contexto
+        const hasResults = !document.getElementById('result').classList.contains('hidden');
+        if (hasResults) {
+          generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para ${selectedOccasion} (${recommendationsToShow})`;
+        } else {
+          generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar ${recommendationsToShow} Recomendación${recommendationsToShow > 1 ? 'es' : ''}`;
+        }
       } else {
         generateBtn.disabled = true;
         generateBtn.style.opacity = '0.6';
@@ -1380,6 +1387,16 @@
       if (topsCount < 1 || bottomsCount < 1 || shoesCount < 1) {
         showNotification('Sube al menos 1 prenda de cada tipo', 'error'); 
         return; 
+      }
+
+      // Limpiar notificaciones de cambio de ocasión
+      const resultDiv = document.getElementById('result');
+      const changeNotice = document.getElementById('occasionChangeNotice');
+      if (changeNotice) {
+        changeNotice.remove();
+      }
+      if (resultDiv) {
+        resultDiv.style.opacity = '1';
       }
 
       const processingTimer = document.getElementById('processingTimer');
@@ -1411,6 +1428,9 @@
       // Agregar ocasión
       formData.append('occasion', selectedOccasion);
       
+      console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
+      console.log(`📁 Archivos: ${uploadedFiles.tops.length} tops, ${uploadedFiles.bottoms.length} bottoms, ${uploadedFiles.shoes.length} shoes`);
+      
       // Llamada real al backend
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
         method: 'POST',
@@ -1426,10 +1446,14 @@
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
-        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Otra Recomendación';
+        
+        const totalCombinations = topsCount * bottomsCount * shoesCount;
+        const recommendationsToShow = Math.min(3, totalCombinations);
+        generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para otra ocasión`;
         
         console.log('✅ Respuesta del backend:', data);
         renderRecommendations(data);
+        showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
       })
       .catch(error => {
         console.error('❌ Error en llamada al backend:', error);
@@ -1754,16 +1778,50 @@
           btn.style.borderColor = 'var(--success)';
           btn.style.background = 'rgba(16, 185, 129, 0.1)';
           
+          const previousOccasion = selectedOccasion;
           selectedOccasion = btn.dataset.occasion;
+          
+          // Si ya tenemos fotos cargadas y cambiamos ocasión, permitir regenerar
+          const hasPhotos = uploadedImages.tops.length > 0 && uploadedImages.bottoms.length > 0 && uploadedImages.shoes.length > 0;
+          
+          if (hasPhotos && previousOccasion && previousOccasion !== selectedOccasion) {
+            // Cambio de ocasión con fotos ya cargadas - permitir regenerar inmediatamente
+            showNotification(`Ocasión cambiada a ${selectedOccasion}. Las mismas fotos tendrán scores diferentes.`, 'info');
+            
+            // Ocultar resultados anteriores para indicar que necesita regenerar
+            const resultDiv = document.getElementById('result');
+            if (resultDiv && !resultDiv.classList.contains('hidden')) {
+              resultDiv.style.opacity = '0.5';
+              
+              // Agregar mensaje de "ocasión cambiada"
+              const changeNotice = document.createElement('div');
+              changeNotice.id = 'occasionChangeNotice';
+              changeNotice.style.cssText = `
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: rgba(59, 130, 246, 0.95); color: white; padding: 2rem;
+                border-radius: 15px; text-align: center; font-weight: 600; z-index: 10;
+              `;
+              changeNotice.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🔄</div>
+                <div>Ocasión cambiada a: ${selectedOccasion}</div>
+                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Genera para ver nuevos scores</div>
+              `;
+              resultDiv.style.position = 'relative';
+              resultDiv.appendChild(changeNotice);
+            }
+          } else {
+            showNotification(`Ocasión seleccionada: ${selectedOccasion}`, 'success');
+          }
           
           if (!closetMode) {
             document.getElementById('uploadArea').classList.remove('hidden');
             document.getElementById('directModeCounters').classList.remove('hidden');
-            renderUploadArea();
+            if (!hasPhotos) {
+              renderUploadArea();
+            }
           }
           
           updateGenerateButton();
-          showNotification(`Ocasión seleccionada: ${selectedOccasion}`, 'success');
         }
         
         // Closet tabs
