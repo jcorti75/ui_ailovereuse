@@ -1901,7 +1901,34 @@
         window.isProcessingRecommendation = false;
       });
     };
-
+    // AGREGAR después de: formData.append('occasion', selectedOccasion);
+    if (currentUser?.email) {
+      formData.append('email', currentUser.email);
+      console.log('📧 Email agregado:', currentUser.email);
+    } else {
+      console.error('❌ Usuario no tiene email');
+      showNotification('Error: Usuario no autenticado', 'error');
+      window.isProcessingRecommendation = false;
+      return;
+    }
+    
+    // AGREGAR antes del fetch para debugging:
+    console.log('🚀 DEBUGGING COMPLETO:');
+    console.log('- Occasion:', selectedOccasion);
+    console.log('- User Email:', currentUser?.email);
+    console.log('- Valid Tops:', validTops.length, 'archivos');
+    console.log('- Valid Bottoms:', validBottoms.length, 'archivos');
+    console.log('- Valid Shoes:', validShoes.length, 'archivos');
+    
+    // Debug FormData
+    console.log('📦 FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}:`, value.name, value.type, value.size, 'bytes');
+      } else {
+        console.log(`${key}:`, value);
+      }
+    }
     // ============================================
     // INICIALIZACIÓN Y DELEGACIÓN DE EVENTOS
     // ============================================
