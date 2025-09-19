@@ -1848,39 +1848,54 @@
         }
       }
       
-      // CORRECCIÓN: Llamada con headers mejorados y manejo de errores detallado
+      // CORRECCIÓN: Llamada con debugging completo
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
         method: 'POST',
         headers: {
-          // NO incluir Content-Type para FormData - el navegador lo maneja automáticamente
           'Accept': 'application/json',
           'User-Agent': 'NoShopiA-Frontend/1.0'
         },
         body: formData
       })
       .then(async response => {
+        console.log('📡 RESPONSE STATUS:', response.status);
+        console.log('📡 RESPONSE HEADERS:', [...response.headers.entries()]);
+        
         const responseText = await response.text();
-        console.log(`📡 Respuesta del servidor (${response.status}):`, responseText);
+        console.log('📡 RESPONSE BODY (raw):', responseText);
         
         if (!response.ok) {
+          console.error(`❌ RESPONSE NOT OK: Status ${response.status}`);
           if (response.status === 422) {
-            console.error('❌ ERROR 422: El backend rechaza el formato de datos');
-            console.error('📋 Datos enviados fueron:', [...formData.entries()]);
-            throw new Error(`Error 422: Datos no procesables por el backend. Revisar formato.`);
-          } else if (response.status === 500) {
-            console.error('❌ ERROR 500: Error interno del servidor');
-            throw new Error(`Error 500: El servidor tiene un problema interno.`);
+            console.error('❌ ERROR 422 DETALLADO:');
+            console.error('   - Body respuesta:', responseText);
+            console.error('   - Headers:', [...response.headers.entries()]);
+            throw new Error(`Error 422: ${responseText}`);
           } else {
             throw new Error(`Error HTTP ${response.status}: ${responseText}`);
           }
         }
         
+        console.log('✅ Response OK, parseando JSON...');
+        
+        let parsedData;
         try {
-          return JSON.parse(responseText);
+          parsedData = JSON.parse(responseText);
+          console.log('✅ JSON parseado correctamente:', parsedData);
         } catch (parseError) {
           console.error('❌ Error parseando JSON:', parseError);
-          throw new Error('Respuesta del servidor no es JSON válido');
+          console.error('   - Raw text:', responseText);
+          throw new Error(`JSON inválido: ${parseError.message}`);
         }
+        
+        // Validar estructura esperada
+        if (!parsedData.results || !Array.isArray(parsedData.results)) {
+          console.error('❌ Estructura de respuesta inválida:', parsedData);
+          throw new Error('Respuesta sin resultados válidos');
+        }
+        
+        console.log('🎉 DATOS VÁLIDOS RECIBIDOS DEL BACKEND');
+        return parsedData;
       })
       .then(data => {
         console.log('✅ Datos procesados correctamente:', data);
@@ -1919,24 +1934,28 @@
         console.log('✅ Proceso completado exitosamente');
       })
       .catch(error => {
-        console.error('❌ Error completo en llamada al backend:', error);
+        console.error('❌ ERROR CRÍTICO - La llamada al backend falló:', error);
+        console.error('🚨 DEBUGGING: ¿Por qué está fallando?');
+        console.error('   - URL backend:', CONFIG.BACKEND_URL);
+        console.error('   - Error tipo:', error.message);
+        console.error('   - Status response:', error.status || 'N/A');
+        
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i class="fas fa-magic"></i> Reintentar';
         
-        // Mostrar error específico basado en el tipo
+        // DESHABILITAR FALLBACK TEMPORALMENTE PARA DEBUGGING
         if (error.message.includes('422')) {
-          showNotification('Error 422: El backend no acepta el formato de datos. Revisar archivos.', 'error');
+          showNotification('Error 422: El backend rechaza los datos. Revisar formato exacto.', 'error');
         } else if (error.message.includes('500')) {
-          showNotification('Error 500: Problema interno del servidor. Intenta más tarde.', 'error');
+          showNotification('Error 500: Problema interno del servidor.', 'error');
         } else {
-          showNotification('Error de conexión. Usando datos de prueba.', 'error');
+          showNotification('Error de red. Verificar conexión al backend.', 'error');
         }
         
-        const totalCombinations = topsCount * bottomsCount * shoesCount;
-        const maxRecommendations = Math.min(3, totalCombinations);
-        showMockRecommendationsAsBackup(maxRecommendations, totalCombinations);
+        // NO ejecutar fallback mock para ver el error real
+        console.error('🛑 FALLBACK DESHABILITADO - Verificar por qué falla el backend');
       });
     };
 
