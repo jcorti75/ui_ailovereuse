@@ -1753,6 +1753,12 @@
     // GENERACIÓN DE RECOMENDACIONES - BACKEND REAL CON CORRECCIÓN ERROR 422
     // ============================================
     window.getRecommendation = function() {
+      // PREVENIR MÚLTIPLES LLAMADAS
+      if (window.isProcessingRecommendation) {
+        console.log('⚠️ Ya hay una recomendación en proceso, ignorando llamada duplicada');
+        return;
+      }
+      
       if (!selectedOccasion) { 
         showNotification('Selecciona una ocasión primero', 'error'); 
         return; 
@@ -1766,6 +1772,9 @@
         showNotification('Sube al menos 1 prenda de cada tipo', 'error'); 
         return; 
       }
+
+      // MARCAR COMO PROCESANDO
+      window.isProcessingRecommendation = true;
 
       const resultDiv = document.getElementById('result');
       const changeNotice = document.getElementById('occasionChangeNotice');
@@ -1788,65 +1797,30 @@
         document.getElementById('timerDisplay').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       }, 100);
 
-      // CORRECCIÓN ERROR 422: Crear FormData con formato exacto que espera el backend
+      // FORMATO EXACTO QUE ACEPTA EL BACKEND
       const formData = new FormData();
       
-      // Filtrar y validar archivos
-      const validTops = uploadedFiles.tops.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
-      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
-      const validShoes = uploadedFiles.shoes.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
-      
-      console.log('🔧 CORRECCIÓN ERROR 422 - Validación estricta:');
-      console.log(`📁 Archivos válidos después de filtros - tops: ${validTops.length}, bottoms: ${validBottoms.length}, shoes: ${validShoes.length}`);
+      // Archivos válidos únicamente
+      const validTops = uploadedFiles.tops.filter(file => file instanceof File);
+      const validBottoms = uploadedFiles.bottoms.filter(file => file instanceof File);
+      const validShoes = uploadedFiles.shoes.filter(file => file instanceof File);
       
       if (validTops.length === 0 || validBottoms.length === 0 || validShoes.length === 0) {
-        console.error('❌ Error: No hay archivos válidos para enviar');
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
-        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Error: archivos no válidos';
-        showNotification('Error: No se pudieron procesar las imágenes', 'error');
+        showNotification('Error: Archivos no válidos', 'error');
+        window.isProcessingRecommendation = false;
         return;
       }
       
-      // CORRECCIÓN: Agregar archivos con nombres únicos y tipos correctos
-      validTops.forEach((file, index) => {
-        const sanitizedName = `top_${index}_${Date.now()}.${file.type.split('/')[1]}`;
-        console.log(`📤 Agregando top[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
-        formData.append('tops', file, sanitizedName);
-      });
+      // Agregar archivos tal como están
+      validTops.forEach(file => formData.append('tops', file));
+      validBottoms.forEach(file => formData.append('bottoms', file));
+      validShoes.forEach(file => formData.append('shoes', file));
       
-      validBottoms.forEach((file, index) => {
-        const sanitizedName = `bottom_${index}_${Date.now()}.${file.type.split('/')[1]}`;
-        console.log(`📤 Agregando bottom[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
-        formData.append('bottoms', file, sanitizedName);
-      });
-      
-      validShoes.forEach((file, index) => {
-        const sanitizedName = `shoe_${index}_${Date.now()}.${file.type.split('/')[1]}`;
-        console.log(`📤 Agregando shoe[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
-        formData.append('shoes', file, sanitizedName);
-      });
-      
-      // CORRECCIÓN DEFINITIVA: El backend usa español, no inglés
-      const backendOccasion = selectedOccasion; // Sin mapeo - usar directo
-      formData.append('occasion', backendOccasion);
-      console.log(`🎯 Ocasión enviada: "${selectedOccasion}"`);
-      
-      // CORRECCIÓN: Agregar metadatos que podrían ser requeridos por el backend
-      formData.append('user_id', currentUser?.sub || 'anonymous');
-      formData.append('timestamp', new Date().toISOString());
-      formData.append('total_combinations', String(topsCount * bottomsCount * shoesCount));
-      
-      // Debug completo del FormData
-      console.log('📋 FormData final enviada al backend:');
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`  ${key}: ${value.name} (${value.type}, ${value.size} bytes)`);
-        } else {
-          console.log(`  ${key}: "${value}" (${typeof value})`);
-        }
-      }
+      // Ocasión exacta
+      formData.append('occasion', selectedOccasion);
       
       // CORRECCIÓN: Llamada con debugging completo
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
@@ -1898,13 +1872,35 @@
         return parsedData;
       })
       .then(data => {
-        console.log('✅ Datos procesados correctamente:', data);
-        console.log('🔍 DEBUGGING COMPLETO:');
-        console.log('📋 Results array:', data.results);
-        console.log('📊 Total results:', data.results?.length);
+        console.log('✅ RESPUESTA EXITOSA DEL BACKEND:');
+        console.log('📋 Data completa:', JSON.stringify(data, null, 2));
         
         if (data.results && data.results.length > 0) {
-          console.log('🖼️ Verificando imágenes para primera combinación:');
+          console.log('🔍 DATOS DEL PRIMER RESULTADO:');
+          const firstResult = data.results[0];
+          console.log('  - Top detected_item:', firstResult.top?.detected_item);
+          console.log('  - Top index:', firstResult.top?.index);
+          console.log('  - Bottom detected_item:', firstResult.bottom?.detected_item);
+          console.log('  - Bottom index:', firstResult.bottom?.index);
+          console.log('  - Shoe detected_item:', firstResult.shoe?.detected_item);
+          console.log('  - Shoe index:', firstResult.shoe?.index);
+        }
+        
+        clearInterval(timerInterval);
+        processingTimer.classList.add('hidden');
+        generateBtn.disabled = false;
+        
+        const totalCombinations = topsCount * bottomsCount * shoesCount;
+        generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para otra ocasión`;
+        
+        console.log('🚀 LLAMANDO A renderRecommendations CON DATOS REALES...');
+        renderRecommendations(data);
+        showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
+        console.log('✅ Proceso completado exitosamente');
+        
+        // LIBERAR FLAG DE PROCESAMIENTO
+        window.isProcessingRecommendation = false;
+      }) Verificando imágenes para primera combinación:');
           const firstResult = data.results[0];
           console.log('  - Top index:', firstResult.top?.index, 'Imágenes tops disponibles:', uploadedImages.tops.length);
           console.log('  - Bottom index:', firstResult.bottom?.index, 'Imágenes bottoms disponibles:', uploadedImages.bottoms.length);  
