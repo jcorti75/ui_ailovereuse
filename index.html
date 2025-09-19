@@ -14,6 +14,7 @@
     :root {
       --primary: #3b82f6; --text-primary: #1f2937; --text-secondary: #6b7280; --background: #ffffff;
       --border: #e5e7eb; --accent: #10b981; --warning: #f59e0b; --error: #ef4444; --success: #10b981; --gold: #fbbf24;
+      --surface: #f8fafc; --surface-hover: #f1f5f9;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -43,7 +44,7 @@
     }
     .nav-pill:hover, .nav-pill.active { background: rgba(59, 130, 246, 0.2); transform: translateY(-2px); }
     
-    /* Buttons & Interactive Elements */
+    /* Enhanced Buttons */
     .btn {
       padding: 1.2rem 3rem; border: none; border-radius: 50px; font-weight: 600; font-size: 1.1rem;
       cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.8rem;
@@ -58,11 +59,17 @@
     .btn-secondary {
       background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 2px solid var(--primary);
     }
+    .btn-secondary:hover { background: var(--primary); color: white; transform: translateY(-2px); }
     .btn-success {
       background: linear-gradient(135deg, var(--success), #059669); color: white;
       box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
     }
     .btn-success:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4); }
+    .btn-danger {
+      background: linear-gradient(135deg, var(--error), #dc2626); color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(239, 68, 68, 0.4); }
     
     /* Hero Section */
     .hero {
@@ -79,12 +86,12 @@
     .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
     .grid-5 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
     
-    /* Card Components */
+    /* Enhanced Card Components */
     .card {
       background: var(--background); border-radius: 25px; padding: 3rem 2rem; border: 1px solid var(--border);
-      transition: all 0.3s ease; text-align: center;
+      transition: all 0.3s ease; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); }
+    .card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); }
     .card-compact { padding: 2rem 1.5rem; }
     .card-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--primary); }
     .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #000000; }
@@ -94,7 +101,7 @@
       background: rgba(59, 130, 246, 0.05); border: 2px solid rgba(59, 130, 246, 0.2);
       border-radius: 20px; padding: 3rem 2rem; margin: 2rem 0; animation: fadeInUp 0.6s ease-out;
     }
-    .form-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .form-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
     .form-option {
       background: var(--background); border: 2px solid var(--border); border-radius: 15px; padding: 1rem 0.5rem;
       cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center;
@@ -131,7 +138,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     
-    /* Closet Components */
+    /* Enhanced Closet Components */
     .closet-container {
       display: none; background: var(--background); border-radius: 25px; margin: 2rem 0;
       border: 2px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -159,6 +166,37 @@
     }
     .closet-content { padding: 2rem; min-height: 300px; }
     
+    /* Subcategory Sections */
+    .subcategory-section {
+      margin-bottom: 2rem; padding: 1.5rem; background: rgba(59, 130, 246, 0.02);
+      border-radius: 15px; border: 1px solid var(--border);
+    }
+    .subcategory-title {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+      font-size: 1.1rem; font-weight: 600; color: #000000;
+    }
+    .subcategory-icon {
+      font-size: 1.2rem; width: 35px; height: 35px; display: flex; align-items: center;
+      justify-content: center; background: var(--primary); color: white; border-radius: 8px;
+    }
+    .subcategory-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem;
+    }
+    .subcategory-item {
+      background: var(--background); border: 2px solid var(--border); border-radius: 12px;
+      padding: 1rem; text-align: center; transition: all 0.3s ease; cursor: pointer;
+      min-height: 100px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .subcategory-item:hover {
+      border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .subcategory-item.has-items {
+      border-color: var(--success); background: rgba(16, 185, 129, 0.05);
+    }
+    .subcategory-count {
+      font-weight: 600; color: var(--primary); font-size: 0.9rem; margin-top: 0.5rem;
+    }
+    
     /* Impact Bars */
     .impact-bar {
       height: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem;
@@ -182,6 +220,20 @@
     .notification.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
     .notification.info { background: linear-gradient(135deg, var(--primary), #1d4ed8); }
     
+    /* Enhanced Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+      z-index: 10000; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(5px); animation: fadeIn 0.3s ease;
+    }
+    .modal {
+      background: var(--background); border-radius: 20px; padding: 2rem; max-width: 400px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: scaleIn 0.3s ease;
+    }
+    .modal h3 { margin-bottom: 1rem; color: #000000; text-align: center; }
+    .modal p { margin-bottom: 2rem; color: var(--text-secondary); text-align: center; }
+    .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+    
     /* Mode Indicator */
     .mode-indicator {
       position: fixed; top: 100px; right: 20px; background: var(--primary); color: white;
@@ -193,6 +245,8 @@
     /* Animations */
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading {
       display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3);
@@ -212,9 +266,11 @@
       .form-options { grid-template-columns: 1fr; }
       .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
       .grid-5 { grid-template-columns: repeat(2, 1fr); }
+      .subcategory-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
     }
     @media (max-width: 480px) {
       .grid-5 { grid-template-columns: 1fr; }
+      .subcategory-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -251,14 +307,18 @@
       <button class="pricing-btn"></button>
     </div>
   </template>
-  
-  <template id="folder-item-tpl">
-    <div class="card card-compact folder-item">
-      <div class="card-icon folder-icon"></div>
-      <div class="folder-name"></div>
-      <div class="folder-count"></div>
+
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="modal-overlay">
+    <div class="modal">
+      <h3>¿Cerrar sesión?</h3>
+      <p>¿Estás seguro que deseas salir de tu cuenta?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeLogoutModal()">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmLogout()">Salir</button>
+      </div>
     </div>
-  </template>
+  </div>
 
   <header>
     <nav>
@@ -297,7 +357,7 @@
           <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary);"/>
             <span id="userName" style="color: #000000;"></span>
-            <button onclick="logout()" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Salir</button>
+            <button onclick="showLogoutModal()" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Salir</button>
           </div>
         </div>
       </div>
@@ -451,25 +511,31 @@
           <button class="closet-tab active" data-tab="superiores"><i class="fas fa-tshirt"></i> Superiores</button>
           <button class="closet-tab" data-tab="inferiores"><i class="fas fa-user-tie"></i> Inferiores</button>
           <button class="closet-tab" data-tab="calzado"><i class="fas fa-shoe-prints"></i> Calzado</button>
-          <button class="closet-tab" data-tab="recomendaciones"><i class="fas fa-star"></i> Recomendaciones</button>
+          <button class="closet-tab" data-tab="favoritas"><i class="fas fa-star"></i> Mis Favoritas</button>
         </div>
 
         <div class="closet-content">
           <div id="superiores" class="closet-tab-content">
             <h3 class="mb-2">🔸 Prendas Superiores</h3>
-            <div class="grid grid-4" id="superioresGrid"></div>
+            <div id="superioresSubcategories"></div>
           </div>
           <div id="inferiores" class="closet-tab-content hidden">
             <h3 class="mb-2">🔸 Prendas Inferiores</h3>
-            <div class="grid grid-4" id="inferioresGrid"></div>
+            <div id="inferioresSubcategories"></div>
           </div>
           <div id="calzado" class="closet-tab-content hidden">
             <h3 class="mb-2">🔸 Calzado</h3>
-            <div class="grid grid-4" id="calzadoGrid"></div>
+            <div id="calzadoSubcategories"></div>
           </div>
-          <div id="recomendaciones" class="closet-tab-content hidden">
-            <h3 class="mb-2">⭐ Mis Recomendaciones Guardadas</h3>
-            <div id="savedRecommendationsList" class="text-center" style="opacity: 0.7; padding: 2rem;">Aquí aparecerán tus combinaciones favoritas guardadas</div>
+          <div id="favoritas" class="closet-tab-content hidden">
+            <h3 class="mb-2">⭐ Mis Recomendaciones Favoritas</h3>
+            <div id="savedRecommendationsList" class="text-center" style="opacity: 0.7; padding: 2rem;">
+              <div class="card">
+                <i class="fas fa-heart" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
+                <h4>Aún no tienes favoritos</h4>
+                <p>Aquí aparecerán las combinaciones que guardes como favoritas</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -571,6 +637,7 @@
     let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
     let uploadedImages = { tops: [], bottoms: [], shoes: [] };
     let closetItems = { tops: [], bottoms: [], shoes: [] };
+    let savedRecommendations = [];
 
     // ============================================
     // GOOGLE AUTH REAL - CALLBACK FUNCTION
@@ -625,6 +692,22 @@
     }
 
     // ============================================
+    // MODAL FUNCTIONS
+    // ============================================
+    window.showLogoutModal = function() {
+      document.getElementById('logoutModal').style.display = 'flex';
+    };
+
+    window.closeLogoutModal = function() {
+      document.getElementById('logoutModal').style.display = 'none';
+    };
+
+    window.confirmLogout = function() {
+      closeLogoutModal();
+      logout();
+    };
+
+    // ============================================
     // FUNCIONES PRINCIPALES FALTANTES
     // ============================================
     window.showModeSelector = function() {
@@ -644,6 +727,7 @@
       document.getElementById('closetContainer').classList.remove('hidden');
       document.getElementById('occasionSelector').classList.remove('hidden');
       document.getElementById('userEmail').textContent = currentUser?.email || '';
+      renderSubcategories();
       renderOccasions();
       showNotification('Modo Closet activado - Máximo 15 prendas totales', 'success');
     };
@@ -656,7 +740,7 @@
       document.getElementById('closetContainer').classList.add('hidden');
       document.getElementById('occasionSelector').classList.remove('hidden');
       renderOccasions();
-      showNotification('Modo Recomendaciones Directas activado - Máx: 3 superiores, 3 inferiores, 5 zapatos', 'info');
+      showNotification('Modo Recomendaciones Directas activado - Límites: 3 superiores, 3 inferiores, 5 zapatos', 'info');
     };
 
     // ============================================
@@ -687,11 +771,12 @@
       }
     }
 
-    window.logout = function() {
+    function logout() {
       isLoggedIn = false; currentUser = null; closetMode = false; selectedOccasion = '';
       uploadedFiles = { tops: [], bottoms: [], shoes: [] };
       uploadedImages = { tops: [], bottoms: [], shoes: [] };
       closetItems = { tops: [], bottoms: [], shoes: [] };
+      savedRecommendations = [];
       
       updateAuthUI();
       
@@ -707,7 +792,7 @@
       if (window.google && google.accounts) {
         google.accounts.id.disableAutoSelect();
       }
-    };
+    }
 
     // ============================================
     // DATOS DE CONTENIDO COMPONENTIZADOS
@@ -769,27 +854,27 @@
         { type: 'bottoms', title: 'Parte Inferior', desc: 'Pantalones, faldas, shorts', icon: 'fas fa-user-tie', label: 'Subir Inferiores' },
         { type: 'shoes', title: 'Calzado', desc: 'Zapatos, sneakers, botas', icon: 'fas fa-shoe-prints', label: 'Subir Zapatos' }
       ],
-      closetFolders: {
-        superiores: [
-          { icon: '👕', name: 'Poleras', desc: 'poleras lisas, con estampados, polerones' },
-          { icon: '👔', name: 'Camisas', desc: 'camisas de vestir, casuales, mezclilla' },
-          { icon: '🧥', name: 'Sweaters', desc: 'sweaters, cardiganes, poleras con capucha' },
-          { icon: '🏷️', name: 'Chaquetas', desc: 'casacas, blazers, de cuero' },
-          { icon: '🧥', name: 'Abrigos', desc: 'parkas, de invierno, Montgomery' }
+      subcategories: {
+        tops: [
+          { id: 'camisas', name: 'Camisas', icon: '👔', desc: 'Camisas de vestir, casuales, denim' },
+          { id: 'blusas', name: 'Blusas', icon: '👚', desc: 'Blusas formales, casuales, estampadas' },
+          { id: 'sweaters', name: 'Sweaters', icon: '🧥', desc: 'Suéteres, cardiganes, hoodies' },
+          { id: 'chaquetas', name: 'Chaquetas', icon: '🏷️', desc: 'Blazers, casacas, chaquetas de cuero' },
+          { id: 'poleras', name: 'Poleras', icon: '👕', desc: 'Camisetas básicas, con estampados' }
         ],
-        inferiores: [
-          { icon: '👖', name: 'Pantalones', desc: 'jeans, de tela, de vestir' },
-          { icon: '🩳', name: 'Shorts', desc: 'bermudas, deportivos, de playa' },
-          { icon: '👗', name: 'Faldas', desc: 'minifalda, falda tubo, largas' },
-          { icon: '🩱', name: 'Calzas', desc: 'leggins, deportivas, térmicas' },
-          { icon: '👗', name: 'Vestidos', desc: 'casuales, formales, largos' }
+        bottoms: [
+          { id: 'pantalones', name: 'Pantalones', icon: '👖', desc: 'Jeans, de vestir, deportivos' },
+          { id: 'shorts', name: 'Shorts', icon: '🩳', desc: 'Bermudas, deportivos, de mezclilla' },
+          { id: 'faldas', name: 'Faldas', icon: '👗', desc: 'Minifaldas, midi, largas' },
+          { id: 'vestidos', name: 'Vestidos', icon: '👗', desc: 'Casuales, formales, de noche' },
+          { id: 'calzas', name: 'Calzas', icon: '🩱', desc: 'Leggings, deportivas, térmicas' }
         ],
-        calzado: [
-          { icon: '👞', name: 'Zapatos', desc: 'de vestir, mocasines, con tacos' },
-          { icon: '👟', name: 'Zapatillas', desc: 'deportivas, urbanas' },
-          { icon: '🥾', name: 'Botas', desc: 'bototos, de lluvia, botines' },
-          { icon: '👡', name: 'Sandalias', desc: 'chalas, con taco, deportivas' },
-          { icon: '⚽', name: 'Especializados', desc: 'running, trekking, trabajo' }
+        shoes: [
+          { id: 'zapatos', name: 'Zapatos', icon: '👞', desc: 'Formales, mocasines, con tacón' },
+          { id: 'zapatillas', name: 'Zapatillas', icon: '👟', desc: 'Deportivas, urbanas, running' },
+          { id: 'botas', name: 'Botas', icon: '🥾', desc: 'Botines, de lluvia, militares' },
+          { id: 'sandalias', name: 'Sandalias', icon: '👡', desc: 'De vestir, deportivas, playeras' },
+          { id: 'especiales', name: 'Especiales', icon: '⚽', desc: 'Trabajo, trekking, específicos' }
         ]
       }
     };
@@ -868,6 +953,56 @@
       });
     }
 
+    // ============================================
+    // NUEVA FUNCIÓN PARA RENDERIZAR SUBCATEGORÍAS
+    // ============================================
+    function renderSubcategories() {
+      ['tops', 'bottoms', 'shoes'].forEach(type => {
+        const containerId = type === 'tops' ? 'superioresSubcategories' : 
+                           type === 'bottoms' ? 'inferioresSubcategories' : 'calzadoSubcategories';
+        const container = document.getElementById(containerId);
+        
+        container.innerHTML = '';
+        
+        CONTENT_DATA.subcategories[type].forEach(subcategory => {
+          const section = document.createElement('div');
+          section.className = 'subcategory-section';
+          
+          const itemCount = getSubcategoryItemCount(type, subcategory.id);
+          const hasItems = itemCount > 0;
+          
+          section.innerHTML = `
+            <div class="subcategory-title">
+              <div class="subcategory-icon">${subcategory.icon}</div>
+              <span>${subcategory.name}</span>
+              <div class="subcategory-count">${itemCount} prendas</div>
+            </div>
+            <div class="subcategory-grid">
+              <div class="subcategory-item ${hasItems ? 'has-items' : ''}" onclick="uploadToSubcategory('${type}', '${subcategory.id}')">
+                <i class="fas fa-plus" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                <p style="font-size: 0.8rem; opacity: 0.8;">${subcategory.desc}</p>
+                ${hasItems ? `<div class="subcategory-count">${itemCount} items</div>` : ''}
+              </div>
+            </div>
+          `;
+          
+          container.appendChild(section);
+        });
+      });
+    }
+
+    function getSubcategoryItemCount(type, subcategoryId) {
+      // Simulación del conteo - en implementación real sería del storage
+      return Math.floor(Math.random() * 3); // 0, 1, o 2 items aleatorios
+    }
+
+    window.uploadToSubcategory = function(type, subcategoryId) {
+      // Trigger file input for specific subcategory
+      const input = document.getElementById(`${type}-upload`);
+      input.dataset.subcategory = subcategoryId;
+      input.click();
+    };
+
     function renderUploadArea() {
       const container = document.getElementById('uploadGrid');
       container.innerHTML = '';
@@ -878,12 +1013,140 @@
           <i class="${upload.icon}" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
           <h4 style="color: #000000; margin-bottom: 0.5rem;">${upload.title}</h4>
           <p style="color: #000000; opacity: 0.8; margin-bottom: 1rem;">${upload.desc}</p>
-          <label for="${upload.type}-upload" class="file-label">${upload.label} (máx ${CONFIG.RECOMMENDATION_LIMITS[upload.type] || 15})</label>
+          <label for="${upload.type}-upload" class="file-label" id="${upload.type}-label">${upload.label}</label>
           <input type="file" id="${upload.type}-upload" class="file-input" accept="image/*" multiple />
           <div id="${upload.type}-preview" class="preview-area"></div>
         `;
         container.appendChild(div);
       });
+    }
+
+    // ============================================
+    // FUNCIONES DE CONTADOR CORREGIDAS
+    // ============================================
+    function getTotalClosetItems() {
+      return closetItems.tops.length + closetItems.bottoms.length + closetItems.shoes.length;
+    }
+
+    function updateUploadLabels() {
+      ['tops', 'bottoms', 'shoes'].forEach(type => {
+        const label = document.getElementById(`${type}-label`);
+        if (!label) return;
+        
+        const currentCount = uploadedImages[type].length;
+        
+        if (closetMode) {
+          // CLOSET: Contador total acumulativo (15 máx)
+          const totalItems = getTotalClosetItems();
+          const totalRemaining = CONFIG.CLOSET_MAX_TOTAL - totalItems;
+          const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
+          label.innerHTML = `📤 Subir ${typeNames[type]} (Total: ${totalItems}/15) - Te quedan ${totalRemaining}`;
+        } else {
+          // RECOMENDACIONES RÁPIDAS: Límites independientes por tipo
+          const limits = CONFIG.RECOMMENDATION_LIMITS;
+          const maxForType = limits[type];
+          const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
+          label.innerHTML = `📤 Subir ${typeNames[type]} (${currentCount}/${maxForType})`;
+        }
+      });
+    }
+
+    // ============================================
+    // FUNCIONES DE UPLOAD CORREGIDAS
+    // ============================================
+    function handleFileUpload(type, input) {
+      const files = Array.from(input.files);
+      
+      if (closetMode) {
+        // MODO CLOSET: Validar límite total de 15
+        const totalItems = getTotalClosetItems();
+        const remainingSpace = CONFIG.CLOSET_MAX_TOTAL - totalItems;
+        if (files.length > remainingSpace) {
+          showNotification(`Solo puedes subir ${remainingSpace} prendas más. Total máximo: ${CONFIG.CLOSET_MAX_TOTAL}`, 'error');
+          input.value = '';
+          return;
+        }
+      } else {
+        // MODO RECOMENDACIONES: Validar límites por tipo (3-3-5)
+        const currentCount = uploadedFiles[type].length;
+        const maxAllowed = CONFIG.RECOMMENDATION_LIMITS[type] - currentCount;
+        if (files.length > maxAllowed) {
+          showNotification(`Solo puedes subir ${maxAllowed} ${type} más. Máximo: ${CONFIG.RECOMMENDATION_LIMITS[type]}`, 'error');
+          input.value = '';
+          return;
+        }
+      }
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          uploadedFiles[type].push(file);
+          uploadedImages[type].push(e.target.result);
+          if (closetMode) {
+            closetItems[type].push(e.target.result);
+            saveUserClosetData();
+          }
+          updatePreview(type);
+          updateUploadLabels();
+          updateGenerateButton();
+        };
+        reader.readAsDataURL(file);
+      });
+      input.value = '';
+      
+      // Mostrar mensaje de éxito personalizado
+      const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
+      if (closetMode) {
+        const total = getTotalClosetItems() + files.length;
+        const remaining = CONFIG.CLOSET_MAX_TOTAL - total;
+        showNotification(`${files.length} ${typeNames[type]} subidas. Te quedan ${remaining} por subir (${total}/15)`, 'success');
+      } else {
+        const newCount = uploadedFiles[type].length + files.length;
+        const remaining = CONFIG.RECOMMENDATION_LIMITS[type] - newCount;
+        showNotification(`${files.length} ${typeNames[type]} subidas. Puedes subir ${remaining} más (${newCount}/${CONFIG.RECOMMENDATION_LIMITS[type]})`, 'success');
+      }
+    }
+
+    function updatePreview(type) {
+      const preview = document.getElementById(`${type}-preview`);
+      if (!preview) return;
+      
+      preview.innerHTML = '';
+      uploadedImages[type].forEach((imageUrl, index) => {
+        const container = document.createElement('div');
+        container.className = 'preview-container';
+        container.innerHTML = `
+          <img src="${imageUrl}" class="preview-image" alt="${type} ${index + 1}">
+          <button class="remove-image" onclick="removeImage('${type}', ${index})">×</button>
+        `;
+        preview.appendChild(container);
+      });
+    }
+
+    window.removeImage = function(type, index) {
+      uploadedFiles[type].splice(index, 1);
+      uploadedImages[type].splice(index, 1);
+      if (closetMode) {
+        closetItems[type].splice(index, 1);
+        saveUserClosetData();
+      }
+      updatePreview(type);
+      updateUploadLabels();
+      updateGenerateButton();
+    };
+
+    function updateGenerateButton() {
+      const generateBtn = document.getElementById('generateBtn');
+      const topsCount = uploadedImages.tops.length;
+      const bottomsCount = uploadedImages.bottoms.length;
+      const shoesCount = uploadedImages.shoes.length;
+      const hasMinimum = topsCount >= 1 && bottomsCount >= 1 && shoesCount >= 1;
+      
+      generateBtn.disabled = !hasMinimum;
+      generateBtn.innerHTML = hasMinimum ? 
+        '<i class="fas fa-magic"></i> ¡Generar Recomendaciones!' : 
+        '<i class="fas fa-magic"></i> Sube al menos 1 prenda de cada tipo';
+      generateBtn.style.opacity = hasMinimum ? '1' : '0.6';
     }
 
     // ============================================
@@ -936,19 +1199,6 @@
       renderOptions('ageRangeOptions', CONTENT_DATA.profileOptions.ageRange, 'age_range');
       renderOptions('genderOptions', CONTENT_DATA.profileOptions.gender, 'gender');
       
-      // Render closet folders
-      ['superiores', 'inferiores', 'calzado'].forEach(type => {
-        const container = document.getElementById(`${type}Grid`);
-        if (container) {
-          renderWithTemplate('folder-item-tpl', container, CONTENT_DATA.closetFolders[type], (tpl, folder) => {
-            tpl.querySelector('.folder-icon').textContent = folder.icon;
-            tpl.querySelector('.folder-name').textContent = folder.name;
-            tpl.querySelector('.folder-count').textContent = folder.desc;
-            tpl.querySelector('.folder-count').style.cssText = 'font-size: 0.85rem; color: #000000; opacity: 0.7; line-height: 1.4;';
-          });
-        }
-      });
-      
       renderUploadArea();
       setupEventDelegation();
     }
@@ -990,14 +1240,6 @@
           e.target.classList.add('active');
           document.getElementById(e.target.dataset.tab).classList.remove('hidden');
         }
-        
-        // Remove image
-        if (e.target.matches('.remove-image')) {
-          const preview = e.target.closest('.preview-area');
-          const type = preview.id.replace('-preview', '');
-          const index = Array.from(preview.children).indexOf(e.target.parentElement);
-          removeImage(type, index);
-        }
       });
       
       // File upload delegation
@@ -1007,112 +1249,18 @@
           handleFileUpload(type, e.target);
         }
       });
+      
+      // Close modal on overlay click
+      document.addEventListener('click', (e) => {
+        if (e.target.matches('.modal-overlay')) {
+          closeLogoutModal();
+        }
+      });
     }
 
     // ============================================
     // RESTO DE FUNCIONES AUXILIARES
     // ============================================
-    function handleFileUpload(type, input) {
-      const files = Array.from(input.files);
-      const limits = closetMode ? { tops: 15, bottoms: 15, shoes: 15 } : CONFIG.RECOMMENDATION_LIMITS;
-      
-      if (closetMode) {
-        const totalItems = getTotalClosetItems();
-        const remainingSpace = CONFIG.CLOSET_MAX_TOTAL - totalItems;
-        if (files.length > remainingSpace) {
-          showNotification(`Solo puedes subir ${remainingSpace} prendas más. Total máximo: ${CONFIG.CLOSET_MAX_TOTAL}`, 'error');
-          input.value = '';
-          return;
-        }
-      } else {
-        const currentCount = uploadedFiles[type].length;
-        const maxAllowed = limits[type] - currentCount;
-        if (files.length > maxAllowed) {
-          showNotification(`Solo puedes subir ${maxAllowed} ${type} más. Máximo: ${limits[type]}`, 'error');
-          input.value = '';
-          return;
-        }
-      }
-
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedFiles[type].push(file);
-          uploadedImages[type].push(e.target.result);
-          if (closetMode) {
-            closetItems[type].push(e.target.result);
-            saveUserClosetData();
-          }
-          updatePreview(type);
-          updateUploadLabels();
-          updateGenerateButton();
-        };
-        reader.readAsDataURL(file);
-      });
-      input.value = '';
-    }
-
-    function updatePreview(type) {
-      const preview = document.getElementById(`${type}-preview`);
-      if (!preview) return;
-      
-      preview.innerHTML = '';
-      uploadedImages[type].forEach((imageUrl, index) => {
-        const container = document.createElement('div');
-        container.style.cssText = 'position: relative; display: inline-block; margin: 0.5rem;';
-        container.innerHTML = `
-          <img src="${imageUrl}" class="preview-image" alt="${type} ${index + 1}">
-          <button class="remove-image">×</button>
-        `;
-        preview.appendChild(container);
-      });
-    }
-
-    function removeImage(type, index) {
-      uploadedFiles[type].splice(index, 1);
-      uploadedImages[type].splice(index, 1);
-      if (closetMode) {
-        closetItems[type].splice(index, 1);
-        saveUserClosetData();
-      }
-      updatePreview(type);
-      updateUploadLabels();
-      updateGenerateButton();
-    }
-
-    function updateUploadLabels() {
-      ['tops', 'bottoms', 'shoes'].forEach(type => {
-        const label = document.querySelector(`label[for="${type}-upload"]`);
-        if (!label) return;
-        
-        const currentCount = uploadedImages[type].length;
-        const limits = closetMode ? { tops: 15, bottoms: 15, shoes: 15 } : CONFIG.RECOMMENDATION_LIMITS;
-        
-        if (closetMode) {
-          const totalItems = getTotalClosetItems();
-          const totalRemaining = CONFIG.CLOSET_MAX_TOTAL - totalItems;
-          label.innerHTML = `📤 Subir ${type} (${currentCount}/${CONFIG.CLOSET_MAX_TOTAL}) - Quedan ${totalRemaining}`;
-        } else {
-          const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
-          label.innerHTML = `📤 Subir ${typeNames[type]} (${currentCount}/${limits[type]})`;
-        }
-      });
-    }
-
-    function updateGenerateButton() {
-      const generateBtn = document.getElementById('generateBtn');
-      const topsCount = uploadedImages.tops.length;
-      const bottomsCount = uploadedImages.bottoms.length;
-      const shoesCount = uploadedImages.shoes.length;
-      const hasMinimum = topsCount >= 1 && bottomsCount >= 1 && shoesCount >= 1;
-      
-      generateBtn.disabled = !hasMinimum;
-      generateBtn.innerHTML = hasMinimum ? 
-        '<i class="fas fa-magic"></i> ¡Generar Recomendaciones!' : 
-        '<i class="fas fa-magic"></i> Sube al menos 1 prenda de cada tipo';
-      generateBtn.style.opacity = hasMinimum ? '1' : '0.6';
-    }
-
     function checkProfileCompletion() {
       const requiredFields = ['skin_color', 'age_range', 'gender'];
       const selections = {};
@@ -1153,10 +1301,6 @@
       
       setTimeout(() => showModeSelector(), 1000);
     };
-
-    function getTotalClosetItems() {
-      return closetItems.tops.length + closetItems.bottoms.length + closetItems.shoes.length;
-    }
 
     function saveUserClosetData() {
       if (!currentUser?.email) return;
@@ -1200,28 +1344,34 @@
 
     function showMockRecommendation() {
       const resultDiv = document.getElementById('result');
+      const favoriteBtn = closetMode ? '<div class="text-center mt-2"><button onclick="saveCurrentRecommendation()" class="btn btn-success" style="background: var(--gradient-gold); color: #000;">⭐ Guardar en Favoritas</button></div>' : '';
+      
       resultDiv.innerHTML = `
-        <div class="card" style="border: 2px solid var(--success);">
+        <div class="card" style="border: 2px solid var(--success); background: rgba(16, 185, 129, 0.02);">
           <h3 style="color: var(--success); margin-bottom: 2rem;">✨ Tu Recomendación para ${selectedOccasion}</h3>
           <div class="grid grid-3" style="margin-bottom: 2rem;">
             <div class="text-center">
-              <img src="${uploadedImages.tops[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success);">
+              <img src="${uploadedImages.tops[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);">
               <h4 style="color: #000; margin-top: 1rem;">Parte Superior</h4>
             </div>
             <div class="text-center">
-              <img src="${uploadedImages.bottoms[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success);">
+              <img src="${uploadedImages.bottoms[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);">
               <h4 style="color: #000; margin-top: 1rem;">Parte Inferior</h4>
             </div>
             <div class="text-center">
-              <img src="${uploadedImages.shoes[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success);">
+              <img src="${uploadedImages.shoes[0]}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 15px; border: 3px solid var(--success); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);">
               <h4 style="color: #000; margin-top: 1rem;">Calzado</h4>
             </div>
           </div>
-          <div class="text-center" style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 15px;">
-            <h4 style="color: var(--success);">Puntuación de Compatibilidad: 92%</h4>
-            <p style="color: #000; opacity: 0.8;">Esta combinación es perfecta para la ocasión seleccionada</p>
+          <div class="text-center" style="background: rgba(16, 185, 129, 0.1); padding: 2rem; border-radius: 15px;">
+            <h4 style="color: var(--success); font-size: 1.5rem; margin-bottom: 1rem;">Puntuación de Compatibilidad: 92%</h4>
+            <p style="color: #000; opacity: 0.8; font-size: 1.1rem;">Esta combinación es perfecta para la ocasión seleccionada</p>
+            <div style="margin-top: 1rem; opacity: 0.7;">
+              <span style="color: var(--primary);">🎨 Armonía cromática perfecta</span> • 
+              <span style="color: var(--success);">✨ Coherencia de estilo</span>
+            </div>
           </div>
-          ${closetMode ? '<div class="text-center mt-2"><button onclick="saveCurrentRecommendation()" class="btn" style="background: var(--gold); color: #000;">⭐ Guardar en Mi Closet</button></div>' : ''}
+          ${favoriteBtn}
         </div>
       `;
       resultDiv.classList.remove('hidden');
@@ -1229,10 +1379,67 @@
       showNotification('¡Recomendación generada exitosamente!', 'success');
     }
 
+    window.saveCurrentRecommendation = function() {
+      const recommendation = {
+        id: Date.now(),
+        occasion: selectedOccasion,
+        top: uploadedImages.tops[0],
+        bottom: uploadedImages.bottoms[0],
+        shoe: uploadedImages.shoes[0],
+        score: 92,
+        savedAt: new Date().toISOString()
+      };
+      
+      savedRecommendations.push(recommendation);
+      
+      // Update favoritas tab if in closet mode
+      if (closetMode) {
+        updateFavoritasTab();
+      }
+      
+      showNotification('¡Recomendación guardada en favoritas!', 'success');
+    };
+
+    function updateFavoritasTab() {
+      const container = document.getElementById('savedRecommendationsList');
+      
+      if (savedRecommendations.length === 0) {
+        container.innerHTML = `
+          <div class="card">
+            <i class="fas fa-heart" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
+            <h4>Aún no tienes favoritos</h4>
+            <p>Aquí aparecerán las combinaciones que guardes como favoritas</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = '';
+        savedRecommendations.forEach(rec => {
+          const favCard = document.createElement('div');
+          favCard.className = 'card';
+          favCard.innerHTML = `
+            <h4 style="color: var(--gold); margin-bottom: 1rem;">⭐ ${rec.occasion}</h4>
+            <div class="grid grid-3" style="margin-bottom: 1rem;">
+              <img src="${rec.top}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+              <img src="${rec.bottom}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+              <img src="${rec.shoe}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+            </div>
+            <p style="color: var(--success); font-weight: 600;">Score: ${rec.score}%</p>
+            <button onclick="removeFavorite(${rec.id})" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; margin-top: 1rem;">Eliminar</button>
+          `;
+          container.appendChild(favCard);
+        });
+      }
+    }
+
+    window.removeFavorite = function(id) {
+      savedRecommendations = savedRecommendations.filter(rec => rec.id !== id);
+      updateFavoritasTab();
+      showNotification('Favorito eliminado', 'info');
+    };
+
     // Placeholder functions
     window.startFreePlan = () => showNotification('Plan gratuito activado', 'success');
     window.upgradeToPremium = () => showNotification('Función de upgrade disponible próximamente', 'info');
-    window.saveCurrentRecommendation = () => showNotification('Recomendación guardada en tu closet', 'success');
 
     // ============================================
     // INICIALIZACIÓN
