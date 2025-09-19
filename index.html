@@ -982,15 +982,16 @@
       closetMode = true;
       updateModeIndicator('Modo Closet Digital (máx 15 prendas)', true);
       
-      // Ocultar selector de modo
       document.getElementById('closetQuestion').classList.add('hidden');
+      document.getElementById('closetContainer').classList.remove('hidden');
+      document.getElementById('occasionSelector').classList.add('hidden');
+      document.getElementById('closetSelection').classList.add('hidden');
+      document.getElementById('uploadArea').classList.add('hidden');
       
-      // Mostrar closet container
-      document.getElementById('closetContainer').style.display = 'block';
       document.getElementById('userEmail').textContent = currentUser?.email || '';
       document.getElementById('closetRemaining').classList.remove('hidden');
-      
       updateClosetRemaining();
+      
       renderSubcategories();
       loadUserClosetData();
       
@@ -1003,11 +1004,8 @@
       closetMode = false;
       updateModeIndicator('Modo Recomendaciones Rápidas (3-3-5)', false);
       
-      // Ocultar selector de modo y closet
       document.getElementById('closetQuestion').classList.add('hidden');
-      document.getElementById('closetContainer').style.display = 'none';
-      
-      // Mostrar modo directo
+      document.getElementById('closetContainer').classList.add('hidden');
       document.getElementById('occasionSelector').classList.remove('hidden');
       document.getElementById('uploadArea').classList.remove('hidden');
       document.getElementById('directModeCounters').classList.remove('hidden');
@@ -1015,7 +1013,6 @@
       renderOccasions();
       renderUploadArea();
       updateDirectModeCounters();
-      
       showNotification('Modo Recomendaciones Directas activado - Límites: 3-3-5', 'info');
     };
 
