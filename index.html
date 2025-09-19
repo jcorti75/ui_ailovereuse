@@ -1487,10 +1487,25 @@
       
       console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
       console.log(`📁 Arrays frontend - tops: ${uploadedImages.tops.length}, bottoms: ${uploadedImages.bottoms.length}, shoes: ${uploadedImages.shoes.length}`);
+      console.log(`📁 Archivos válidos - tops: ${validTops.length}, bottoms: ${validBottoms.length}, shoes: ${validShoes.length}`);
       
-      // Llamada real al backend
+      // Verificar que tenemos archivos válidos
+      if (validTops.length === 0 || validBottoms.length === 0 || validShoes.length === 0) {
+        console.error('❌ Error: No hay archivos válidos para enviar');
+        clearInterval(timerInterval);
+        processingTimer.classList.add('hidden');
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Error: archivos no válidos';
+        showNotification('Error: No se pudieron procesar las imágenes', 'error');
+        return;
+      }
+      
+      // Llamada real al backend con headers CORS correctos
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
         method: 'POST',
+        headers: {
+          // NO incluir Content-Type, dejarlo que el navegador lo maneje automáticamente para FormData
+        },
         body: formData
       })
       .then(response => {
