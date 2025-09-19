@@ -1110,6 +1110,13 @@
           'formal': 'Formal',
           'matrimonio': 'Matrimonio'
         };
+
+        // ANÁLISIS MEJORADO DE LA RESPUESTA EXITOSA
+        console.log('🎉 BACKEND RESPONSE EXITOSO:');
+        console.log('- Total combinaciones:', data.total_combinations_evaluated);
+        console.log('- Usuario:', data.user?.email, `(${data.user?.total_recommendations} recomendaciones totales)`);
+        console.log('- Cache hit rate:', data.processing_stats?.cache_hit_rate);
+        console.log('- Tiempo total:', data.processing_stats?.total_time);
         
         let html = `
           <div style="text-align: center; margin-bottom: 2rem;">
@@ -1836,10 +1843,10 @@
       
       formData.append('occasion', selectedOccasion);
 
-      // ✅ AGREGAR EMAIL AQUÍ (DENTRO de la función) - SIN DUPLICAR
+      // ✅ CORRECCIÓN CRÍTICA: Backend espera 'user_email', no 'email'
       if (currentUser?.email) {
-        formData.append('email', currentUser.email);
-        console.log('📧 Email agregado:', currentUser.email);
+        formData.append('user_email', currentUser.email);
+        console.log('📧 User_email agregado:', currentUser.email);
       } else {
         console.error('❌ Usuario no tiene email');
         showNotification('Error: Usuario no autenticado', 'error');
@@ -1862,6 +1869,35 @@
           console.log(`${key}:`, value);
         }
       }
+      
+      // DEBUGGING INTENSIVO PARA IDENTIFICAR EL PROBLEMA 422
+      console.log('🔍 DEBUGGING COMPLETO PARA ERROR 422:');
+      console.log('- Total entries en FormData:', Array.from(formData.entries()).length);
+      console.log('- Tipos de archivos válidos detectados:');
+      validTops.forEach((file, i) => console.log(`  Top ${i}: ${file.name} (${file.type}, ${file.size} bytes)`));
+      validBottoms.forEach((file, i) => console.log(`  Bottom ${i}: ${file.name} (${file.type}, ${file.size} bytes)`));
+      validShoes.forEach((file, i) => console.log(`  Shoe ${i}: ${file.name} (${file.type}, ${file.size} bytes)`));
+      
+      // Verificar si hay archivos vacíos o corruptos
+      const allFiles = [...validTops, ...validBottoms, ...validShoes];
+      const hasEmptyFiles = allFiles.some(file => file.size === 0);
+      const hasLargeFiles = allFiles.some(file => file.size > 10 * 1024 * 1024); // 10MB
+      
+      console.log('- Verificación de archivos:');
+      console.log(`  Archivos vacíos: ${hasEmptyFiles}`);
+      console.log(`  Archivos grandes (>10MB): ${hasLargeFiles}`);
+      console.log(`  Ocasión válida: ${selectedOccasion ? 'SÍ' : 'NO'}`);
+      console.log(`  Email válido: ${currentUser?.email ? 'SÍ' : 'NO'}`);
+      
+      // Crear una versión simplificada para test
+      const testFormData = new FormData();
+      testFormData.append('occasion', selectedOccasion);
+      testFormData.append('email', currentUser.email);
+      testFormData.append('tops', validTops[0]); // Solo el primer archivo de cada tipo
+      testFormData.append('bottoms', validBottoms[0]);
+      testFormData.append('shoes', validShoes[0]);
+      
+      console.log('🧪 FormData simplificado para test:', Array.from(testFormData.entries()).length, 'entries');
       
       // FETCH REQUEST - CORREGIDO
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
