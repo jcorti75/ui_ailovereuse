@@ -1454,35 +1454,43 @@
         document.getElementById('timerDisplay').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       }, 100);
 
-      // Preparar FormData para envío al backend
+      // Preparar FormData para envío al backend con tipos correctos
       const formData = new FormData();
       
       // CORRECCIÓN: Filtrar archivos null y enviar solo archivos válidos
-      const validTops = uploadedFiles.tops.filter(file => file !== null);
-      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null);
-      const validShoes = uploadedFiles.shoes.filter(file => file !== null);
+      const validTops = uploadedFiles.tops.filter(file => file !== null && file instanceof File);
+      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null && file instanceof File);
+      const validShoes = uploadedFiles.shoes.filter(file => file !== null && file instanceof File);
       
       console.log('📤 Enviando al backend:');
       validTops.forEach((file, index) => {
-        console.log(`  tops[${index}]: ${file.name}`);
-        formData.append('tops', file);
+        console.log(`  tops[${index}]: ${file.name} (${file.type})`);
+        formData.append('tops', file, file.name); // Especificar filename explícitamente
       });
       validBottoms.forEach((file, index) => {
-        console.log(`  bottoms[${index}]: ${file.name}`);
-        formData.append('bottoms', file);
+        console.log(`  bottoms[${index}]: ${file.name} (${file.type})`);
+        formData.append('bottoms', file, file.name);
       });
       validShoes.forEach((file, index) => {
-        console.log(`  shoes[${index}]: ${file.name}`);
-        formData.append('shoes', file);
+        console.log(`  shoes[${index}]: ${file.name} (${file.type})`);
+        formData.append('shoes', file, file.name);
       });
       
-      // Agregar ocasión
-      formData.append('occasion', selectedOccasion);
+      // CRÍTICO: Enviar ocasión como string válido
+      const occasionMap = {
+        'oficina': 'oficina',
+        'deportivo': 'deportivo', 
+        'casual': 'casual',
+        'formal': 'formal',
+        'matrimonio': 'matrimonio'
+      };
+      const mappedOccasion = occasionMap[selectedOccasion] || selectedOccasion;
+      formData.append('occasion', String(mappedOccasion));
       
       // Debug info
       console.log('📋 FormData entries:');
       for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
+        console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : `"${value}" (${typeof value})`);
       }
       
       console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
