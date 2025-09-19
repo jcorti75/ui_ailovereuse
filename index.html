@@ -974,24 +974,42 @@
       closetMode = true;
       updateModeIndicator('Modo Closet Digital (máx 15 prendas)', true);
       
-      // Ocultar/mostrar elementos correctos
-      document.getElementById('closetQuestion').classList.add('hidden');
-      document.getElementById('closetContainer').style.display = 'block'; // Cambio de classList
-      document.getElementById('occasionSelector').classList.add('hidden');
-      document.getElementById('closetSelection').classList.add('hidden');
-      document.getElementById('uploadArea').classList.add('hidden');
+      // Ocultar/mostrar elementos correctos - con verificaciones
+      const closetQuestion = document.getElementById('closetQuestion');
+      const closetContainer = document.getElementById('closetContainer');
+      const occasionSelector = document.getElementById('occasionSelector');
+      const closetSelection = document.getElementById('closetSelection');
+      const uploadArea = document.getElementById('uploadArea');
+      
+      if (closetQuestion) closetQuestion.classList.add('hidden');
+      if (closetContainer) {
+        closetContainer.style.display = 'block';
+        closetContainer.classList.remove('hidden');
+      }
+      if (occasionSelector) occasionSelector.classList.add('hidden');
+      if (closetSelection) closetSelection.classList.add('hidden');
+      if (uploadArea) uploadArea.classList.add('hidden');
       
       // Configurar closet
       if (currentUser?.email) {
-        document.getElementById('userEmail').textContent = currentUser.email;
+        const userEmailEl = document.getElementById('userEmail');
+        if (userEmailEl) userEmailEl.textContent = currentUser.email;
       }
-      document.getElementById('closetRemaining').classList.remove('hidden');
-      updateClosetRemaining();
       
+      const closetRemaining = document.getElementById('closetRemaining');
+      if (closetRemaining) closetRemaining.classList.remove('hidden');
+      
+      updateClosetRemaining();
       renderSubcategories();
       loadUserClosetData();
       
       showNotification('Modo Closet activado - Sube prendas usando las pestañas', 'success');
+      
+      // Activar tab inicial
+      setTimeout(() => {
+        const firstTab = document.querySelector('.closet-tab[data-tab="superiores"]');
+        if (firstTab) firstTab.click();
+      }, 100);
     };
 
     window.useDirectMode = function() {
@@ -999,16 +1017,29 @@
       closetMode = false;
       updateModeIndicator('Modo Recomendaciones Rápidas (3-3-5)', false);
       
-      // Ocultar/mostrar elementos correctos
-      document.getElementById('closetQuestion').classList.add('hidden');
-      document.getElementById('closetContainer').style.display = 'none'; // Asegurar que se oculta
-      document.getElementById('occasionSelector').classList.remove('hidden');
-      document.getElementById('uploadArea').classList.remove('hidden');
-      document.getElementById('directModeCounters').classList.remove('hidden');
+      // Ocultar/mostrar elementos correctos - con verificaciones
+      const closetQuestion = document.getElementById('closetQuestion');
+      const closetContainer = document.getElementById('closetContainer');
+      const occasionSelector = document.getElementById('occasionSelector');
+      const uploadArea = document.getElementById('uploadArea');
+      const directModeCounters = document.getElementById('directModeCounters');
       
-      renderOccasions();
-      renderUploadArea();
-      updateDirectModeCounters();
+      if (closetQuestion) closetQuestion.classList.add('hidden');
+      if (closetContainer) {
+        closetContainer.style.display = 'none';
+        closetContainer.classList.add('hidden');
+      }
+      if (occasionSelector) occasionSelector.classList.remove('hidden');
+      if (uploadArea) uploadArea.classList.remove('hidden');
+      if (directModeCounters) directModeCounters.classList.remove('hidden');
+      
+      // Renderizar componentes necesarios
+      setTimeout(() => {
+        renderOccasions();
+        renderUploadArea();
+        updateDirectModeCounters();
+      }, 100);
+      
       showNotification('Modo Recomendaciones Directas activado - Límites: 3-3-5', 'info');
     };
 
@@ -1452,9 +1483,17 @@
                            type === 'bottoms' ? 'inferioresSubcategories' : 'calzadoSubcategories';
         const container = document.getElementById(containerId);
         
-        if (!container) return;
+        if (!container) {
+          console.warn(`⚠️ Container ${containerId} no encontrado`);
+          return;
+        }
         
         container.innerHTML = '';
+        
+        if (!CONTENT_DATA.subcategories[type]) {
+          console.error(`❌ No hay subcategorías definidas para ${type}`);
+          return;
+        }
         
         CONTENT_DATA.subcategories[type].forEach(subcategory => {
           const section = document.createElement('div');
@@ -1916,6 +1955,8 @@
     }
 
     function setupEventDelegation() {
+      console.log('🔧 Configurando event delegation...');
+      
       document.addEventListener('click', (e) => {
         // Navigation
         if (e.target.matches('[data-section]')) {
@@ -1934,9 +1975,11 @@
           checkProfileCompletion();
         }
         
-        // Occasion selection
+        // Occasion selection - MEJORADO
         if (e.target.matches('[data-occasion]') || e.target.closest('[data-occasion]')) {
           const btn = e.target.closest('[data-occasion]') || e.target;
+          console.log('🎯 Ocasión seleccionada:', btn.dataset.occasion);
+          
           document.querySelectorAll('[data-occasion]').forEach(b => {
             b.classList.remove('selected');
             b.style.borderColor = '';
@@ -1979,29 +2022,45 @@
           }
           
           if (!closetMode) {
-            document.getElementById('uploadArea').classList.remove('hidden');
-            document.getElementById('directModeCounters').classList.remove('hidden');
+            const uploadArea = document.getElementById('uploadArea');
+            const directModeCounters = document.getElementById('directModeCounters');
+            
+            if (uploadArea) uploadArea.classList.remove('hidden');
+            if (directModeCounters) directModeCounters.classList.remove('hidden');
+            
             if (!hasPhotos) {
-              renderUploadArea();
+              setTimeout(() => renderUploadArea(), 100);
             }
           }
           
           updateGenerateButton();
         }
         
-        // Closet tabs
-        if (e.target.matches('.closet-tab')) {
-          document.querySelectorAll('.closet-tab').forEach(tab => tab.classList.remove('active'));
+        // Closet tabs - MEJORADO
+        if (e.target.matches('.closet-tab') || e.target.closest('.closet-tab')) {
+          const tab = e.target.closest('.closet-tab') || e.target;
+          const tabName = tab.dataset.tab;
+          
+          console.log('📁 Cambiando a tab:', tabName);
+          
+          document.querySelectorAll('.closet-tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.closet-tab-content').forEach(content => content.classList.add('hidden'));
-          e.target.classList.add('active');
-          document.getElementById(e.target.dataset.tab).classList.remove('hidden');
+          
+          tab.classList.add('active');
+          const content = document.getElementById(tabName);
+          if (content) {
+            content.classList.remove('hidden');
+          } else {
+            console.error(`❌ Tab content ${tabName} no encontrado`);
+          }
         }
       });
       
-      // File upload delegation
+      // File upload delegation - MEJORADO
       document.addEventListener('change', (e) => {
         if (e.target.matches('.file-input')) {
           const type = e.target.id.replace('-upload', '');
+          console.log('📁 File upload detected for type:', type);
           handleFileUpload(type, e.target);
         }
       });
@@ -2013,6 +2072,8 @@
           if (e.target.id === 'categoryErrorModal') closeCategoryErrorModal();
         }
       });
+      
+      console.log('✅ Event delegation configurado correctamente');
     }
 
     // ============================================
@@ -2095,12 +2156,40 @@
     window.upgradeToPremium = () => showNotification('Función de upgrade disponible próximamente', 'info');
 
     // ============================================
-    // INICIALIZACIÓN - CORREGIDA
+    // INICIALIZACIÓN - MEJORADA CON DEBUGGING
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('✅ NoShopiA inicializado - TODAS LAS CORRECCIONES APLICADAS');
-      initializeApp();
-      updateAuthUI();
+      console.log('🚀 DOM Content Loaded - Iniciando NoShopiA...');
+      
+      // Verificar elementos críticos del DOM
+      const criticalElements = ['closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea', 'result'];
+      criticalElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          console.error(`❌ ELEMENTO CRÍTICO NO ENCONTRADO: ${id}`);
+        } else {
+          console.log(`✅ Elemento encontrado: ${id}`);
+        }
+      });
+      
+      // Verificar que las funciones críticas estén disponibles
+      const criticalFunctions = ['enableCloset', 'useDirectMode', 'getRecommendation', 'handleCredentialResponse'];
+      criticalFunctions.forEach(funcName => {
+        if (typeof window[funcName] !== 'function') {
+          console.error(`❌ FUNCIÓN CRÍTICA NO DISPONIBLE: ${funcName}`);
+        } else {
+          console.log(`✅ Función disponible: ${funcName}`);
+        }
+      });
+      
+      console.log('🔧 Inicializando componentes...');
+      try {
+        initializeApp();
+        updateAuthUI();
+        console.log('✅ Componentes inicializados correctamente');
+      } catch (error) {
+        console.error('❌ Error inicializando componentes:', error);
+      }
       
       // Observer para animaciones de impacto
       const observer = new IntersectionObserver((entries) => {
@@ -2116,8 +2205,23 @@
       
       setTimeout(() => {
         const impactSection = document.getElementById('impacto');
-        if (impactSection) observer.observe(impactSection);
+        if (impactSection) {
+          observer.observe(impactSection);
+          console.log('✅ Observer de animaciones configurado');
+        }
       }, 1000);
+      
+      console.log('🎉 NoShopiA inicializado completamente - TODAS LAS CORRECCIONES APLICADAS');
+      
+      // Test de funcionalidad post-carga
+      setTimeout(() => {
+        console.log('🔍 Estado actual de variables:');
+        console.log('  - isLoggedIn:', isLoggedIn);
+        console.log('  - currentUser:', currentUser ? 'disponible' : 'null');
+        console.log('  - userProfile:', userProfile ? 'disponible' : 'null');
+        console.log('  - closetMode:', closetMode);
+        console.log('  - selectedOccasion:', selectedOccasion);
+      }, 2000);
     });
   </script>
 </body>
