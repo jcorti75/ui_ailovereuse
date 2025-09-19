@@ -1255,11 +1255,17 @@
         }
       }
 
-      files.forEach(file => {
+      // CRÍTICO: Mantener sincronización entre files e images
+      files.forEach((file, fileIndex) => {
         const reader = new FileReader();
         reader.onload = (e) => {
+          const currentIndex = uploadedFiles[type].length;
+          
+          // Agregar simultáneamente a ambos arrays para mantener sincronización
           uploadedFiles[type].push(file);
           uploadedImages[type].push(e.target.result);
+          
+          console.log(`📎 Subido ${type}[${currentIndex}]: ${file.name}`);
           
           if (closetMode) {
             closetItems[type].push(e.target.result);
@@ -1300,8 +1306,13 @@
     }
 
     window.removeImage = function(type, index) {
+      console.log(`🗑️ Eliminando ${type}[${index}]`);
+      
+      // Eliminar de ambos arrays manteniendo sincronización
       uploadedFiles[type].splice(index, 1);
       uploadedImages[type].splice(index, 1);
+      
+      console.log(`📊 Después de eliminar - ${type}: ${uploadedFiles[type].length} archivos, ${uploadedImages[type].length} imágenes`);
       
       if (closetMode) {
         closetItems[type].splice(index, 1);
@@ -1315,6 +1326,44 @@
       
       updateCombinationsDisplay();
       updateGenerateButton();
+    };
+
+    // Función para limpiar cache/reset completo
+    function clearAllCache() {
+      console.log('🧹 Limpiando cache completo...');
+      
+      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      uploadedImages = { tops: [], bottoms: [], shoes: [] };
+      selectedClosetItems = { tops: [], bottoms: [], shoes: [] };
+      
+      // Limpiar resultados anteriores
+      const resultDiv = document.getElementById('result');
+      if (resultDiv) {
+        resultDiv.classList.add('hidden');
+        resultDiv.innerHTML = '';
+      }
+      
+      // Resetear ocasión
+      selectedOccasion = '';
+      document.querySelectorAll('[data-occasion]').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.style.borderColor = '';
+        btn.style.background = '';
+      });
+      
+      // Actualizar UI
+      updatePreview('tops');
+      updatePreview('bottoms');
+      updatePreview('shoes');
+      updateGenerateButton();
+      
+      console.log('✅ Cache limpiado completamente');
+    }
+
+    // Agregar botón de reset cache en desarrollo
+    window.resetCache = function() {
+      clearAllCache();
+      showNotification('Cache limpiado - Sube tus fotos nuevamente', 'info');
     };
 
     function updateCombinationsDisplay() {
@@ -1422,14 +1471,18 @@
       // Preparar FormData para envío al backend
       const formData = new FormData();
       
-      // Agregar archivos de cada categoría
+      // IMPORTANTE: Enviar archivos en el mismo orden que las imágenes mostradas
+      console.log('📤 Enviando al backend:');
       uploadedFiles.tops.forEach((file, index) => {
+        console.log(`  tops[${index}]: ${file.name}`);
         formData.append('tops', file);
       });
       uploadedFiles.bottoms.forEach((file, index) => {
+        console.log(`  bottoms[${index}]: ${file.name}`);
         formData.append('bottoms', file);
       });
       uploadedFiles.shoes.forEach((file, index) => {
+        console.log(`  shoes[${index}]: ${file.name}`);
         formData.append('shoes', file);
       });
       
@@ -1437,7 +1490,7 @@
       formData.append('occasion', selectedOccasion);
       
       console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
-      console.log(`📁 Archivos: ${uploadedFiles.tops.length} tops, ${uploadedFiles.bottoms.length} bottoms, ${uploadedFiles.shoes.length} shoes`);
+      console.log(`📁 Arrays frontend - tops: ${uploadedImages.tops.length}, bottoms: ${uploadedImages.bottoms.length}, shoes: ${uploadedImages.shoes.length}`);
       
       // Llamada real al backend
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
