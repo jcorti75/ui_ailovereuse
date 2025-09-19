@@ -894,7 +894,7 @@
     };
 
     // ============================================
-    // GOOGLE AUTH REAL - CALLBACK FUNCTION
+    // GOOGLE AUTH REAL - CALLBACK FUNCTION (RESTAURADO)
     // ============================================
     window.handleCredentialResponse = function(response) {
       try {
@@ -920,7 +920,7 @@
           showNotification('¡Bienvenido de vuelta!', 'success');
           showModeSelector();
         } else {
-          document.getElementById('welcomeSection').classList.remove('hidden');
+          document.getElementById('welcomeSection').style.display = 'block';
           document.getElementById('profileForm').classList.remove('hidden');
           document.getElementById('profileForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
           showNotification('¡Bienvenido a NoShopiA! Completa tu perfil', 'success');
@@ -960,14 +960,20 @@
     };
 
     // ============================================
-    // FUNCIONES PRINCIPALES
+    // FUNCIONES DE FLUJO PRINCIPALES (RESTAURADAS)
     // ============================================
     window.showModeSelector = function() {
       console.log('Showing mode selector...');
+      
+      // Ocultar secciones anteriores
+      document.getElementById('welcomeSection').style.display = 'none';
       document.getElementById('profileForm').classList.add('hidden');
+      
+      // Mostrar selector de modo
       const selector = document.getElementById('closetQuestion');
       selector.classList.remove('hidden');
       selector.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
       showNotification('Elige tu modo preferido para las recomendaciones', 'info');
     };
 
@@ -976,16 +982,15 @@
       closetMode = true;
       updateModeIndicator('Modo Closet Digital (máx 15 prendas)', true);
       
+      // Ocultar selector de modo
       document.getElementById('closetQuestion').classList.add('hidden');
-      document.getElementById('closetContainer').classList.remove('hidden');
-      document.getElementById('occasionSelector').classList.add('hidden');
-      document.getElementById('closetSelection').classList.add('hidden');
-      document.getElementById('uploadArea').classList.add('hidden');
       
+      // Mostrar closet container
+      document.getElementById('closetContainer').style.display = 'block';
       document.getElementById('userEmail').textContent = currentUser?.email || '';
       document.getElementById('closetRemaining').classList.remove('hidden');
-      updateClosetRemaining();
       
+      updateClosetRemaining();
       renderSubcategories();
       loadUserClosetData();
       
@@ -998,8 +1003,11 @@
       closetMode = false;
       updateModeIndicator('Modo Recomendaciones Rápidas (3-3-5)', false);
       
+      // Ocultar selector de modo y closet
       document.getElementById('closetQuestion').classList.add('hidden');
-      document.getElementById('closetContainer').classList.add('hidden');
+      document.getElementById('closetContainer').style.display = 'none';
+      
+      // Mostrar modo directo
       document.getElementById('occasionSelector').classList.remove('hidden');
       document.getElementById('uploadArea').classList.remove('hidden');
       document.getElementById('directModeCounters').classList.remove('hidden');
@@ -1007,6 +1015,7 @@
       renderOccasions();
       renderUploadArea();
       updateDirectModeCounters();
+      
       showNotification('Modo Recomendaciones Directas activado - Límites: 3-3-5', 'info');
     };
 
@@ -2210,10 +2219,14 @@
       };
 
       localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(profileData));
-      userProfile = profileData;
+      window.userProfile = profileData;
+      
       showNotification('Perfil creado exitosamente', 'success');
       
-      setTimeout(() => showModeSelector(), 1000);
+      // Ir directamente al selector de modo
+      setTimeout(() => {
+        showModeSelector();
+      }, 1000);
     };
 
     function showNotification(message, type = 'info') {
