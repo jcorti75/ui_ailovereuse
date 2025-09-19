@@ -1457,23 +1457,33 @@
       // Preparar FormData para envío al backend
       const formData = new FormData();
       
-      // IMPORTANTE: Enviar archivos en el mismo orden que las imágenes mostradas
+      // CORRECCIÓN: Filtrar archivos null y enviar solo archivos válidos
+      const validTops = uploadedFiles.tops.filter(file => file !== null);
+      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null);
+      const validShoes = uploadedFiles.shoes.filter(file => file !== null);
+      
       console.log('📤 Enviando al backend:');
-      uploadedFiles.tops.forEach((file, index) => {
+      validTops.forEach((file, index) => {
         console.log(`  tops[${index}]: ${file.name}`);
         formData.append('tops', file);
       });
-      uploadedFiles.bottoms.forEach((file, index) => {
+      validBottoms.forEach((file, index) => {
         console.log(`  bottoms[${index}]: ${file.name}`);
         formData.append('bottoms', file);
       });
-      uploadedFiles.shoes.forEach((file, index) => {
+      validShoes.forEach((file, index) => {
         console.log(`  shoes[${index}]: ${file.name}`);
         formData.append('shoes', file);
       });
       
       // Agregar ocasión
       formData.append('occasion', selectedOccasion);
+      
+      // Debug info
+      console.log('📋 FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
+      }
       
       console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
       console.log(`📁 Arrays frontend - tops: ${uploadedImages.tops.length}, bottoms: ${uploadedImages.bottoms.length}, shoes: ${uploadedImages.shoes.length}`);
