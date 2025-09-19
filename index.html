@@ -1065,11 +1065,20 @@
         return null;
       }
       
+      // DEBUGGING PARA IDENTIFICAR EL PROBLEMA DE MAPEO
+      console.log(`🔍 MAPEO ${type.toUpperCase()}:`);
+      console.log(`- Backend index: ${backendIndex}`);
+      console.log(`- Backend filename: ${item[type.slice(0, -1)]?.name}`);
+      console.log(`- Images disponibles: ${images.length}`);
+      console.log(`- Array uploadedImages[${type}]:`, images.map((img, i) => `${i}: ${img ? 'IMAGEN' : 'NULL'}`));
+      
       if (typeof backendIndex === 'number' && backendIndex >= 0 && backendIndex < images.length) {
-        return images[backendIndex];
+        const selectedImage = images[backendIndex];
+        console.log(`✅ Imagen seleccionada para ${type}[${backendIndex}]: ${selectedImage ? 'ENCONTRADA' : 'NULL'}`);
+        return selectedImage;
       }
       
-      console.error(`❌ ${type}: índice ${backendIndex} inválido, usando primera imagen como fallback`);
+      console.error(`❌ ${type}: índice ${backendIndex} inválido (max: ${images.length-1}), usando primera imagen como fallback`);
       return images[0];
     }
 
