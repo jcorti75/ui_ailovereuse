@@ -1230,7 +1230,7 @@
     }
 
     // ============================================
-    // GESTIÓN DE ARCHIVOS CORREGIDA
+    // GESTIÓN DE ARCHIVOS - CORRECCIÓN APLICADA
     // ============================================
     function handleFileUpload(type, input) {
       const files = Array.from(input.files);
@@ -1255,36 +1255,58 @@
         }
       }
 
-      // CRÍTICO: Mantener sincronización entre files e images
+      // CORRECCIÓN: Pre-asignar espacios para preservar orden original
+      const startIndex = uploadedFiles[type].length;
+      const endIndex = startIndex + files.length;
+      
+      // Reservar espacios en arrays
+      uploadedFiles[type].length = endIndex;
+      uploadedImages[type].length = endIndex;
+      
+      // Inicializar con null para detectar posiciones vacías
+      for (let i = startIndex; i < endIndex; i++) {
+        uploadedFiles[type][i] = null;
+        uploadedImages[type][i] = null;
+      }
+
+      let completedReads = 0;
+
+      // Procesar cada archivo manteniendo índice original
       files.forEach((file, fileIndex) => {
+        const targetIndex = startIndex + fileIndex;
+        
         const reader = new FileReader();
         reader.onload = (e) => {
-          const currentIndex = uploadedFiles[type].length;
+          // Usar posición fija calculada, no push()
+          uploadedFiles[type][targetIndex] = file;
+          uploadedImages[type][targetIndex] = e.target.result;
           
-          // Agregar simultáneamente a ambos arrays para mantener sincronización
-          uploadedFiles[type].push(file);
-          uploadedImages[type].push(e.target.result);
+          completedReads++;
           
-          console.log(`📎 Subido ${type}[${currentIndex}]: ${file.name}`);
-          
-          if (closetMode) {
-            closetItems[type].push(e.target.result);
-            saveUserClosetData();
-            updateClosetRemaining();
-            renderSubcategories();
-          } else {
-            updatePreview(type);
-            updateDirectModeCounters();
+          // Solo actualizar UI cuando todas las lecturas terminen
+          if (completedReads === files.length) {
+            if (closetMode) {
+              // En modo closet, agregar al almacén
+              files.forEach((file, idx) => {
+                closetItems[type].push(uploadedImages[type][startIndex + idx]);
+              });
+              saveUserClosetData();
+              updateClosetRemaining();
+              renderSubcategories();
+            } else {
+              updatePreview(type);
+              updateDirectModeCounters();
+            }
+            
+            updateCombinationsDisplay();
+            updateGenerateButton();
           }
-          
-          updateCombinationsDisplay();
-          updateGenerateButton();
         };
+        
         reader.readAsDataURL(file);
       });
       
       input.value = '';
-      
       const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'zapatos' };
       showNotification(`${files.length} ${typeNames[type]} subidas correctamente`, 'success');
     }
@@ -1295,13 +1317,15 @@
       
       preview.innerHTML = '';
       uploadedImages[type].forEach((imageUrl, index) => {
-        const container = document.createElement('div');
-        container.className = 'preview-container';
-        container.innerHTML = `
-          <img src="${imageUrl}" class="preview-image" alt="${type} ${index + 1}">
-          <button class="remove-image" onclick="removeImage('${type}', ${index})">×</button>
-        `;
-        preview.appendChild(container);
+        if (imageUrl) { // Solo mostrar imágenes que ya se cargaron
+          const container = document.createElement('div');
+          container.className = 'preview-container';
+          container.innerHTML = `
+            <img src="${imageUrl}" class="preview-image" alt="${type} ${index + 1}">
+            <button class="remove-image" onclick="removeImage('${type}', ${index})">×</button>
+          `;
+          preview.appendChild(container);
+        }
       });
     }
 
@@ -1326,44 +1350,6 @@
       
       updateCombinationsDisplay();
       updateGenerateButton();
-    };
-
-    // Función para limpiar cache/reset completo
-    function clearAllCache() {
-      console.log('🧹 Limpiando cache completo...');
-      
-      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-      uploadedImages = { tops: [], bottoms: [], shoes: [] };
-      selectedClosetItems = { tops: [], bottoms: [], shoes: [] };
-      
-      // Limpiar resultados anteriores
-      const resultDiv = document.getElementById('result');
-      if (resultDiv) {
-        resultDiv.classList.add('hidden');
-        resultDiv.innerHTML = '';
-      }
-      
-      // Resetear ocasión
-      selectedOccasion = '';
-      document.querySelectorAll('[data-occasion]').forEach(btn => {
-        btn.classList.remove('selected');
-        btn.style.borderColor = '';
-        btn.style.background = '';
-      });
-      
-      // Actualizar UI
-      updatePreview('tops');
-      updatePreview('bottoms');
-      updatePreview('shoes');
-      updateGenerateButton();
-      
-      console.log('✅ Cache limpiado completamente');
-    }
-
-    // Agregar botón de reset cache en desarrollo
-    window.resetCache = function() {
-      clearAllCache();
-      showNotification('Cache limpiado - Sube tus fotos nuevamente', 'info');
     };
 
     function updateCombinationsDisplay() {
@@ -1516,13 +1502,6 @@
         console.log('🎯 Ocasión:', selectedOccasion);
         console.log('📋 Combinaciones recibidas:', data.results?.length || 0);
         
-        // Log de las combinaciones específicas para debugging
-        if (data.results) {
-          data.results.forEach((combo, i) => {
-            console.log(`🔸 Combo ${i+1}: top[${combo.top?.index}] + bottom[${combo.bottom?.index}] + shoe[${combo.shoe?.index}] = ${Math.round((combo.final_score || 0) * 100)}%`);
-          });
-        }
-        
         renderRecommendations(data);
         showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
       })
@@ -1608,9 +1587,6 @@
       renderRecommendations(mockData);
     }
 
-    // ============================================
-    // RENDERIZADO DE RECOMENDACIONES - FORMATO CORRECTO
-    // ============================================
     function getImageForCombination(type, item) {
       const images = uploadedImages[type];
       if (!images || images.length === 0) return null;
@@ -1983,7 +1959,7 @@
     // INICIALIZACIÓN
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('Initializing NoShopiA with corrected recommendation system...');
+      console.log('✅ NoShopiA inicializado con corrección de orden de archivos aplicada');
       initializeApp();
       updateAuthUI();
       
@@ -2003,15 +1979,6 @@
         const impactSection = document.getElementById('impacto');
         if (impactSection) observer.observe(impactSection);
       }, 1000);
-      
-      console.log('✅ TODOS LOS BUGS CORREGIDOS:');
-      console.log('1. Backend real - endpoint configurable');
-      console.log('2. Componentes restaurados - menú y footer completos');
-      console.log('3. Closet: 15 prendas totales distribuibles');
-      console.log('4. Subcategorías implementadas con persistencia');
-      console.log('5. Contadores separados por modo');
-      console.log('6. Validaciones correctas por modo');
-      console.log('7. Contador dinámico "Te quedan X por subir"');
     });
   </script>
 </body>
