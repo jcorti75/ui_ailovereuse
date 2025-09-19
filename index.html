@@ -1706,7 +1706,7 @@
     }
 
     // ============================================
-    // GENERACIÓN DE RECOMENDACIONES - BACKEND REAL CON VALIDACIÓN MEJORADA
+    // GENERACIÓN DE RECOMENDACIONES - BACKEND REAL CON CORRECCIÓN ERROR 422
     // ============================================
     window.getRecommendation = function() {
       if (!selectedOccasion) { 
@@ -1744,45 +1744,16 @@
         document.getElementById('timerDisplay').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       }, 100);
 
+      // CORRECCIÓN ERROR 422: Crear FormData con formato exacto que espera el backend
       const formData = new FormData();
       
-      // CORRECCIÓN: Filtrar archivos null y enviar solo archivos válidos
-      const validTops = uploadedFiles.tops.filter(file => file !== null && file instanceof File);
-      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null && file instanceof File);
-      const validShoes = uploadedFiles.shoes.filter(file => file !== null && file instanceof File);
+      // Filtrar y validar archivos
+      const validTops = uploadedFiles.tops.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
+      const validBottoms = uploadedFiles.bottoms.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
+      const validShoes = uploadedFiles.shoes.filter(file => file !== null && file instanceof File && file.type.startsWith('image/'));
       
-      console.log('📤 Enviando al backend:');
-      validTops.forEach((file, index) => {
-        console.log(`  tops[${index}]: ${file.name} (${file.type})`);
-        formData.append('tops', file, file.name);
-      });
-      validBottoms.forEach((file, index) => {
-        console.log(`  bottoms[${index}]: ${file.name} (${file.type})`);
-        formData.append('bottoms', file, file.name);
-      });
-      validShoes.forEach((file, index) => {
-        console.log(`  shoes[${index}]: ${file.name} (${file.type})`);
-        formData.append('shoes', file, file.name);
-      });
-      
-      const occasionMap = {
-        'oficina': 'oficina',
-        'deportivo': 'deportivo', 
-        'casual': 'casual',
-        'formal': 'formal',
-        'matrimonio': 'matrimonio'
-      };
-      const mappedOccasion = occasionMap[selectedOccasion] || selectedOccasion;
-      formData.append('occasion', String(mappedOccasion));
-      
-      console.log('📋 FormData entries:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}:`, value instanceof File ? `${value.name} (${value.size} bytes, ${value.type})` : `"${value}" (${typeof value})`);
-      }
-      
-      console.log(`🎯 Generando recomendaciones para ocasión: ${selectedOccasion}`);
-      console.log(`📁 Arrays frontend - tops: ${uploadedImages.tops.length}, bottoms: ${uploadedImages.bottoms.length}, shoes: ${uploadedImages.shoes.length}`);
-      console.log(`📁 Archivos válidos - tops: ${validTops.length}, bottoms: ${validBottoms.length}, shoes: ${validShoes.length}`);
+      console.log('🔧 CORRECCIÓN ERROR 422 - Validación estricta:');
+      console.log(`📁 Archivos válidos después de filtros - tops: ${validTops.length}, bottoms: ${validBottoms.length}, shoes: ${validShoes.length}`);
       
       if (validTops.length === 0 || validBottoms.length === 0 || validShoes.length === 0) {
         console.error('❌ Error: No hay archivos válidos para enviar');
@@ -1794,40 +1765,116 @@
         return;
       }
       
+      // CORRECCIÓN: Agregar archivos con nombres únicos y tipos correctos
+      validTops.forEach((file, index) => {
+        const sanitizedName = `top_${index}_${Date.now()}.${file.type.split('/')[1]}`;
+        console.log(`📤 Agregando top[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
+        formData.append('tops', file, sanitizedName);
+      });
+      
+      validBottoms.forEach((file, index) => {
+        const sanitizedName = `bottom_${index}_${Date.now()}.${file.type.split('/')[1]}`;
+        console.log(`📤 Agregando bottom[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
+        formData.append('bottoms', file, sanitizedName);
+      });
+      
+      validShoes.forEach((file, index) => {
+        const sanitizedName = `shoe_${index}_${Date.now()}.${file.type.split('/')[1]}`;
+        console.log(`📤 Agregando shoe[${index}]: ${sanitizedName} (${file.type}, ${file.size} bytes)`);
+        formData.append('shoes', file, sanitizedName);
+      });
+      
+      // CORRECCIÓN: Validar y enviar ocasión con formato estricto
+      const occasionMap = {
+        'oficina': 'office',
+        'deportivo': 'sport', 
+        'casual': 'casual',
+        'formal': 'formal',
+        'matrimonio': 'wedding'
+      };
+      
+      const backendOccasion = occasionMap[selectedOccasion] || 'casual';
+      formData.append('occasion', backendOccasion);
+      console.log(`🎯 Ocasión mapeada: "${selectedOccasion}" -> "${backendOccasion}"`);
+      
+      // CORRECCIÓN: Agregar metadatos que podrían ser requeridos por el backend
+      formData.append('user_id', currentUser?.sub || 'anonymous');
+      formData.append('timestamp', new Date().toISOString());
+      formData.append('total_combinations', String(topsCount * bottomsCount * shoesCount));
+      
+      // Debug completo del FormData
+      console.log('📋 FormData final enviada al backend:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: ${value.name} (${value.type}, ${value.size} bytes)`);
+        } else {
+          console.log(`  ${key}: "${value}" (${typeof value})`);
+        }
+      }
+      
+      // CORRECCIÓN: Llamada con headers mejorados y manejo de errores detallado
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
         method: 'POST',
+        headers: {
+          // NO incluir Content-Type para FormData - el navegador lo maneja automáticamente
+          'Accept': 'application/json',
+          'User-Agent': 'NoShopiA-Frontend/1.0'
+        },
         body: formData
       })
-      .then(response => {
+      .then(async response => {
+        const responseText = await response.text();
+        console.log(`📡 Respuesta del servidor (${response.status}):`, responseText);
+        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if (response.status === 422) {
+            console.error('❌ ERROR 422: El backend rechaza el formato de datos');
+            console.error('📋 Datos enviados fueron:', [...formData.entries()]);
+            throw new Error(`Error 422: Datos no procesables por el backend. Revisar formato.`);
+          } else if (response.status === 500) {
+            console.error('❌ ERROR 500: Error interno del servidor');
+            throw new Error(`Error 500: El servidor tiene un problema interno.`);
+          } else {
+            throw new Error(`Error HTTP ${response.status}: ${responseText}`);
+          }
         }
-        return response.json();
+        
+        try {
+          return JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error parseando JSON:', parseError);
+          throw new Error('Respuesta del servidor no es JSON válido');
+        }
       })
       .then(data => {
+        console.log('✅ Datos procesados correctamente:', data);
+        
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
         
         const totalCombinations = topsCount * bottomsCount * shoesCount;
-        const recommendationsToShow = Math.min(3, totalCombinations);
         generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para otra ocasión`;
-        
-        console.log('✅ Respuesta del backend:', data);
-        console.log('🎯 Ocasión:', selectedOccasion);
-        console.log('📋 Combinaciones recibidas:', data.results?.length || 0);
         
         renderRecommendations(data);
         showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
       })
       .catch(error => {
-        console.error('❌ Error en llamada al backend:', error);
+        console.error('❌ Error completo en llamada al backend:', error);
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
         generateBtn.innerHTML = '<i class="fas fa-magic"></i> Reintentar';
         
-        showNotification('Error conectando al backend, usando datos de prueba', 'error');
+        // Mostrar error específico basado en el tipo
+        if (error.message.includes('422')) {
+          showNotification('Error 422: El backend no acepta el formato de datos. Revisar archivos.', 'error');
+        } else if (error.message.includes('500')) {
+          showNotification('Error 500: Problema interno del servidor. Intenta más tarde.', 'error');
+        } else {
+          showNotification('Error de conexión. Usando datos de prueba.', 'error');
+        }
+        
         const totalCombinations = topsCount * bottomsCount * shoesCount;
         const maxRecommendations = Math.min(3, totalCombinations);
         showMockRecommendationsAsBackup(maxRecommendations, totalCombinations);
