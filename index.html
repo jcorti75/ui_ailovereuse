@@ -928,7 +928,7 @@
     }
 
     // ============================================
-    // GENERACIÓN DE RECOMENDACIONES
+    // GENERACIÓN DE RECOMENDACIONES - BACKEND REAL
     // ============================================
     window.getRecommendation = function() {
       if (!selectedOccasion) { 
@@ -950,49 +950,189 @@
       
       processingTimer.classList.remove('hidden');
       generateBtn.disabled = true;
-      generateBtn.innerHTML = '<div class="loading"></div> Generando...';
+      generateBtn.innerHTML = '<div class="loading"></div> Procesando con IA...';
 
       let startTime = Date.now();
       const timerInterval = setInterval(() => {
         document.getElementById('timerDisplay').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       }, 100);
 
-      // Simular llamada al backend
-      setTimeout(() => {
+      // Preparar FormData para envío al backend
+      const formData = new FormData();
+      
+      // Agregar archivos de cada categoría
+      uploadedFiles.tops.forEach((file, index) => {
+        formData.append('tops', file);
+      });
+      uploadedFiles.bottoms.forEach((file, index) => {
+        formData.append('bottoms', file);
+      });
+      uploadedFiles.shoes.forEach((file, index) => {
+        formData.append('shoes', file);
+      });
+      
+      // Agregar ocasión
+      formData.append('occasion', selectedOccasion);
+      
+      // Llamada real al backend
+      fetch('/api/recommendations', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
         generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Otra Recomendación';
         
-        // Actualizar texto del botón basado en combinaciones - usar regla correcta
+        console.log('✅ Respuesta del backend:', data);
+        renderRecommendations(data);
+      })
+      .catch(error => {
+        console.error('❌ Error en llamada al backend:', error);
+        clearInterval(timerInterval);
+        processingTimer.classList.add('hidden');
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Reintentar';
+        
+        // Fallback: usar datos mock si falla el backend
+        showNotification('Error conectando al backend, usando datos de prueba', 'error');
         const totalCombinations = topsCount * bottomsCount * shoesCount;
-        const recommendationsToShow = Math.min(3, totalCombinations);
-        
-        generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar Otra Recomendación`;
-        
-        showMockRecommendations(recommendationsToShow, totalCombinations);
-      }, 2500);
+        const maxRecommendations = Math.min(3, totalCombinations);
+        showMockRecommendationsAsBackup(maxRecommendations, totalCombinations);
+      });
     };
+
+    function showMockRecommendationsAsBackup(maxRecommendations, totalCombinations) {
+      // Solo como backup si falla el backend
+      const mockResults = [];
+      
+      for (let i = 0; i < maxRecommendations; i++) {
+        const topIndex = i % uploadedImages.tops.length;
+        const bottomIndex = i % uploadedImages.bottoms.length; 
+        const shoeIndex = i % uploadedImages.shoes.length;
+        
+        // Scores diferentes según ocasión
+        const occasionScores = {
+          'oficina': [0.94, 0.87, 0.81],
+          'deportivo': [0.76, 0.84, 0.79],
+          'casual': [0.89, 0.82, 0.77],
+          'formal': [0.96, 0.91, 0.85],
+          'matrimonio': [0.98, 0.93, 0.88]
+        };
+        
+        const scores = occasionScores[selectedOccasion] || [0.85, 0.78, 0.72];
+        const finalScore = scores[i] || (0.85 - i * 0.07);
+        
+        mockResults.push({
+          combination_id: i + 1,
+          top: { 
+            index: topIndex, 
+            detected_item: ['leather jacket', 'shirt', 'graphic t-shirt'][topIndex],
+            formality: ['casual', 'formal', 'casual'][topIndex]
+          },
+          bottom: { 
+            index: bottomIndex, 
+            detected_item: ['shorts', 'dress pants', 'formal pants'][bottomIndex],
+            formality: ['formal', 'formal', 'formal'][bottomIndex]
+          },
+          shoe: { 
+            index: shoeIndex, 
+            detected_item: ['dress shoes', 'sneakers', 'boots'][shoeIndex],
+            formality: ['formal', 'casual', 'formal'][shoeIndex]
+          },
+          final_score: finalScore,
+          occasion_match: selectedOccasion,
+          scores: {
+            harmony: {
+              type_display: ['Monocromática', 'Complementaria', 'Tetrádica'][i % 3],
+              description: ['Armonía monocromática sofisticada', 'Contraste complementario equilibrado', 'Composición tetrádica balanceada'][i % 3]
+            }
+          },
+          style_tips: [
+            'Añade texturas contrastantes para crear profundidad visual',
+            'Incluye accesorios metálicos para romper la uniformidad',
+            'Excelente combinación con gran potencial'
+          ],
+          coherence_explanation: 'Dominancia formal con toque variado - sofisticado'
+        });
+      }
+
+      const mockData = {
+        success: true,
+        results: mockResults,
+        total_combinations_possible: totalCombinations,
+        total_combinations_evaluated: Math.min(10, totalCombinations),
+        message: `Las mejores ${maxRecommendations} de ${totalCombinations} combinaciones están listas (modo prueba)`,
+        processing_stats: { total_time: '2.5s' }
+      };
+
+      renderRecommendations(mockData);
+    }
 
     function showMockRecommendations(maxRecommendations, totalCombinations) {
       // Generar datos mock que respetan la lógica del backend
       const mockResults = [];
       
+      // Generar combinaciones específicas para asegurar variedad
+      const topIndices = Array.from({length: uploadedImages.tops.length}, (_, i) => i);
+      const bottomIndices = Array.from({length: uploadedImages.bottoms.length}, (_, i) => i);
+      const shoeIndices = Array.from({length: uploadedImages.shoes.length}, (_, i) => i);
+      
       for (let i = 0; i < maxRecommendations; i++) {
-        const baseScore = 0.9 - (i * 0.1); // Decrecer el score
+        // Usar diferentes combinaciones para cada recomendación
+        const topIndex = topIndices[i % topIndices.length];
+        const bottomIndex = bottomIndices[i % bottomIndices.length];
+        const shoeIndex = shoeIndices[i % shoeIndices.length];
+        
+        // Scores variables según ocasión
+        const baseScore = 0.95 - (i * 0.08); // Decrecer más gradualmente
         const occasionBonus = getOccasionBonus(selectedOccasion);
-        const finalScore = Math.min(0.95, baseScore + occasionBonus);
+        const randomVariation = (Math.random() - 0.5) * 0.05; // Variación pequeña
+        const finalScore = Math.max(0.65, Math.min(0.98, baseScore + occasionBonus + randomVariation));
+        
+        const detectedItems = {
+          tops: ['leather jacket', 'shirt', 'graphic t-shirt'],
+          bottoms: ['shorts', 'dress pants', 'formal pants'],
+          shoes: ['dress shoes', 'sneakers', 'boots']
+        };
         
         mockResults.push({
           combination_id: i + 1,
-          top: { index: Math.floor(Math.random() * uploadedImages.tops.length), detected_item: 'shirt' },
-          bottom: { index: Math.floor(Math.random() * uploadedImages.bottoms.length), detected_item: 'pants' },
-          shoe: { index: Math.floor(Math.random() * uploadedImages.shoes.length), detected_item: 'sneakers' },
+          top: { 
+            index: topIndex, 
+            detected_item: detectedItems.tops[topIndex % detectedItems.tops.length] 
+          },
+          bottom: { 
+            index: bottomIndex, 
+            detected_item: detectedItems.bottoms[bottomIndex % detectedItems.bottoms.length] 
+          },
+          shoe: { 
+            index: shoeIndex, 
+            detected_item: detectedItems.shoes[shoeIndex % detectedItems.shoes.length] 
+          },
           final_score: finalScore,
           occasion_match: selectedOccasion,
-          harmony_type: ['Monocromática', 'Complementaria', 'Tetrádica'][i % 3],
-          harmony_description: 'Combinación balanceada y elegante'
+          harmony_type: ['Monocromática', 'Complementaria', 'Tetrádica', 'Neutral', 'Análoga'][i % 5],
+          harmony_description: [
+            'Armonía monocromática sofisticada',
+            'Contraste complementario equilibrado', 
+            'Composición tetrádica balanceada',
+            'Combinación neutral elegante',
+            'Paleta análoga armoniosa'
+          ][i % 5]
         });
       }
+
+      // Guardar en cache con la ocasión actual
+      const cacheKey = `${selectedOccasion}_${Date.now()}`;
+      recommendationCache.set(cacheKey, mockResults);
 
       const mockData = {
         success: true,
@@ -1003,6 +1143,9 @@
         processing_stats: { total_time: '2.5s' }
       };
 
+      console.log(`🎯 Generando ${maxRecommendations} recomendaciones para ocasión: ${selectedOccasion}`);
+      console.log('📊 Scores generados:', mockResults.map(r => `${Math.round(r.final_score * 100)}%`).join(', '));
+      
       renderRecommendations(mockData);
     }
 
@@ -1018,46 +1161,24 @@
     }
 
     // ============================================
-    // RENDERIZADO DE RECOMENDACIONES
+    // RENDERIZADO DE RECOMENDACIONES - FORMATO CORRECTO
     // ============================================
-    function getImageForCombination(type, item) {
-      const images = uploadedImages[type];
-      if (!images || images.length === 0) return null;
-      
-      let backendIndex;
-      if (type === 'tops') {
-        backendIndex = item.top?.index || 0;
-      } else if (type === 'bottoms') {
-        backendIndex = item.bottom?.index || 0;
-      } else if (type === 'shoes') {
-        backendIndex = item.shoe?.index || 0;
-      } else {
-        return null;
-      }
-      
-      if (backendIndex >= 0 && backendIndex < images.length) {
-        return images[backendIndex];
-      }
-      
-      return images[0]; // Fallback
-    }
-
     function renderRecommendations(data) {
       const result = document.getElementById('result');
       const results = data.results || [];
       
       if (results.length === 0) {
-        result.innerHTML = '<p style="text-align: center; color: #000000;">No se encontraron recomendaciones.</p>';
+        result.innerHTML = '<p style="text-align: center; color: #000000; padding: 2rem;">No se encontraron recomendaciones.</p>';
         result.classList.remove('hidden');
         return;
       }
       
-      // Ordenar por final_score descendente
+      // Ordenar por final_score descendente (el backend ya debería enviarlos ordenados)
       results.sort((a, b) => (b.final_score || 0) - (a.final_score || 0));
       
       const occasionText = {
-        'oficina': 'Oficina/Trabajo',
-        'deportivo': 'Deportes/Gym', 
+        'oficina': 'Oficina',
+        'deportivo': 'Deportivo', 
         'casual': 'Casual',
         'formal': 'Formal',
         'matrimonio': 'Matrimonio'
@@ -1065,88 +1186,115 @@
       
       let html = `
         <div style="text-align: center; margin-bottom: 2rem;">
-          <h2 style="color: #000000;">🪄 Recomendaciones para ${occasionText[selectedOccasion] || selectedOccasion}</h2>
-          <div style="background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border-radius: 15px; padding: 1rem; margin: 1rem 0; display: inline-block;">
-            <strong>📍 Ocasión: ${occasionText[selectedOccasion] || selectedOccasion}</strong>
-          </div>
-          <p style="color: #000000; opacity: 0.8;">
-            ${data.message || `${results.length} combinaciones optimizadas para esta ocasión`}
-          </p>
-          <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
-            <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'} | 
-            <strong>Evaluadas:</strong> ${data.total_combinations_evaluated}/${data.total_combinations_possible}
+          <h2 style="color: #000000; margin-bottom: 1rem;">🪄 Tus Recomendaciones</h2>
+          <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0; display: inline-block;">
+            <strong>📍 ${occasionText[selectedOccasion] || selectedOccasion}</strong> | 
+            <strong>${data.message || `${results.length} recomendaciones generadas`}</strong>
           </div>
         </div>
-        <div style="display: grid; gap: 2rem;">
       `;
       
+      // Renderizar TODAS las recomendaciones del backend
       results.forEach((item, idx) => {
         const scorePercent = Math.round((item.final_score || 0) * 100);
-        const isBest = idx === 0;
         
         const topImage = getImageForCombination('tops', item);
         const bottomImage = getImageForCombination('bottoms', item);
         const shoeImage = getImageForCombination('shoes', item);
         
         html += `
-          <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
-            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR PARA ' + (occasionText[selectedOccasion] || selectedOccasion).toUpperCase() + '</div>' : ''}
+          <div style="background: var(--background); border: 2px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
-              <h3 style="color: #000000; margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <span style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">${occasionText[selectedOccasion] || selectedOccasion}</span>
-                <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+            <!-- HEADER CON SCORE EN ESQUINA SUPERIOR DERECHA -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+              <h3 style="color: #000000; margin: 0; font-size: 1.5rem; font-weight: 700;">Combinación ${idx + 1}</h3>
+              <div style="background: #4F83FF; color: white; padding: 0.8rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(79, 131, 255, 0.3);">
+                ${scorePercent}%
               </div>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+            <!-- GRID DE IMÁGENES -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
               <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${topImage ? `<img src="${topImage}" style="max-width: 150px; max-height: 150px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
+                <div style="background: #f8fafc; border: 2px solid #e5e7eb; border-radius: 15px; padding: 1rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                  ${topImage ? `<img src="${topImage}" style="max-width: 160px; max-height: 160px; object-fit: contain; border-radius: 10px;" alt="Superior">` : '<div style="color: #666; font-size: 3rem;">👕</div>'}
                 </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
+                <div style="font-size: 0.9rem; color: #666; text-transform: uppercase; font-weight: 600;">👕 SUPERIOR</div>
+                <div style="color: #000; font-weight: 600; margin: 0.5rem 0;">${item.top?.detected_item || 'Superior'}</div>
+                <div style="color: #666; font-size: 0.8rem;">${item.top?.formality || 'Casual'}</div>
               </div>
+              
               <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 150px; max-height: 150px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
+                <div style="background: #f8fafc; border: 2px solid #e5e7eb; border-radius: 15px; padding: 1rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 160px; max-height: 160px; object-fit: contain; border-radius: 10px;" alt="Inferior">` : '<div style="color: #666; font-size: 3rem;">👖</div>'}
                 </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
+                <div style="font-size: 0.9rem; color: #666; text-transform: uppercase; font-weight: 600;">👖 INFERIOR</div>
+                <div style="color: #000; font-weight: 600; margin: 0.5rem 0;">${item.bottom?.detected_item || 'Inferior'}</div>
+                <div style="color: #666; font-size: 0.8rem;">${item.bottom?.formality || 'Semiformal'}</div>
               </div>
+              
               <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👠 CALZADO</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 150px; max-height: 150px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👠</div>'}
+                <div style="background: #f8fafc; border: 2px solid #e5e7eb; border-radius: 15px; padding: 1rem; min-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 160px; max-height: 160px; object-fit: contain; border-radius: 10px;" alt="Calzado">` : '<div style="color: #666; font-size: 3rem;">👠</div>'}
                 </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
+                <div style="font-size: 0.9rem; color: #666; text-transform: uppercase; font-weight: 600;">👠 CALZADO</div>
+                <div style="color: #000; font-weight: 600; margin: 0.5rem 0;">${item.shoe?.detected_item || 'Calzado'}</div>
+                <div style="color: #666; font-size: 0.8rem;">${item.shoe?.formality || 'Casual'}</div>
               </div>
             </div>
             
-            <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
-              <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">
-                ${item.harmony_type || 'Equilibrada'}
+            <!-- INFORMACIÓN DE OCASIÓN, ARMONÍA Y COHERENCIA -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="text-align: center; background: #f0f9ff; padding: 1rem; border-radius: 10px;">
+                <div style="font-weight: 600; color: #0369a1; font-size: 0.8rem; margin-bottom: 0.5rem;">OCASIÓN</div>
+                <div style="color: #000; font-weight: 600;">${occasionText[item.occasion_match] || item.occasion_match || selectedOccasion}</div>
               </div>
-              <div style="color: #000000; opacity: 0.8; font-size: 0.9rem;">
-                ${item.harmony_description || 'Combinación balanceada'}
+              <div style="text-align: center; background: #f0fdf4; padding: 1rem; border-radius: 10px;">
+                <div style="font-weight: 600; color: #15803d; font-size: 0.8rem; margin-bottom: 0.5rem;">ARMONÍA</div>
+                <div style="color: #000; font-weight: 600;">${item.scores?.harmony?.type_display || item.harmony_type || 'Equilibrada'}</div>
+              </div>
+              <div style="text-align: center; background: #fef3f2; padding: 1rem; border-radius: 10px;">
+                <div style="font-weight: 600; color: #dc2626; font-size: 0.8rem; margin-bottom: 0.5rem;">COHERENCIA</div>
+                <div style="color: #000; font-weight: 600;">${scorePercent}%</div>
               </div>
             </div>
+            
+            <!-- DESCRIPCIÓN DE ARMONÍA -->
+            <div style="background: #f8fafc; border-left: 4px solid #4F83FF; padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 10px 10px 0;">
+              <div style="color: #4F83FF; font-weight: 600; margin-bottom: 0.5rem;">💡 ${item.scores?.harmony?.description || item.harmony_description || 'Combinación balanceada'}</div>
+            </div>
+            
+            <!-- TIPS DE ESTILO -->
+            ${item.style_tips && item.style_tips.length > 0 ? `
+            <div style="background: #fffbeb; border-radius: 10px; padding: 1.5rem;">
+              <div style="color: #d97706; font-weight: 600; margin-bottom: 1rem;">💡 Tipo de Estilo:</div>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                ${item.style_tips.slice(0, 3).map(tip => `
+                  <li style="padding: 0.3rem 0; color: #000; display: flex; align-items: flex-start;">
+                    <span style="color: #d97706; margin-right: 0.5rem;">•</span>
+                    <span>${tip}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+            ` : ''}
+            
           </div>
         `;
       });
       
-      html += '</div>';
       result.innerHTML = html;
       result.classList.remove('hidden');
       
+      // Guardar resultados globalmente
       currentResults = results;
       
       setTimeout(() => {
         result.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      }, 200);
       
-      showNotification('¡Recomendaciones generadas exitosamente!', 'success');
+      showNotification(`${results.length} recomendaciones generadas para ${selectedOccasion}`, 'success');
+      console.log(`✅ Renderizadas ${results.length} recomendaciones para ocasión: ${selectedOccasion}`);
     }
 
     // ============================================
