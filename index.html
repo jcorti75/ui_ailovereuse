@@ -1452,6 +1452,16 @@
         generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para otra ocasión`;
         
         console.log('✅ Respuesta del backend:', data);
+        console.log('🎯 Ocasión:', selectedOccasion);
+        console.log('📋 Combinaciones recibidas:', data.results?.length || 0);
+        
+        // Log de las combinaciones específicas para debugging
+        if (data.results) {
+          data.results.forEach((combo, i) => {
+            console.log(`🔸 Combo ${i+1}: top[${combo.top?.index}] + bottom[${combo.bottom?.index}] + shoe[${combo.shoe?.index}] = ${Math.round((combo.final_score || 0) * 100)}%`);
+          });
+        }
+        
         renderRecommendations(data);
         showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
       })
@@ -1546,20 +1556,23 @@
       
       let backendIndex;
       if (type === 'tops') {
-        backendIndex = item.top?.index || 0;
+        backendIndex = item.top?.index;
       } else if (type === 'bottoms') {
-        backendIndex = item.bottom?.index || 0;
+        backendIndex = item.bottom?.index;
       } else if (type === 'shoes') {
-        backendIndex = item.shoe?.index || 0;
+        backendIndex = item.shoe?.index;
       } else {
         return null;
       }
       
-      if (backendIndex >= 0 && backendIndex < images.length) {
+      // El backend envía el índice exacto - usarlo directamente
+      if (backendIndex !== undefined && backendIndex >= 0 && backendIndex < images.length) {
+        console.log(`📷 ${type}: usando índice ${backendIndex} del backend (de ${images.length} disponibles)`);
         return images[backendIndex];
       }
       
-      return images[0]; // Fallback
+      console.warn(`⚠️ ${type}: índice ${backendIndex} del backend fuera de rango [0-${images.length-1}], usando primera imagen`);
+      return images[0]; // Fallback solo si hay error
     }
 
     function renderRecommendations(data) {
