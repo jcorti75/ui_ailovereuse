@@ -1770,7 +1770,7 @@
     }
 
     // ============================================
-    // GENERACIÓN DE RECOMENDACIONES - CORREGIDO
+    // GENERACIÓN DE RECOMENDACIONES - CORREGIDO SIN DUPLICACIONES
     // ============================================
     window.getRecommendation = function() {
       if (window.isProcessingRecommendation) {
@@ -1835,8 +1835,35 @@
       validShoes.forEach(file => formData.append('shoes', file));
       
       formData.append('occasion', selectedOccasion);
+
+      // ✅ AGREGAR EMAIL AQUÍ (DENTRO de la función) - SIN DUPLICAR
+      if (currentUser?.email) {
+        formData.append('email', currentUser.email);
+        console.log('📧 Email agregado:', currentUser.email);
+      } else {
+        console.error('❌ Usuario no tiene email');
+        showNotification('Error: Usuario no autenticado', 'error');
+        window.isProcessingRecommendation = false;
+        return;
+      }
       
-      // CORRECCIÓN CRÍTICA: Estructura correcta del fetch sin código roto
+      console.log('🚀 DEBUGGING COMPLETO:');
+      console.log('- Occasion:', selectedOccasion);
+      console.log('- User Email:', currentUser?.email);
+      console.log('- Valid Tops:', validTops.length, 'archivos');
+      console.log('- Valid Bottoms:', validBottoms.length, 'archivos');
+      console.log('- Valid Shoes:', validShoes.length, 'archivos');
+      
+      console.log('📦 FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}:`, value.name, value.type, value.size, 'bytes');
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
+      
+      // FETCH REQUEST - CORREGIDO
       fetch(`${CONFIG.BACKEND_URL}/api/recommend`, {
         method: 'POST',
         headers: {
@@ -1901,39 +1928,33 @@
         window.isProcessingRecommendation = false;
       });
     };
-    // AGREGAR después de: formData.append('occasion', selectedOccasion);
-    if (currentUser?.email) {
-      formData.append('email', currentUser.email);
-      console.log('📧 Email agregado:', currentUser.email);
-    } else {
-      console.error('❌ Usuario no tiene email');
-      showNotification('Error: Usuario no autenticado', 'error');
-      window.isProcessingRecommendation = false;
-      return;
-    }
-    
-    // AGREGAR antes del fetch para debugging:
-    console.log('🚀 DEBUGGING COMPLETO:');
-    console.log('- Occasion:', selectedOccasion);
-    console.log('- User Email:', currentUser?.email);
-    console.log('- Valid Tops:', validTops.length, 'archivos');
-    console.log('- Valid Bottoms:', validBottoms.length, 'archivos');
-    console.log('- Valid Shoes:', validShoes.length, 'archivos');
-    
-    // Debug FormData
-    console.log('📦 FormData entries:');
-    for (let [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}:`, value.name, value.type, value.size, 'bytes');
-      } else {
-        console.log(`${key}:`, value);
-      }
-    }
+
     // ============================================
     // INICIALIZACIÓN Y DELEGACIÓN DE EVENTOS
     // ============================================
     function initializeApp() {
       console.log('🚀 Inicializando NoShopiA con correcciones aplicadas...');
+      
+      // Verificar elementos críticos del DOM
+      const criticalElements = ['closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea', 'result'];
+      criticalElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          console.error(`❌ ELEMENTO CRÍTICO NO ENCONTRADO: ${id}`);
+        } else {
+          console.log(`✅ Elemento encontrado: ${id}`);
+        }
+      });
+      
+      // Verificar que las funciones críticas estén disponibles
+      const criticalFunctions = ['enableCloset', 'useDirectMode', 'getRecommendation', 'handleCredentialResponse'];
+      criticalFunctions.forEach(funcName => {
+        if (typeof window[funcName] === 'function') {
+          console.log(`✅ Función disponible: ${funcName}`);
+        } else {
+          console.error(`❌ FUNCIÓN CRÍTICA NO ENCONTRADA: ${funcName}`);
+        }
+      });
       
       renderHeroStats();
       renderImpactBars();
@@ -1979,6 +2000,8 @@
       renderOptions('genderOptions', CONTENT_DATA.profileOptions.gender, 'gender');
       
       setupEventDelegation();
+      
+      console.log('✅ Inicialización completada exitosamente');
     }
 
     function setupEventDelegation() {
@@ -2183,17 +2206,20 @@
     window.upgradeToPremium = () => showNotification('Función de upgrade disponible próximamente', 'info');
 
     // ============================================
-    // INICIALIZACIÓN - MEJORADA CON DEBUGGING
+    // INICIALIZACIÓN FINAL - COMPLETA Y CORREGIDA
     // ============================================
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🚀 DOM Content Loaded - Iniciando NoShopiA...');
       
       // Verificar elementos críticos del DOM
       const criticalElements = ['closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea', 'result'];
+      let allElementsFound = true;
+      
       criticalElements.forEach(id => {
         const element = document.getElementById(id);
         if (!element) {
           console.error(`❌ ELEMENTO CRÍTICO NO ENCONTRADO: ${id}`);
+          allElementsFound = false;
         } else {
           console.log(`✅ Elemento encontrado: ${id}`);
         }
@@ -2201,55 +2227,98 @@
       
       // Verificar que las funciones críticas estén disponibles
       const criticalFunctions = ['enableCloset', 'useDirectMode', 'getRecommendation', 'handleCredentialResponse'];
+      let allFunctionsFound = true;
+      
       criticalFunctions.forEach(funcName => {
-        if (typeof window[funcName] !== 'function') {
-          console.error(`❌ FUNCIÓN CRÍTICA NO DISPONIBLE: ${funcName}`);
-        } else {
+        if (typeof window[funcName] === 'function') {
           console.log(`✅ Función disponible: ${funcName}`);
+        } else {
+          console.error(`❌ FUNCIÓN CRÍTICA NO ENCONTRADA: ${funcName}`);
+          allFunctionsFound = false;
         }
       });
       
-      console.log('🔧 Inicializando componentes...');
-      try {
-        initializeApp();
-        updateAuthUI();
-        console.log('✅ Componentes inicializados correctamente');
-      } catch (error) {
-        console.error('❌ Error inicializando componentes:', error);
+      if (!allElementsFound || !allFunctionsFound) {
+        console.error('❌ ERRORES CRÍTICOS DETECTADOS - La aplicación puede no funcionar correctamente');
+        showNotification('Error de inicialización - Recarga la página', 'error');
+      } else {
+        console.log('✅ Todos los elementos y funciones críticas están disponibles');
       }
       
-      // Observer para animaciones de impacto
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.querySelectorAll('.impact-fill').forEach(fill => {
-              const width = fill.dataset.width;
-              if (width) fill.style.width = width + '%';
-            });
+      // Inicializar la aplicación
+      try {
+        initializeApp();
+        console.log('🎉 NoShopiA inicializado exitosamente');
+        
+        // Mostrar notificación de bienvenida
+        setTimeout(() => {
+          if (!isLoggedIn) {
+            showNotification('¡Bienvenido a NoShopiA! Inicia sesión para comenzar', 'info');
+          }
+        }, 1000);
+        
+      } catch (error) {
+        console.error('❌ ERROR CRÍTICO EN INICIALIZACIÓN:', error);
+        showNotification('Error crítico de inicialización', 'error');
+      }
+      
+      // Animaciones de impacto después de la carga
+      setTimeout(() => {
+        document.querySelectorAll('.impact-fill').forEach(fill => {
+          const width = fill.dataset.width;
+          if (width) {
+            fill.style.width = width + '%';
           }
         });
-      }, { threshold: 0.5 });
-      
-      setTimeout(() => {
-        const impactSection = document.getElementById('impacto');
-        if (impactSection) {
-          observer.observe(impactSection);
-          console.log('✅ Observer de animaciones configurado');
-        }
-      }, 1000);
-      
-      console.log('🎉 NoShopiA inicializado completamente - TODAS LAS CORRECCIONES APLICADAS');
-      
-      // Test de funcionalidad post-carga
-      setTimeout(() => {
-        console.log('🔍 Estado actual de variables:');
-        console.log('  - isLoggedIn:', isLoggedIn);
-        console.log('  - currentUser:', currentUser ? 'disponible' : 'null');
-        console.log('  - userProfile:', userProfile ? 'disponible' : 'null');
-        console.log('  - closetMode:', closetMode);
-        console.log('  - selectedOccasion:', selectedOccasion);
       }, 2000);
     });
+
+    // ============================================
+    // MANEJO DE ERRORES GLOBALES
+    // ============================================
+    window.addEventListener('error', (e) => {
+      console.error('❌ ERROR GLOBAL CAPTURADO:', e.error);
+      showNotification('Error técnico detectado', 'error');
+    });
+
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('❌ PROMESA RECHAZADA NO MANEJADA:', e.reason);
+      showNotification('Error de conexión detectado', 'error');
+    });
+
+    // ============================================
+    // FUNCIONES DE DEBUG (solo en desarrollo)
+    // ============================================
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window.debugNoShopiA = {
+        resetUser: () => {
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('noshopia_')) {
+              localStorage.removeItem(key);
+            }
+          });
+          location.reload();
+        },
+        showState: () => {
+          console.log('🔍 ESTADO ACTUAL:', {
+            isLoggedIn,
+            currentUser,
+            closetMode,
+            selectedOccasion,
+            uploadedFiles,
+            uploadedImages,
+            closetItems,
+            userProfile
+          });
+        },
+        testNotification: (type = 'info') => {
+          showNotification(`Notificación de prueba (${type})`, type);
+        }
+      };
+      console.log('🛠️ Funciones de debug disponibles: window.debugNoShopiA');
+    }
+
+    console.log('✅ NoShopiA JavaScript completamente cargado y listo');
   </script>
 </body>
 </html>
