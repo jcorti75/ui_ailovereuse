@@ -828,7 +828,11 @@
       
       document.getElementById('closetQuestion').classList.add('hidden');
       document.getElementById('closetContainer').classList.remove('hidden');
-      document.getElementById('occasionSelector').classList.remove('hidden');
+      // NO mostrar ocasión aún - primero debe subir prendas
+      document.getElementById('occasionSelector').classList.add('hidden');
+      document.getElementById('closetSelection').classList.add('hidden');
+      document.getElementById('uploadArea').classList.add('hidden');
+      
       document.getElementById('userEmail').textContent = currentUser?.email || '';
       
       // Mostrar contador del closet
@@ -836,8 +840,12 @@
       updateClosetRemaining();
       
       renderSubcategories();
-      renderOccasions();
-      showNotification('Modo Closet activado - Máximo 15 prendas totales', 'success');
+      loadUserClosetData(); // Cargar datos existentes
+      
+      showNotification('Modo Closet activado - Sube prendas usando las pestañas', 'success');
+      
+      // Verificar si ya tiene prendas para mostrar siguiente paso
+      checkClosetProgress();
     };
 
     window.useDirectMode = function() {
