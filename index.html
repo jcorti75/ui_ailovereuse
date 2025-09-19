@@ -1014,148 +1014,192 @@
     // FUNCIONES DE IMAGEN CORREGIDAS - SIN FALLBACKS ERRÓNEOS
     // ============================================
     
-    // CORRECCIÓN: Obtener imagen para combinación usando índices directos del backend (SIN fallbacks)
+    // CORRECCIÓN DEFINITIVA: Obtener imagen para combinación 100% consistente con backend
     function getImageForCombination(type, item) {
       const images = uploadedImages[type];
-      if (!images || images.length === 0) return null;
-      
-      // CORRECCIÓN CRÍTICA: Usar directamente el índice que viene del backend SIN fallback automático
-      let backendIndex;
-      if (type === 'tops') {
-        backendIndex = item.top?.index; // SIN || 0
-      } else if (type === 'bottoms') {
-        backendIndex = item.bottom?.index; // SIN || 0
-      } else if (type === 'shoes') {
-        backendIndex = item.shoe?.index; // SIN || 0
-      } else {
+      if (!images || images.length === 0) {
+        console.warn(`⚠️ No hay imágenes para tipo: ${type}`);
         return null;
       }
       
-      // CORRECCIÓN: Verificar que el índice existe Y esté dentro del rango
-      if (backendIndex !== undefined && backendIndex >= 0 && backendIndex < images.length) {
-        console.log(`🖼️ ${type}: usando índice ${backendIndex} del backend`);
+      // El backend envía la estructura exacta según el JSON de respuesta
+      let backendIndex;
+      if (type === 'tops' && item.top) {
+        backendIndex = item.top.index;
+      } else if (type === 'bottoms' && item.bottom) {
+        backendIndex = item.bottom.index;
+      } else if (type === 'shoes' && item.shoe) {
+        backendIndex = item.shoe.index;
+      } else {
+        console.error(`❌ Estructura incorrecta para tipo ${type}:`, item);
+        return null;
+      }
+      
+      console.log(`🔍 Backend index para ${type}: ${backendIndex}, imágenes disponibles: ${images.length}`);
+      
+      // Validación estricta según respuesta del backend
+      if (typeof backendIndex === 'number' && backendIndex >= 0 && backendIndex < images.length) {
+        console.log(`✅ ${type}: usando índice ${backendIndex} del backend`);
         return images[backendIndex];
       }
       
-      console.warn(`⚠️ ${type}: índice ${backendIndex} del backend fuera de rango [0-${images.length-1}]`);
-      return images[0]; // Fallback SOLO si hay error
+      console.error(`❌ ${type}: índice ${backendIndex} inválido, usando primera imagen como fallback`);
+      return images[0]; // Solo fallback si hay error crítico
     }
 
-    // CORRECCIÓN: Render recomendaciones con TODA la funcionalidad de recommendations.js
+    // CORRECCIÓN DEFINITIVA: Render recomendaciones con manejo robusto de errores
     function renderRecommendations(data) {
-      const result = document.getElementById('result');
-      const results = data.results || [];
+      console.log('🚀 INICIANDO renderRecommendations con datos:', data);
       
-      if (results.length === 0) {
-        result.innerHTML = '<p style="text-align: center; color: #000000;">No se encontraron recomendaciones.</p>';
-        result.style.display = 'block';
+      const result = document.getElementById('result');
+      if (!result) {
+        console.error('❌ ERROR CRÍTICO: Elemento #result no encontrado en DOM');
         return;
       }
       
-      // MANTENER: Encontrar la mejor recomendación
-      let bestIndex = 0;
-      let highestScore = 0;
-      results.forEach((item, index) => {
-        const score = item.final_score || 0;
-        if (score > highestScore) {
-          highestScore = score;
-          bestIndex = index;
-        }
-      });
+      const results = data.results || [];
+      console.log('📋 Procesando', results.length, 'resultados');
       
-      // MANTENER: Mapear ocasiones a texto legible COMPLETO
-      const occasionText = {
-        'oficina': 'Oficina/Trabajo',
-        'deportivo': 'Deportes/Gym', 
-        'casual': 'Casual',
-        'formal': 'Formal',
-        'matrimonio': 'Matrimonio'
-      };
+      if (results.length === 0) {
+        console.warn('⚠️ No hay resultados para mostrar');
+        result.innerHTML = '<p style="text-align: center; color: #000000; padding: 2rem;">No se encontraron recomendaciones.</p>';
+        result.classList.remove('hidden');
+        return;
+      }
       
-      let html = `
-        <div style="text-align: center; margin-bottom: 2rem;">
-          <h2 style="color: #000000;">🪄 Recomendaciones para ${occasionText[selectedOccasion] || selectedOccasion}</h2>
-          <div style="background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border-radius: 15px; padding: 1rem; margin: 1rem 0; display: inline-block;">
-            <strong>📍 Ocasión Actual: ${occasionText[selectedOccasion] || selectedOccasion}</strong>
-          </div>
-          <p style="color: #000000; opacity: 0.8;">
-            ${data.message || `${results.length} combinaciones optimizadas para esta ocasión`}
-          </p>
-          <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
-            <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'}
-          </div>
-        </div>
-        <div style="display: grid; gap: 2rem;">
-      `;
-      
-      results.forEach((item, idx) => {
-        const scorePercent = Math.round((item.final_score || 0) * 100);
-        const isBest = idx === bestIndex;
+      try {
+        // MANTENER: Encontrar la mejor recomendación
+        let bestIndex = 0;
+        let highestScore = 0;
+        results.forEach((item, index) => {
+          const score = item.final_score || 0;
+          if (score > highestScore) {
+            highestScore = score;
+            bestIndex = index;
+          }
+        });
+        console.log('🏆 Mejor combinación: índice', bestIndex, 'con score', highestScore);
         
-        const topImage = getImageForCombination('tops', item);
-        const bottomImage = getImageForCombination('bottoms', item);
-        const shoeImage = getImageForCombination('shoes', item);
+        // MANTENER: Mapear ocasiones a texto legible COMPLETO
+        const occasionText = {
+          'oficina': 'Oficina/Trabajo',
+          'deportivo': 'Deportes/Gym', 
+          'casual': 'Casual',
+          'formal': 'Formal',
+          'matrimonio': 'Matrimonio'
+        };
         
-        html += `
-          <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
-            ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR PARA ' + (occasionText[selectedOccasion] || selectedOccasion).toUpperCase() + '</div>' : ''}
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
-              <h3 style="color: #000000; margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <span style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">${occasionText[selectedOccasion] || selectedOccasion}</span>
-                <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
-              </div>
+        let html = `
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="color: #000000;">🪄 Recomendaciones para ${occasionText[selectedOccasion] || selectedOccasion}</h2>
+            <div style="background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border-radius: 15px; padding: 1rem; margin: 1rem 0; display: inline-block;">
+              <strong>📍 Ocasión Actual: ${occasionText[selectedOccasion] || selectedOccasion}</strong>
             </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
-              <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${topImage ? `<img src="${topImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
-                </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
-              </div>
-              <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${bottomImage ? `<img src="${bottomImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
-                </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
-              </div>
-              <div style="text-align: center;">
-                <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
-                <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                  ${shoeImage ? `<img src="${shoeImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👢</div>'}
-                </div>
-                <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
-              </div>
+            <p style="color: #000000; opacity: 0.8;">
+              ${data.message || `${results.length} combinaciones optimizadas para esta ocasión`}
+            </p>
+            <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+              <strong>Procesamiento:</strong> ${data.processing_stats?.total_time || 'N/A'}
             </div>
-            
-            <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
-              <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">
-                ${item.harmony_type || item.scores?.harmony?.type_display || 'Equilibrada'}
+          </div>
+          <div style="display: grid; gap: 2rem;">
+        `;
+        
+        console.log('🔄 Procesando', results.length, 'combinaciones...');
+        
+        results.forEach((item, idx) => {
+          console.log(`📝 Procesando combinación ${idx + 1}:`, item);
+          
+          const scorePercent = Math.round((item.final_score || 0) * 100);
+          const isBest = idx === bestIndex;
+          
+          // CORRECCIÓN: Obtener imágenes con debugging
+          const topImage = getImageForCombination('tops', item);
+          const bottomImage = getImageForCombination('bottoms', item);
+          const shoeImage = getImageForCombination('shoes', item);
+          
+          console.log(`🖼️ Imágenes para combinación ${idx + 1}:`, {
+            top: topImage ? 'OK' : 'FALTA',
+            bottom: bottomImage ? 'OK' : 'FALTA', 
+            shoe: shoeImage ? 'OK' : 'FALTA'
+          });
+          
+          html += `
+            <div style="background: var(--background); border: 2px solid ${isBest ? 'var(--gold)' : 'var(--border)'}; border-radius: 20px; padding: 2rem; position: relative; ${isBest ? 'box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);' : ''}">
+              ${isBest ? '<div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000000; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 800; font-size: 0.9rem;">⭐ MEJOR PARA ' + (occasionText[selectedOccasion] || selectedOccasion).toUpperCase() + '</div>' : ''}
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; ${isBest ? 'margin-top: 1rem;' : ''}">
+                <h3 style="color: #000000; margin: 0;">${isBest ? '👑' : ''} Combinación ${idx + 1}</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <span style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">${occasionText[selectedOccasion] || selectedOccasion}</span>
+                  <span style="background: ${isBest ? 'var(--gold)' : 'var(--primary)'}; color: ${isBest ? '#000000' : 'white'}; padding: 0.5rem 1rem; border-radius: 15px; font-weight: 700;">${scorePercent}%</span>
+                </div>
               </div>
-              <div style="color: #000000; opacity: 0.8; font-size: 0.9rem;">
-                ${item.harmony_description || item.scores?.harmony?.description || 'Combinación balanceada'}
+              
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                <div style="text-align: center;">
+                  <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👕 SUPERIOR</div>
+                  <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                    ${topImage ? `<img src="${topImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Superior">` : '<div style="color: #666; font-size: 2rem;">👕</div>'}
+                  </div>
+                  <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.top?.detected_item || 'Superior'}</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👖 INFERIOR</div>
+                  <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                    ${bottomImage ? `<img src="${bottomImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Inferior">` : '<div style="color: #666; font-size: 2rem;">👖</div>'}
+                  </div>
+                  <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.bottom?.detected_item || 'Inferior'}</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="font-size: 0.8rem; color: #000000; font-weight: 600; margin-bottom: 0.5rem;">👢 CALZADO</div>
+                  <div style="background: transparent; border-radius: 20px; padding: 1.5rem; min-height: 240px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                    ${shoeImage ? `<img src="${shoeImage}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Calzado">` : '<div style="color: #666; font-size: 2rem;">👢</div>'}
+                  </div>
+                  <div style="font-size: 0.9rem; color: #000000; opacity: 0.8;">${item.shoe?.detected_item || 'Calzado'}</div>
+                </div>
               </div>
+              
+              <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
+                <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">
+                  ${item.harmony_type || item.scores?.harmony?.type_display || 'Equilibrada'}
+                </div>
+                <div style="color: #000000; opacity: 0.8; font-size: 0.9rem;">
+                  ${item.harmony_description || item.scores?.harmony?.description || 'Combinación balanceada'}
+                </div>
+              </div>
+              
+              ${closetMode ? `<button onclick="saveRecommendationToCloset(${idx})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Mi Closet</button>` : ''}
             </div>
-            
-            ${closetMode ? `<button onclick="saveRecommendationToCloset(${idx})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: var(--success); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Mi Closet</button>` : ''}
+          `;
+        });
+        
+        html += '</div>';
+        result.innerHTML = html;
+        result.classList.remove('hidden');
+        console.log('✅ HTML generado e insertado en DOM');
+        
+        // MANTENER: Guardar resultados globalmente para referencia
+        window.currentResults = results;
+        
+        setTimeout(() => {
+          result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          console.log('📜 Scroll automático ejecutado');
+        }, 100);
+        
+        console.log('🎉 renderRecommendations completado exitosamente');
+        
+      } catch (error) {
+        console.error('❌ ERROR EN renderRecommendations:', error);
+        result.innerHTML = `
+          <div style="text-align: center; padding: 2rem; background: rgba(239, 68, 68, 0.1); border-radius: 15px; color: var(--error);">
+            <h3>Error al mostrar recomendaciones</h3>
+            <p>Error técnico: ${error.message}</p>
+            <p>Por favor, intenta nuevamente o contacta soporte.</p>
           </div>
         `;
-      });
-      
-      html += '</div>';
-      result.innerHTML = html;
-      result.style.display = 'block';
-      
-      // MANTENER: Guardar resultados globalmente para referencia
-      window.currentResults = results;
-      
-      setTimeout(() => {
-        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+        result.classList.remove('hidden');
+      }
     }
 
     // ============================================
@@ -1784,18 +1828,10 @@
         formData.append('shoes', file, sanitizedName);
       });
       
-      // CORRECCIÓN: Validar y enviar ocasión con formato estricto
-      const occasionMap = {
-        'oficina': 'office',
-        'deportivo': 'sport', 
-        'casual': 'casual',
-        'formal': 'formal',
-        'matrimonio': 'wedding'
-      };
-      
-      const backendOccasion = occasionMap[selectedOccasion] || 'casual';
+      // CORRECCIÓN DEFINITIVA: El backend usa español, no inglés
+      const backendOccasion = selectedOccasion; // Sin mapeo - usar directo
       formData.append('occasion', backendOccasion);
-      console.log(`🎯 Ocasión mapeada: "${selectedOccasion}" -> "${backendOccasion}"`);
+      console.log(`🎯 Ocasión enviada: "${selectedOccasion}"`);
       
       // CORRECCIÓN: Agregar metadatos que podrían ser requeridos por el backend
       formData.append('user_id', currentUser?.sub || 'anonymous');
@@ -1848,6 +1884,27 @@
       })
       .then(data => {
         console.log('✅ Datos procesados correctamente:', data);
+        console.log('🔍 DEBUGGING COMPLETO:');
+        console.log('📋 Results array:', data.results);
+        console.log('📊 Total results:', data.results?.length);
+        
+        if (data.results && data.results.length > 0) {
+          console.log('🖼️ Verificando imágenes para primera combinación:');
+          const firstResult = data.results[0];
+          console.log('  - Top index:', firstResult.top?.index, 'Imágenes tops disponibles:', uploadedImages.tops.length);
+          console.log('  - Bottom index:', firstResult.bottom?.index, 'Imágenes bottoms disponibles:', uploadedImages.bottoms.length);  
+          console.log('  - Shoe index:', firstResult.shoe?.index, 'Imágenes shoes disponibles:', uploadedImages.shoes.length);
+          
+          // Test de getImageForCombination
+          const topImg = getImageForCombination('tops', firstResult);
+          const bottomImg = getImageForCombination('bottoms', firstResult);
+          const shoeImg = getImageForCombination('shoes', firstResult);
+          
+          console.log('🎨 Imágenes obtenidas:');
+          console.log('  - Top imagen:', topImg ? 'ENCONTRADA' : 'NO ENCONTRADA');
+          console.log('  - Bottom imagen:', bottomImg ? 'ENCONTRADA' : 'NO ENCONTRADA');
+          console.log('  - Shoe imagen:', shoeImg ? 'ENCONTRADA' : 'NO ENCONTRADA');
+        }
         
         clearInterval(timerInterval);
         processingTimer.classList.add('hidden');
@@ -1856,8 +1913,10 @@
         const totalCombinations = topsCount * bottomsCount * shoesCount;
         generateBtn.innerHTML = `<i class="fas fa-magic"></i> Generar para otra ocasión`;
         
+        console.log('🚀 Llamando a renderRecommendations...');
         renderRecommendations(data);
         showNotification(`Recomendaciones generadas para ${selectedOccasion}`, 'success');
+        console.log('✅ Proceso completado exitosamente');
       })
       .catch(error => {
         console.error('❌ Error completo en llamada al backend:', error);
