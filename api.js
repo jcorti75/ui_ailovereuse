@@ -1,6 +1,6 @@
-// api.js - Funciones de Comunicación con Backend CORREGIDAS
+// api.js - Funciones de Comunicación con Backend INTEGRADAS con Sistema Dinámico
 
-// CORREGIDA: Generar recomendaciones con archivos específicos
+// CORREGIDA: Generar recomendaciones con archivos específicos + Integración carpetas dinámicas
 async function generateRecommendationsWithFiles(files) {
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
@@ -49,7 +49,7 @@ async function generateRecommendationsWithFiles(files) {
   }
   
   try {
-    console.log('=== ENVIANDO RECOMENDACIÓN ===');
+    console.log('=== ENVIANDO RECOMENDACIÓN CON SISTEMA DINÁMICO ===');
     console.log('Usuario:', currentUser.email);
     console.log('Ocasión:', selectedOccasion);
     console.log('Archivos a enviar:', {
@@ -133,55 +133,35 @@ async function generateRecommendationsWithFiles(files) {
     console.log('✅ Response data:', data);
     
     if (data.success) {
+      // 🚀 NUEVO: PROCESAR DETECCIÓN DE IA Y CREAR CATEGORÍAS DINÁMICAS
+      console.log('🤖 Procesando detecciones de IA para crear categorías...');
+      
+      // Si la respuesta contiene información de detección de IA
+      if (data.results && Array.isArray(data.results)) {
+        try {
+          // Crear array de detecciones desde los resultados
+          const detectionResults = data.results.map(result => ({
+            top: result.top,
+            bottom: result.bottom, 
+            shoe: result.shoe
+          }));
+          
+          // Procesar detecciones y crear categorías dinámicas
+          if (typeof processAIDetectionAndCreateCategories === 'function') {
+            processAIDetectionAndCreateCategories(allFiles, detectionResults);
+            console.log('✅ Categorías dinámicas procesadas exitosamente');
+          } else {
+            console.warn('⚠️ Función processAIDetectionAndCreateCategories no encontrada');
+          }
+          
+        } catch (categoryError) {
+          console.error('❌ Error procesando categorías dinámicas:', categoryError);
+          // No interrumpir el flujo principal por este error
+        }
+      }
+      
+      // Actualizar estadísticas y renderizar resultados
       userStats.recommendations++;
       updateStatsDisplay();
       renderRecommendations(data);
-      showNotification(`✅ Procesado en ${finalTime.toFixed(1)}s`, 'success');
-    } else {
-      throw new Error(data.message || 'Error generando recomendaciones');
-    }
-    
-  } catch (error) {
-    clearInterval(timerInterval);
-    console.error('❌ Error completo:', error);
-    console.error('❌ Stack trace:', error.stack);
-    
-    // Mostrar error más informativo
-    let errorMessage = 'Error desconocido';
-    if (error.message) {
-      if (error.message.includes('422')) {
-        errorMessage = 'Error de validación en archivos. Verifica que las imágenes sean válidas.';
-      } else if (error.message.includes('413')) {
-        errorMessage = 'Archivos muy grandes. Reduce el tamaño de las imágenes.';
-      } else if (error.message.includes('500')) {
-        errorMessage = 'Error interno del servidor. Intenta de nuevo.';
-      } else {
-        errorMessage = error.message;
-      }
-    }
-    
-    showNotification(`Error: ${errorMessage}`, 'error');
-    
-  } finally {
-    setTimeout(() => {
-      if (timer) timer.style.display = 'none';
-    }, 2000);
-    
-    if (btn) {
-      btn.innerHTML = '<i class="fas fa-magic"></i> Generar Nuevas Recomendaciones';
-      btn.disabled = false;
-    }
-  }
-}
-
-// Función principal de generación de recomendaciones
-async function getRecommendation() {
-  const files = {
-    tops: uploadedFiles.tops || [],
-    bottoms: uploadedFiles.bottoms || [],
-    shoes: uploadedFiles.shoes || []
-  };
-  
-  console.log('🎯 Iniciando generación con archivos:', files);
-  await generateRecommendationsWithFiles(files);
-}
+      showNotification(`✅ Procesado en ${finalTime.toFixed(1)}s
