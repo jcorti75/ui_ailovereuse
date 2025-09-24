@@ -1431,18 +1431,38 @@
         isLoggedIn = true;
         updateAuthUI();
 
+        // Ocultar todas las secciones primero
+        hideAllSections();
+
         const existingProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
 
         if (existingProfile) {
           userProfile = JSON.parse(existingProfile);
-          console.log('👥 Usuario existente detectado');
+          console.log('👥 Usuario existente detectado, cargando perfil:', userProfile);
           showNotification('¡Bienvenido de vuelta!', 'success');
-          showModeSelector();
+          
+          // Ir directo al selector de modo
+          setTimeout(() => {
+            showModeSelector();
+          }, 500);
         } else {
-          console.log('🆕 Usuario nuevo, mostrando formulario de perfil');
-          document.getElementById('welcomeSection').style.display = 'block';
-          document.getElementById('profileForm').classList.remove('hidden');
-          document.getElementById('profileForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          console.log('🆕 Usuario nuevo, mostrando bienvenida y formulario de perfil');
+          
+          // Mostrar sección de bienvenida
+          const welcomeSection = document.getElementById('welcomeSection');
+          welcomeSection.style.display = 'block';
+          welcomeSection.classList.remove('hidden');
+          
+          // Mostrar formulario de perfil
+          const profileForm = document.getElementById('profileForm');
+          profileForm.style.display = 'block';
+          profileForm.classList.remove('hidden');
+          
+          // Scroll al formulario
+          setTimeout(() => {
+            profileForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+          
           showNotification('¡Bienvenido a NoShopiA! Completa tu perfil', 'success');
         }
 
@@ -1482,17 +1502,104 @@
     // ============================================
     // FUNCIONES DE FLUJO PRINCIPALES
     // ============================================
+    // ============================================
+    // FUNCIONES DE GESTIÓN DE SECCIONES
+    // ============================================
+    function hideAllSections() {
+      const sectionsToHide = [
+        'welcomeSection', 
+        'profileForm', 
+        'closetQuestion', 
+        'closetContainer', 
+        'occasionSelector', 
+        'uploadArea',
+        'closetSelection'
+      ];
+
+      sectionsToHide.forEach(sectionId => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.style.display = 'none';
+          element.classList.add('hidden');
+        }
+      });
+
+      // Especial para closet container
+      const closetContainer = document.getElementById('closetContainer');
+      if (closetContainer) {
+        closetContainer.style.display = 'none';
+      }
+
+      console.log('📦 Todas las secciones ocultas');
+    }
+
+    function showSection(sectionId) {
+      hideAllSections(); // Ocultar todo primero
+      
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.style.display = 'block';
+        element.classList.remove('hidden');
+        
+        // Scroll suave hacia la sección
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        
+        console.log(`📍 Sección mostrada: ${sectionId}`);
+        return true;
+      } else {
+        console.error(`❌ Sección no encontrada: ${sectionId}`);
+        return false;
+      }
+    }
+
+    // ============================================
+    // FUNCIONES DE FLUJO PRINCIPALES CORREGIDAS
+    // ============================================
     window.showModeSelector = function() {
-      console.log('🎯 Showing mode selector...');
+      console.log('🎯 Mostrando selector de modo...');
 
-      document.getElementById('welcomeSection').style.display = 'none';
-      document.getElementById('profileForm').classList.add('hidden');
-
-      const selector = document.getElementById('closetQuestion');
-      if (selector) {
-        selector.classList.remove('hidden');
-        selector.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (showSection('closetQuestion')) {
         showNotification('Elige tu modo preferido para las recomendaciones', 'info');
+      } else {
+        console.error('❌ Error mostrando selector de modo');
+        showNotification('Error mostrando opciones. Recarga la página.', 'error');
+      }
+    };
+
+    window.submitUserProfile = function() {
+      if (!currentUser || !window.selectedProfileData) {
+        showNotification('Error: Datos de usuario no válidos', 'error');
+        return;
+      }
+
+      console.log('💾 Guardando perfil de usuario...', window.selectedProfileData);
+
+      const profileData = {
+        email: currentUser.email,
+        name: currentUser.name,
+        picture: currentUser.picture,
+        ...window.selectedProfileData,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(profileData));
+        userProfile = profileData;
+
+        showNotification('✅ Perfil creado exitosamente', 'success');
+        
+        console.log('✅ Perfil guardado, redirigiendo al selector de modo...');
+
+        // Ir al selector de modo después de guardar el perfil
+        setTimeout(() => {
+          showModeSelector();
+        }, 1500); // Dar tiempo para que se vea la notificación
+
+      } catch (error) {
+        console.error('❌ Error guardando perfil:', error);
+        showNotification('Error guardando perfil. Intenta nuevamente.', 'error');
       }
     };
 
@@ -1501,39 +1608,43 @@
       closetMode = true;
       updateModeIndicator('Modo Closet Digital (máx 15 prendas)', true);
 
-      const closetQuestion = document.getElementById('closetQuestion');
-      const closetContainer = document.getElementById('closetContainer');
-      const occasionSelector = document.getElementById('occasionSelector');
-      const closetSelection = document.getElementById('closetSelection');
-      const uploadArea = document.getElementById('uploadArea');
+      // Ocultar todas las secciones primero
+      hideAllSections();
 
-      if (closetQuestion) closetQuestion.classList.add('hidden');
+      // Mostrar el contenedor del closet
+      const closetContainer = document.getElementById('closetContainer');
       if (closetContainer) {
         closetContainer.style.display = 'block';
         closetContainer.classList.remove('hidden');
       }
-      if (occasionSelector) occasionSelector.classList.add('hidden');
-      if (closetSelection) closetSelection.classList.add('hidden');
-      if (uploadArea) uploadArea.classList.add('hidden');
 
+      // Configurar datos del usuario
       if (currentUser?.email) {
         const userEmailEl = document.getElementById('userEmail');
         if (userEmailEl) userEmailEl.textContent = currentUser.email;
       }
 
+      // Mostrar indicador de prendas restantes
       const closetRemaining = document.getElementById('closetRemaining');
       if (closetRemaining) closetRemaining.classList.remove('hidden');
 
+      // Cargar y actualizar datos del closet
       updateClosetRemaining();
       loadUserClosetData();
-      setupClosetFolderUploads();
 
-      showNotification('Modo Closet activado - Sube prendas usando las pestañas', 'success');
+      showNotification('✅ Modo Closet activado - Sube prendas usando las pestañas', 'success');
 
+      // Activar la primera pestaña y configurar carpetas
       setTimeout(() => {
         const firstTab = document.querySelector('.closet-tab[data-tab="superiores"]');
-        if (firstTab) showClosetTab('superiores');
-      }, 100);
+        if (firstTab) {
+          showClosetTab('superiores');
+          setupClosetFolderUploads();
+        }
+        
+        // Scroll al closet
+        closetContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
     };
 
     window.useDirectMode = function() {
@@ -1541,27 +1652,52 @@
       closetMode = false;
       updateModeIndicator('Modo Recomendaciones Rápidas (3-3-5)', false);
 
-      const closetQuestion = document.getElementById('closetQuestion');
-      const closetContainer = document.getElementById('closetContainer');
-      const occasionSelector = document.getElementById('occasionSelector');
-      const uploadArea = document.getElementById('uploadArea');
-      const directModeCounters = document.getElementById('directModeCounters');
-
-      if (closetQuestion) closetQuestion.classList.add('hidden');
-      if (closetContainer) {
-        closetContainer.style.display = 'none';
-        closetContainer.classList.add('hidden');
+      // Mostrar selector de ocasión primero
+      if (showSection('occasionSelector')) {
+        showNotification('✅ Modo Recomendaciones Directas activado - Selecciona una ocasión', 'info');
+        
+        // También preparar el área de upload (pero mantenerla oculta hasta seleccionar ocasión)
+        const uploadArea = document.getElementById('uploadArea');
+        const directModeCounters = document.getElementById('directModeCounters');
+        if (uploadArea) uploadArea.classList.add('hidden');
+        if (directModeCounters) directModeCounters.classList.add('hidden');
+        
+        setTimeout(() => {
+          updateDirectModeCounters();
+        }, 100);
       }
-      if (occasionSelector) occasionSelector.classList.remove('hidden');
-      if (uploadArea) uploadArea.classList.remove('hidden');
-      if (directModeCounters) directModeCounters.classList.remove('hidden');
-
-      setTimeout(() => {
-        updateDirectModeCounters();
-      }, 100);
-
-      showNotification('Modo Recomendaciones Directas activado - Límites: 3-3-5', 'info');
     };
+
+    // ============================================
+    // FUNCIONES DE PERFIL DE USUARIO CORREGIDAS
+    // ============================================
+    function checkProfileCompletion() {
+      const requiredFields = ['skin_color', 'age_range', 'gender'];
+      const selections = {};
+
+      document.querySelectorAll('.form-option.selected').forEach(option => {
+        selections[option.dataset.field] = option.dataset.value;
+      });
+
+      const isComplete = requiredFields.every(field => selections[field]);
+      const createBtn = document.getElementById('createProfileBtn');
+
+      if (createBtn) {
+        createBtn.disabled = !isComplete;
+        createBtn.style.opacity = isComplete ? '1' : '0.6';
+        createBtn.innerHTML = isComplete ? 
+          '<i class="fas fa-user-plus"></i> ✅ Crear Mi Perfil' : 
+          '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+      }
+
+      window.selectedProfileData = selections;
+      
+      console.log('📋 Profile completion check:', { 
+        isComplete, 
+        selections, 
+        requiredFields 
+      });
+    }
 
     // ============================================
     // FUNCIONES DEL CLOSET
