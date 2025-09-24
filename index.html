@@ -457,6 +457,25 @@
         </button>
 
         <div class="auth-container">
+          <!-- Google Login en esquina superior derecha -->
+          <div id="googleLoginContainer">
+            <div id="g_id_onload"
+                 data-client_id="326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="pill"
+                 data-theme="filled_blue"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-locale="es">
+            </div>
+          </div>
+
           <div class="user-info" id="userInfo">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
             <span id="userName" style="color: #000000; font-weight: 500;"></span>
@@ -485,25 +504,6 @@
       <p style="font-size: 1.1rem; color: #000000; opacity: 0.8; margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;">
         Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.
       </p>
-
-      <!-- Google Login - SOLO UNA INSTANCIA AQUI -->
-      <div id="heroAuth" class="text-center" style="margin-bottom: 2rem;">
-        <p style="margin-bottom: 1rem; color: #666;">Inicia sesión con Google para comenzar:</p>
-        <div id="g_id_onload"
-             data-client_id="326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="handleCredentialResponse"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin"
-             data-type="standard"
-             data-shape="pill"
-             data-theme="filled_blue"
-             data-text="continue_with"
-             data-size="large">
-        </div>
-      </div>
 
       <div class="grid grid-3" style="max-width: 800px;">
         <div class="card card-compact">
