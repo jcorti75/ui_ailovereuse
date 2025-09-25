@@ -1,17 +1,10 @@
-// auth.js - Versión CONSERVADORA (Mantiene compatibilidad total)
+// auth.js - CORREGIDO con Perfilamiento Único
 
 // FUNCIONES AUXILIARES VERIFICADAS
 function safeShowNotification(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${message}`);
   
   try {
-    // Intentar usar la función global si existe
-    if (typeof window.showNotification === 'function') {
-      window.showNotification(message, type);
-      return;
-    }
-    
-    // Crear notificación simple
     const notification = document.createElement('div');
     notification.textContent = message;
     notification.style.cssText = `
@@ -22,7 +15,6 @@ function safeShowNotification(message, type = 'info') {
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
   } catch (e) {
-    // Fallback total
     console.log(`NOTIFICATION: ${message}`);
   }
 }
@@ -30,44 +22,71 @@ function safeShowNotification(message, type = 'info') {
 function safeLoadGoogleScript() {
   return new Promise((resolve) => {
     try {
-      // Verificar si ya existe
       if (typeof google !== 'undefined' && google.accounts?.id) {
         resolve();
         return;
       }
       
-      // Intentar usar loadGoogleScript de config.js si existe
       if (typeof window.loadGoogleScript === 'function') {
         window.loadGoogleScript().then(resolve).catch(() => resolve());
         return;
       }
       
-      // Cargar manualmente
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
       script.onload = () => setTimeout(resolve, 2000);
-      script.onerror = () => resolve(); // No fallar
+      script.onerror = () => resolve();
       document.head.appendChild(script);
     } catch (e) {
-      resolve(); // No fallar nunca
+      resolve();
     }
   });
 }
 
-// VERIFICAR CONFIG SEGURO
 function getGoogleClientId() {
   try {
     if (typeof CONFIG !== 'undefined' && CONFIG.GOOGLE_CLIENT_ID) {
       return CONFIG.GOOGLE_CLIENT_ID;
     }
-    // Fallback al ID hardcoded
     return '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
   } catch (e) {
     return '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
   }
 }
 
-// FUNCIONES PRINCIPALES CON VALIDACIÓN
+// VERIFICAR SI EL USUARIO YA COMPLETÓ SU PERFIL
+function hasCompletedProfile(email) {
+  try {
+    // Verificar flag de perfil completado
+    const profileCompleted = localStorage.getItem(`noshopia_profile_completed_${email}`);
+    if (profileCompleted === 'true') {
+      console.log('Usuario ya completó perfil (flag)');
+      return true;
+    }
+    
+    // Verificar datos de perfil
+    const profileData = localStorage.getItem(`noshopia_profile_${email}`);
+    if (profileData) {
+      try {
+        const data = JSON.parse(profileData);
+        if (data.skin_color && data.age_range && data.gender) {
+          console.log('Usuario ya completó perfil (datos)');
+          return true;
+        }
+      } catch (e) {
+        console.log('Error parseando datos de perfil');
+      }
+    }
+    
+    console.log('Usuario NO ha completado perfil');
+    return false;
+  } catch (e) {
+    console.log('Error verificando perfil:', e);
+    return false;
+  }
+}
+
+// FUNCIONES PRINCIPALES
 async function checkGoogleAuth() {
   console.log('Iniciando verificación Google Auth...');
   
@@ -133,7 +152,6 @@ function showManualEmailForm() {
 
 function processManualLogin(email) {
   try {
-    // Usar funciones globales si existen, sino usar locales
     if (typeof window.clearAllUserState === 'function') {
       window.clearAllUserState();
     }
@@ -156,13 +174,9 @@ function processManualLogin(email) {
     updateAuthUI();
     safeShowNotification(`Bienvenido ${user.name}!`, 'success');
     
-    // Navegación segura
+    // VERIFICAR PERFIL Y REDIRIGIR CORRECTAMENTE
     setTimeout(() => {
-      const uploadSection = document.getElementById('upload');
-      if (uploadSection) {
-        uploadSection.scrollIntoView({ behavior: 'smooth' });
-      }
-      showUploadFlow();
+      checkProfileAndRedirect(user.email);
     }, 1000);
     
   } catch (e) {
@@ -177,7 +191,6 @@ async function handleGoogleSignIn(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
     
-    // Usar funciones globales si existen
     if (typeof window.clearAllUserState === 'function') {
       window.clearAllUserState();
     }
@@ -200,19 +213,10 @@ async function handleGoogleSignIn(response) {
     updateAuthUI();
     safeShowNotification(`Bienvenido ${user.name}!`, 'success');
     
-    // Intentar flujo completo si existe, sino básico
-    if (typeof checkProfileAndRedirectCorrect === 'function') {
-      await checkProfileAndRedirectCorrect();
-    } else {
-      // Flujo básico
-      setTimeout(() => {
-        const uploadSection = document.getElementById('upload');
-        if (uploadSection) {
-          uploadSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        showUploadFlow();
-      }, 1000);
-    }
+    // VERIFICAR PERFIL Y REDIRIGIR CORRECTAMENTE
+    setTimeout(() => {
+      checkProfileAndRedirect(user.email);
+    }, 1000);
     
   } catch (e) {
     console.log('Error en Google login:', e);
@@ -220,19 +224,167 @@ async function handleGoogleSignIn(response) {
   }
 }
 
-function showUploadFlow() {
+// VERIFICAR PERFIL Y REDIRIGIR (LA FUNCIÓN CLAVE)
+function checkProfileAndRedirect(email) {
   try {
-    // Mostrar secciones básicas
-    const sections = ['welcomeSection', 'profileForm', 'closetQuestion'];
-    sections.forEach(id => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.style.display = 'block';
+    // Scroll a la sección de upload
+    const uploadSection = document.getElementById('upload');
+    if (uploadSection) {
+      uploadSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Verificar si ya completó el perfil
+    if (hasCompletedProfile(email)) {
+      // USUARIO EXISTENTE - Ir directo a opciones del closet
+      console.log('Usuario existente - saltando perfilamiento');
+      
+      setTimeout(() => {
+        hideAllSections();
+        document.getElementById('closetQuestion').style.display = 'block';
+        setupClosetOptions();
+      }, 1500);
+      
+      safeShowNotification('Bienvenido de nuevo! Elige tu método de recomendación.', 'success');
+      
+    } else {
+      // USUARIO NUEVO - Mostrar perfilamiento único
+      console.log('Usuario nuevo - mostrando perfilamiento por primera vez');
+      
+      setTimeout(() => {
+        hideAllSections();
+        document.getElementById('welcomeSection').style.display = 'block';
+        document.getElementById('profileForm').style.display = 'block';
+        setupProfileForm(email);
+      }, 1500);
+      
+      safeShowNotification('Completa tu perfil una sola vez.', 'info');
+    }
+    
+  } catch (error) {
+    console.log('Error en verificación de perfil:', error);
+    // Fallback: mostrar perfilamiento
+    setTimeout(() => {
+      hideAllSections();
+      document.getElementById('profileForm').style.display = 'block';
+      setupProfileForm(email);
+    }, 1500);
+  }
+}
+
+// CONFIGURAR FORMULARIO DE PERFIL (solo primera vez)
+function setupProfileForm(email) {
+  console.log('Configurando formulario de perfil para:', email);
+  
+  const profileOptions = document.querySelectorAll('.profile-option');
+  const createBtn = document.getElementById('createProfileBtn');
+  let selectedOptions = { skin_color: null, age_range: null, gender: null };
+  
+  profileOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      const field = this.dataset.field;
+      const value = this.dataset.value;
+      
+      // Deseleccionar otras del mismo campo
+      document.querySelectorAll(`[data-field="${field}"]`).forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Seleccionar esta
+      this.classList.add('selected');
+      selectedOptions[field] = value;
+      
+      console.log('Opciones seleccionadas:', selectedOptions);
+      
+      // Verificar si todas están seleccionadas
+      const allSelected = selectedOptions.skin_color && 
+                         selectedOptions.age_range && 
+                         selectedOptions.gender;
+      
+      if (createBtn) {
+        if (allSelected) {
+          createBtn.disabled = false;
+          createBtn.style.opacity = '1';
+          createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
+          
+          createBtn.onclick = function() {
+            completeProfile(email, selectedOptions);
+          };
+        } else {
+          createBtn.disabled = true;
+          createBtn.style.opacity = '0.6';
+          createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+        }
       }
     });
-  } catch (e) {
-    console.log('Error mostrando upload flow');
+  });
+}
+
+// COMPLETAR PERFIL (guardar para siempre)
+function completeProfile(email, profileData) {
+  try {
+    console.log('Completando perfil para:', email, profileData);
+    
+    // Guardar datos del perfil
+    localStorage.setItem(`noshopia_profile_${email}`, JSON.stringify(profileData));
+    
+    // Guardar flag de perfil completado
+    localStorage.setItem(`noshopia_profile_completed_${email}`, 'true');
+    
+    // Ocultar formulario de perfil
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('welcomeSection').style.display = 'none';
+    
+    // Mostrar opciones del closet
+    setTimeout(() => {
+      document.getElementById('closetQuestion').style.display = 'block';
+      setupClosetOptions();
+    }, 500);
+    
+    safeShowNotification('¡Perfil completado! No volverás a ver este formulario.', 'success');
+    
+  } catch (error) {
+    console.log('Error completando perfil:', error);
+    safeShowNotification('Error guardando perfil', 'error');
   }
+}
+
+// CONFIGURAR OPCIONES DEL CLOSET
+function setupClosetOptions() {
+  const enableClosetBtn = document.getElementById('enableClosetBtn');
+  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+  
+  if (enableClosetBtn) {
+    enableClosetBtn.onclick = function() {
+      hideAllSections();
+      document.getElementById('closetContainer').style.display = 'block';
+      document.getElementById('occasionSelector').style.display = 'block';
+      safeShowNotification('Closet Digital activado!', 'success');
+    };
+  }
+  
+  if (useDirectModeBtn) {
+    useDirectModeBtn.onclick = function() {
+      hideAllSections();
+      document.getElementById('uploadArea').style.display = 'block';
+      document.getElementById('occasionSelector').style.display = 'block';
+      safeShowNotification('Recomendaciones Rápidas activado!', 'success');
+    };
+  }
+}
+
+// FUNCIONES AUXILIARES
+function hideAllSections() {
+  const sections = [
+    'welcomeSection', 'profileForm', 'closetQuestion',
+    'closetContainer', 'uploadArea', 'occasionSelector'
+  ];
+  
+  sections.forEach(sectionId => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.style.display = 'none';
+    }
+  });
 }
 
 function handleMainLogin() {
@@ -270,6 +422,7 @@ function logout() {
     }
     
     updateAuthUI();
+    hideAllSections();
     safeShowNotification('Sesión cerrada', 'info');
   } catch (e) {
     console.log('Error en logout:', e);
@@ -281,7 +434,6 @@ function updateAuthUI() {
     const userInfo = document.getElementById('userInfo');
     const headerLoginBtn = document.getElementById('headerLoginBtn');
     
-    // Verificar estado de login
     let isLoggedIn = false;
     let currentUser = null;
     
@@ -336,15 +488,15 @@ function upgradeToPremium() {
   safeShowNotification('Próximamente: Sistema de pagos Premium', 'info');
 }
 
-// EXPONER FUNCIONES GLOBALMENTE (conservar interfaz)
+// EXPONER FUNCIONES GLOBALMENTE
 window.handleMainLogin = handleMainLogin;
 window.startFreePlan = startFreePlan;
 window.upgradeToPremium = upgradeToPremium;
 window.logout = logout;
 
-// INICIALIZAR CUANDO DOM ESTÉ LISTO
+// INICIALIZAR
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Inicializando sistema de auth...');
+  console.log('Inicializando sistema de auth con perfilamiento único...');
   
   try {
     const logoutBtn = document.getElementById('logoutBtn');
@@ -355,7 +507,6 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
   } catch (e) {
     console.log('Error en inicialización:', e);
-    // Intentar configurar botón básico como fallback
     setTimeout(() => {
       const headerBtn = document.getElementById('headerLoginBtn');
       if (headerBtn) {
@@ -368,4 +519,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-console.log('auth.js cargado correctamente');
+console.log('auth.js con perfilamiento único cargado correctamente');
