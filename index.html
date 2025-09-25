@@ -47,17 +47,6 @@
     .mobile-menu-toggle {
       display: none; background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer;
     }
-    .mobile-nav {
-      display: none; position: fixed; top: 100%; left: 0; right: 0; background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(20px); padding: 2rem; border-bottom: 1px solid var(--border);
-      transform: translateY(-100%); transition: transform 0.3s ease;
-    }
-    .mobile-nav.active { transform: translateY(0); }
-    .mobile-nav-item {
-      display: block; padding: 1rem; color: #000000; text-decoration: none; border-radius: 10px;
-      margin-bottom: 0.5rem; transition: background 0.3s ease;
-    }
-    .mobile-nav-item:hover { background: rgba(59, 130, 246, 0.1); }
     
     .auth-container { display: flex; align-items: center; gap: 1rem; margin-left: 1rem; }
     .user-info { display: none; align-items: center; gap: 1rem; }
@@ -68,6 +57,32 @@
       border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;
     }
     .logout-btn:hover { background: var(--primary); color: white; }
+
+    /* BOTÓN DE LOGIN AZUL PERSONALIZADO */
+    .custom-google-btn {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      text-decoration: none;
+      outline: none;
+      font-family: inherit;
+    }
+    .custom-google-btn:hover {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    .custom-google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .btn {
       padding: 1.2rem 3rem; border: none; border-radius: 50px; font-weight: 600; font-size: 1.1rem;
@@ -80,20 +95,11 @@
     }
     .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-    .btn-secondary {
-      background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 2px solid var(--primary);
-    }
-    .btn-secondary:hover { background: var(--primary); color: white; transform: translateY(-2px); }
     .btn-success {
       background: linear-gradient(135deg, var(--success), #059669); color: white;
       box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
     }
     .btn-success:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4); }
-    .btn-gold {
-      background: linear-gradient(135deg, var(--gold), #f59e0b); color: #000;
-      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
-    }
-    .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4); }
 
     .hero {
       min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -132,60 +138,6 @@
       border-color: var(--primary); background: rgba(59, 130, 246, 0.15); transform: translateY(-3px);
       box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
     }
-
-    /* Impact Bars */
-    .impact-item { text-align: left; margin-bottom: 2rem; }
-    .impact-label { 
-      display: flex; justify-content: space-between; margin-bottom: 0.5rem; 
-      font-weight: 600; color: #000000; 
-    }
-    .impact-bar {
-      height: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; 
-      overflow: hidden; margin-bottom: 0.5rem;
-    }
-    .impact-fill {
-      height: 100%; background: linear-gradient(135deg, var(--primary), #1d4ed8); 
-      border-radius: 10px; transition: width 2s ease; width: 0%;
-    }
-    .impact-fill[data-width="85"] { width: 85%; }
-    .impact-fill[data-width="72"] { width: 72%; }
-    .impact-fill[data-width="68"] { width: 68%; }
-    .impact-fill[data-width="63"] { width: 63%; }
-
-    /* Pricing Cards */
-    .pricing-card {
-      background: var(--background); border-radius: 25px; padding: 3rem 2rem; 
-      border: 1px solid var(--border); transition: all 0.3s ease; position: relative; text-align: center;
-    }
-    .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); }
-    .pricing-card.premium { border-color: var(--primary); background: rgba(59, 130, 246, 0.02); }
-    .pricing-badge {
-      position: absolute; top: -15px; left: 50%; transform: translateX(-50%); 
-      background: var(--primary); color: white; padding: 0.5rem 2rem; border-radius: 20px; 
-      font-weight: 800; font-size: 0.9rem;
-    }
-    .pricing-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .pricing-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; color: #000000; }
-    .pricing-price { font-size: 3rem; font-weight: 900; color: #000000; margin: 1rem 0; }
-    .pricing-period { font-size: 1rem; color: #000000; opacity: 0.7; margin-bottom: 2rem; font-weight: 600; }
-    .pricing-features { list-style: none; text-align: left; margin-bottom: 2rem; }
-    .pricing-features li { padding: 0.5rem 0; color: #000000; line-height: 1.6; }
-    .pricing-btn {
-      width: 100%; padding: 1rem 2rem; border: none; border-radius: 25px; font-weight: 600; 
-      cursor: pointer; transition: all 0.3s ease; font-size: 1rem;
-    }
-    .pricing-btn.free { background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 2px solid var(--primary); }
-    .pricing-btn.premium { background: var(--primary); color: white; }
-    .pricing-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
-
-    /* Team Cards */
-    .team-card {
-      background: var(--background); border-radius: 25px; padding: 2rem; border: 1px solid var(--border);
-      transition: all 0.3s ease; text-align: center;
-    }
-    .team-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1); }
-    .team-card h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #000000; }
-    .team-role { font-size: 1rem; color: var(--primary); font-weight: 600; margin-bottom: 1rem; }
 
     /* CLOSET INTELIGENTE REAL */
     .intelligent-closet {
@@ -289,14 +241,6 @@
     .item-btn.select { background: var(--success); }
     .item-btn.select:hover { background: var(--primary); }
 
-    .auto-navigation {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-      border: 2px solid var(--success); border-radius: 15px; padding: 1rem; margin: 1rem 0;
-      text-align: center; display: none;
-    }
-    .auto-navigation.show { display: block; animation: slideInDown 0.5s ease; }
-    .auto-nav-text { font-weight: 600; color: var(--success); margin-bottom: 0.5rem; }
-
     .smart-selection-panel {
       background: rgba(59, 130, 246, 0.05); border-radius: 20px; padding: 2rem; margin-top: 2rem;
     }
@@ -368,41 +312,6 @@
     .combinations-formula { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
     .combinations-result { font-size: 1rem; color: #000000; opacity: 0.8; }
 
-    /* Footer */
-    .footer-cta {
-      background: rgba(59, 130, 246, 0.05); padding: 4rem 5%; text-align: center;
-    }
-    .footer-cta h3 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; color: #000000; }
-    .footer-cta p { font-size: 1.1rem; color: #000000; opacity: 0.8; margin-bottom: 3rem; }
-    .cta-features {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; 
-      max-width: 600px; margin: 0 auto 3rem;
-    }
-    .cta-feature {
-      text-align: center; padding: 2rem; background: var(--background); border-radius: 20px; 
-      border: 2px solid var(--border); transition: all 0.3s ease;
-    }
-    .cta-feature:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); }
-
-    footer {
-      background: var(--background); color: #000000; padding: 3rem 5% 2rem; border-top: 1px solid var(--border);
-    }
-    .footer-content {
-      max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr; 
-      gap: 3rem; margin-bottom: 2rem;
-    }
-    .footer-column h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; color: #000000; }
-    .footer-column p, .footer-column a {
-      color: #000000; opacity: 0.7; text-decoration: none; line-height: 1.8; 
-      transition: color 0.3s ease; display: block; margin-bottom: 0.5rem; cursor: pointer;
-    }
-    .footer-column a:hover { opacity: 1; }
-
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes slideInDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-    @keyframes spin { to { transform: rotate(360deg); } }
     .loading {
       display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%; border-top-color: #ffffff; animation: spin 1s ease-in-out infinite;
@@ -412,11 +321,15 @@
     .text-center { text-align: center; }
     .mb-2 { margin-bottom: 2rem; }
 
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Responsive */
     @media (max-width: 768px) {
       .nav-pills { display: none; }
       .mobile-menu-toggle { display: block; }
-      .mobile-nav { display: block; }
       .logo { font-size: 2rem; }
       .section { padding: 4rem 3%; }
       .form-options { grid-template-columns: 1fr; }
@@ -426,11 +339,7 @@
       .card { padding: 2rem 1rem; }
       .intelligent-categories { grid-template-columns: 1fr; }
       .closet-navigation { flex-direction: column; }
-      .footer-content { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
       .selection-summary { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 480px) {
-      .grid-4, .grid-5 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -446,7 +355,7 @@
       <div style="display: flex; align-items: center;">
         <div class="nav-pills">
           <a href="#inicio" class="nav-pill active" data-section="inicio">🏠 Inicio</a>
-          <a href="#impacto" class="nav-pill" data-section="impacto">🌍 Impacto Ambiental</a>
+          <a href="#impacto" class="nav-pill" data-section="impacto">🌍 Impacto</a>
           <a href="#precios" class="nav-pill" data-section="precios">$ Precios</a>
           <a href="#funcionamiento" class="nav-pill" data-section="funcionamiento">⚙️ Cómo funciona</a>
           <a href="#equipo" class="nav-pill" data-section="equipo">👥 Equipo</a>
@@ -457,26 +366,26 @@
         </button>
 
         <div class="auth-container">
-          <!-- Google Login en esquina superior derecha -->
-          <div id="googleLoginContainer">
+          <!-- Botón personalizado de login AZUL -->
+          <div id="googleLoginContainer" style="display: block;">
             <div id="g_id_onload"
                  data-client_id="326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com"
                  data-context="signin"
                  data-ux_mode="popup"
                  data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
+                 data-auto_prompt="false"
+                 style="display: none;">
             </div>
-            <div class="g_id_signin"
-                 data-type="standard"
-                 data-shape="pill"
-                 data-theme="filled_blue"
-                 data-text="signin_with"
-                 data-size="large"
-                 data-locale="es">
-            </div>
+            <div class="g_id_signin" style="display: none;"></div>
+            
+            <button id="customGoogleLoginBtn" class="custom-google-btn" onclick="triggerGoogleLogin()">
+              <i class="fab fa-google" style="margin-right: 8px;"></i>
+              Iniciar Sesión
+            </button>
           </div>
 
-          <div class="user-info" id="userInfo">
+          <!-- Info del usuario -->
+          <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
             <span id="userName" style="color: #000000; font-weight: 500;"></span>
             <button class="logout-btn" onclick="logout()">Salir</button>
@@ -484,15 +393,6 @@
         </div>
       </div>
     </nav>
-    
-    <!-- Mobile Menu -->
-    <div class="mobile-nav" id="mobileNav">
-      <a href="#inicio" class="mobile-nav-item" onclick="scrollToSection('inicio'); toggleMobileMenu()">🏠 Inicio</a>
-      <a href="#impacto" class="mobile-nav-item" onclick="scrollToSection('impacto'); toggleMobileMenu()">🌍 Impacto Ambiental</a>
-      <a href="#precios" class="mobile-nav-item" onclick="scrollToSection('precios'); toggleMobileMenu()">$ Precios</a>
-      <a href="#funcionamiento" class="mobile-nav-item" onclick="scrollToSection('funcionamiento'); toggleMobileMenu()">⚙️ Cómo funciona</a>
-      <a href="#equipo" class="mobile-nav-item" onclick="scrollToSection('equipo'); toggleMobileMenu()">👥 Equipo</a>
-    </div>
   </header>
 
   <!-- Hero Section -->
@@ -517,138 +417,6 @@
         <div class="card card-compact">
           <span style="font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 0.5rem; display: block;">25kg</span>
           <span style="color: #000000; opacity: 0.7;">CO₂ reducido</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Impact Section -->
-  <section id="impacto" class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2>🌍 Impacto Ambiental</h2>
-        <p class="section-subtitle">La industria de la moda es una de las más contaminantes del planeta. Reutilizar tu ropa tiene un impacto positivo inmediato.</p>
-      </div>
-      <div style="max-width: 800px; margin: 0 auto;">
-        <div class="impact-item">
-          <div class="impact-label">
-            <span>Reducción en consumo de agua</span>
-            <span>85%</span>
-          </div>
-          <div class="impact-bar">
-            <div class="impact-fill" data-width="85"></div>
-          </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
-            Cada prenda nueva requiere miles de litros de agua en su producción.
-          </p>
-        </div>
-        <div class="impact-item">
-          <div class="impact-label">
-            <span>Menos emisiones de CO₂</span>
-            <span>72%</span>
-          </div>
-          <div class="impact-bar">
-            <div class="impact-fill" data-width="72"></div>
-          </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
-            El transporte y manufactura textil son grandes emisores de carbono.
-          </p>
-        </div>
-        <div class="impact-item">
-          <div class="impact-label">
-            <span>Reducción residuos textiles</span>
-            <span>68%</span>
-          </div>
-          <div class="impact-bar">
-            <div class="impact-fill" data-width="68"></div>
-          </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
-            Millones de toneladas de ropa terminan en vertederos anualmente.
-          </p>
-        </div>
-        <div class="impact-item">
-          <div class="impact-label">
-            <span>Menos uso de químicos</span>
-            <span>63%</span>
-          </div>
-          <div class="impact-bar">
-            <div class="impact-fill" data-width="63"></div>
-          </div>
-          <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #000000; opacity: 0.7;">
-            Los tintes y tratamientos textiles contaminan ríos y océanos.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing Section -->
-  <section id="precios" class="section" style="background: rgba(249, 250, 251, 0.5);">
-    <div class="container">
-      <div class="section-title">
-        <h2>$ Precios Simples y Claros</h2>
-        <p class="section-subtitle">Elige el plan que mejor se adapte a tu estilo de vida</p>
-      </div>
-      <div class="grid grid-2" style="max-width: 800px; margin: 0 auto;">
-        <div class="pricing-card">
-          <div class="pricing-icon">🎁</div>
-          <h3 class="pricing-title">Plan Free</h3>
-          <div class="pricing-price">Gratis</div>
-          <div class="pricing-period">Primer mes completo</div>
-          <ul class="pricing-features">
-            <li>✅ 30 combinaciones incluidas</li>
-            <li>✅ Análisis básico de IA</li>
-            <li>✅ 3 prendas superiores</li>
-            <li>✅ 3 prendas inferiores</li>
-            <li>✅ 5 zapatos diferentes</li>
-            <li>✅ Recomendaciones instantáneas</li>
-            <li>✅ Sin compromiso</li>
-          </ul>
-          <button class="pricing-btn free" onclick="startFreePlan()">Empezar Gratis</button>
-        </div>
-        <div class="pricing-card premium">
-          <div class="pricing-badge">Más Popular</div>
-          <div class="pricing-icon">⭐</div>
-          <h3 class="pricing-title">Plan Premium</h3>
-          <div class="pricing-price">$5,000</div>
-          <div class="pricing-period">por mes</div>
-          <ul class="pricing-features">
-            <li>🚀 Recomendaciones ilimitadas</li>
-            <li>🧠 IA avanzada personalizada</li>
-            <li>👗 Prendas ilimitadas</li>
-            <li>👠 Zapatos ilimitados</li>
-            <li>⚡ Análisis en tiempo real</li>
-            <li>🎨 Sugerencias de estilo</li>
-            <li>📱 Soporte prioritario</li>
-          </ul>
-          <button class="pricing-btn premium" onclick="upgradeToPremium()">Actualizar a Premium</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How it Works Section -->
-  <section id="funcionamiento" class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2>⚙️ Cómo Funciona</h2>
-        <p class="section-subtitle">Descubre combinaciones únicas con tu ropa actual en solo tres simples pasos</p>
-      </div>
-      <div class="grid grid-3">
-        <div class="card">
-          <div style="font-size: 4rem; margin-bottom: 2rem; display: block;">📱</div>
-          <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #000000;">1. Sube tus prendas</h3>
-          <p style="color: #000000; opacity: 0.8; line-height: 1.6;">Fotografía las prendas que quieres incluir: superiores, inferiores y calzado. Nuestra IA analiza cada pieza automáticamente.</p>
-        </div>
-        <div class="card">
-          <div style="font-size: 4rem; margin-bottom: 2rem; display: block;">🤖</div>
-          <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #000000;">2. IA genera recomendaciones</h3>
-          <p style="color: #000000; opacity: 0.8; line-height: 1.6;">Nuestro algoritmo avanzado analiza colores, estilos, ocasiones y tendencias para crear outfits únicos y balanceados.</p>
-        </div>
-        <div class="card">
-          <div style="font-size: 4rem; margin-bottom: 2rem; display: block;">✨</div>
-          <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #000000;">3. Recibe sugerencias</h3>
-          <p style="color: #000000; opacity: 0.8; line-height: 1.6;">Obtén recomendaciones personalizadas rankeadas por score de compatibilidad en menos de 10 segundos.</p>
         </div>
       </div>
     </div>
@@ -790,7 +558,7 @@
             <h2 style="margin: 0; font-size: 1.8rem;">🧠 Closet Inteligente con IA</h2>
             <p style="margin: 0.5rem 0 0 0; opacity: 0.8;" id="userEmailCloset">usuario@email.com</p>
           </div>
-          <button class="btn btn-secondary" onclick="enableDirectMode()">⚡ Modo Rápido</button>
+          <button class="btn btn-primary" onclick="enableDirectMode()">⚡ Modo Rápido</button>
         </div>
 
         <!-- AI Detection Status -->
@@ -800,12 +568,6 @@
             <div class="ai-progress-bar" id="aiProgressBar"></div>
           </div>
           <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;" id="aiStatusText">Analizando colores, formas y estilos...</div>
-        </div>
-
-        <!-- Auto-Navigation Status -->
-        <div class="auto-navigation" id="autoNavigation">
-          <div class="auto-nav-text">🎯 Navegando automáticamente a la sección detectada...</div>
-          <div style="font-size: 0.9rem; opacity: 0.8;" id="autoNavText">La IA detectó prendas superiores</div>
         </div>
 
         <!-- Smart Upload Area -->
@@ -864,7 +626,7 @@
           </div>
 
           <div class="text-center">
-            <button class="btn btn-gold" onclick="generateFromIntelligentCloset()" id="intelligentGenerateBtn" disabled>
+            <button class="btn btn-success" onclick="generateFromIntelligentCloset()" id="intelligentGenerateBtn" disabled>
               <i class="fas fa-magic"></i> Selecciona al menos 1 de cada tipo
             </button>
           </div>
@@ -959,71 +721,6 @@
     </div>
   </section>
 
-  <!-- Team Section -->
-  <section id="equipo" class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2>👥 Nuestro Equipo</h2>
-        <p class="section-subtitle">Conoce a las personas detrás de NoShopiA</p>
-      </div>
-      <div class="grid grid-2">
-        <div class="team-card">
-          <h3>José Francisco Corti Badia</h3>
-          <p class="team-role">Founder & CEO</p>
-          <p style="color: #000000; opacity: 0.8; line-height: 1.6;">Ingeniero Comercial, Diplomado en GenAI U. De Chile 2025 y Diplomado en AI PUC 2022. Experto en Inteligencia Artificial con más de 15 años creando soluciones tecnológicas innovadoras en distintas industrias.</p>
-        </div>
-        <div class="team-card">
-          <h3>Paola Andrea Curti Simpson</h3>
-          <p class="team-role">Directora Creativa</p>
-          <p style="color: #000000; opacity: 0.8; line-height: 1.6;">Arquitecta especialista en moda sustentable con amplia experiencia en diseño consciente y sostenibilidad. Lidera la visión creativa y el impacto ambiental de nuestras soluciones.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer CTA -->
-  <section class="footer-cta">
-    <div class="container">
-      <h3>🚀 ¡Comienza Ahora!</h3>
-      <p>Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
-      <div class="cta-features">
-        <div class="cta-feature">
-          <div style="font-size: 4rem; margin-bottom: 1rem; color: var(--success);">🎁</div>
-          <h4 style="color: #000000; font-weight: 700; font-size: 1.5rem;">Gratis</h4>
-          <p style="color: #000000; opacity: 0.7;">Sin costo inicial</p>
-        </div>
-        <div class="cta-feature">
-          <div style="font-size: 4rem; margin-bottom: 1rem; color: var(--primary);">⚡</div>
-          <h4 style="color: #000000; font-weight: 700; font-size: 1.5rem;">Instantáneo</h4>
-          <p style="color: #000000; opacity: 0.7;">Resultados en 10 segundos</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3>
-          <span class="logo-no">No</span><span class="logo-shop">shop</span><span class="logo-i">i</span><span class="logo-a">A</span>
-        </h3>
-        <p>Maximiza tu ropa, minimiza tu impacto ambiental con IA.</p>
-      </div>
-      <div class="footer-column">
-        <h3>Enlaces Rápidos</h3>
-        <a onclick="scrollToSection('inicio')">Inicio</a>
-        <a onclick="scrollToSection('impacto')">Impacto Ambiental</a>
-        <a onclick="scrollToSection('precios')">Precios</a>
-        <a onclick="scrollToSection('funcionamiento')">Cómo Funciona</a>
-        <a onclick="scrollToSection('equipo')">Nuestro Equipo</a>
-      </div>
-    </div>
-    <div style="padding-top: 2rem; border-top: 1px solid var(--border); color: #000000; opacity: 0.7; text-align: center;">
-      <p>&copy; 2025 NoshopiA. Todos los derechos reservados.</p>
-    </div>
-  </footer>
-
   <script>
     // CONFIGURACIÓN Y VARIABLES GLOBALES COMPLETAS
     const CONFIG = {
@@ -1041,24 +738,19 @@
         "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan"], color: "#f59e0b", confidence: 0.92 },
         "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "casual"], color: "#10b981", confidence: 0.96 },
         "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer"], color: "#6b7280", confidence: 0.88 },
-        "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown"], color: "#8b5cf6", confidence: 0.94 },
-        "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded"], color: "#ef4444", confidence: 0.93 },
-        "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench"], color: "#1f2937", confidence: 0.91 }
+        "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown"], color: "#8b5cf6", confidence: 0.94 }
       },
       bottoms: {
         "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af", confidence: 0.97 },
         "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks"], color: "#3b82f6", confidence: 0.92 },
         "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt"], color: "#ec4899", confidence: 0.94 },
-        "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981", confidence: 0.96 },
-        "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants"], color: "#6b7280", confidence: 0.95 }
+        "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981", confidence: 0.96 }
       },
       shoes: {
         "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers"], color: "#3b82f6", confidence: 0.96 },
         "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords"], color: "#1f2937", confidence: 0.93 },
         "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots"], color: "#92400e", confidence: 0.91 },
-        "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels"], color: "#ec4899", confidence: 0.94 },
-        "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops"], color: "#f59e0b", confidence: 0.92 },
-        "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers"], color: "#6b7280", confidence: 0.90 }
+        "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels"], color: "#ec4899", confidence: 0.94 }
       }
     };
 
@@ -1105,6 +797,45 @@
         document.querySelectorAll('.nav-pill').forEach(pill => pill.classList.remove('active'));
         const navPill = document.querySelector(`[data-section="${sectionId}"]`);
         if (navPill) navPill.classList.add('active');
+      }
+    }
+
+    // FUNCIÓN PRINCIPAL DEL BOTÓN DE LOGIN
+    window.triggerGoogleLogin = function() {
+      console.log('🔐 Iniciando proceso de login con Google...');
+      
+      const btn = document.getElementById('customGoogleLoginBtn');
+      
+      // Mostrar estado de carga
+      btn.disabled = true;
+      btn.innerHTML = '<div class="loading"></div> Conectando...';
+      
+      try {
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+          // Usar la API de Google Sign-In
+          window.google.accounts.id.prompt((notification) => {
+            console.log('Google prompt notification:', notification);
+            
+            // Restaurar botón si se cancela
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              resetLoginButton();
+            }
+          });
+        } else {
+          throw new Error('Google Sign-In API no disponible');
+        }
+      } catch (error) {
+        console.error('❌ Error en triggerGoogleLogin:', error);
+        showNotification('Error al conectar con Google. Intenta recargar la página.', 'error');
+        resetLoginButton();
+      }
+    };
+
+    function resetLoginButton() {
+      const btn = document.getElementById('customGoogleLoginBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-google" style="margin-right: 8px;"></i>Iniciar Sesión';
       }
     }
 
@@ -1174,6 +905,7 @@
       } else {
         if (googleLoginContainer) googleLoginContainer.style.display = 'block';
         if (userInfo) userInfo.classList.remove('show');
+        resetLoginButton();
       }
     }
 
@@ -1370,10 +1102,8 @@
       
       // Activar indicador de IA
       const aiStatus = document.getElementById('aiDetectionStatus');
-      const autoNav = document.getElementById('autoNavigation');
       const progressBar = document.getElementById('aiProgressBar');
       const statusText = document.getElementById('aiStatusText');
-      const autoNavText = document.getElementById('autoNavText');
       
       aiStatus.classList.add('active');
       progressBar.style.width = '0%';
@@ -1398,15 +1128,6 @@
           // Categorizar automáticamente
           categorizeIntelligentItem(detectionResult.type, detectionResult.category, detectionResult.item, imageUrl, file);
           
-          // Mostrar navegación automática
-          autoNav.classList.add('show');
-          autoNavText.textContent = `La IA detectó: ${detectionResult.item} (${detectionResult.type})`;
-          
-          // Navegar automáticamente a la sección correcta
-          setTimeout(() => {
-            navigateToDetectedType(detectionResult.type);
-          }, 1500);
-          
           await new Promise(resolve => setTimeout(resolve, 1000)); // Simular procesamiento
           
         } catch (error) {
@@ -1418,7 +1139,6 @@
       // Finalizar proceso
       setTimeout(() => {
         aiStatus.classList.remove('active');
-        autoNav.classList.remove('show');
         finishIntelligentUpload(files.length);
       }, 2000);
       
@@ -1486,17 +1206,6 @@
       intelligentClosetItems[type][categoryId].push(item);
       
       console.log(`🧠 Prenda categorizada: ${detectedItem} en ${type}/${categoryId}`);
-    }
-
-    function navigateToDetectedType(type) {
-      // Cambiar pestaña activa
-      document.querySelectorAll('.closet-nav-item').forEach(nav => nav.classList.remove('active'));
-      document.querySelector(`[data-type="${type}"]`).classList.add('active');
-      
-      activeClosetType = type;
-      renderIntelligentCategories();
-      
-      showNotification(`📍 Navegando a ${type === 'tops' ? 'Superiores' : type === 'bottoms' ? 'Inferiores' : 'Calzado'}`, 'info');
     }
 
     function finishIntelligentUpload(count) {
@@ -2062,10 +1771,6 @@
       });
     }
 
-    // Pricing & Team Functions
-    window.startFreePlan = () => showNotification('Plan gratuito activado', 'success');
-    window.upgradeToPremium = () => showNotification('Función de upgrade disponible próximamente', 'info');
-
     // EVENT DELEGATION COMPLETO
     document.addEventListener('click', (e) => {
       // Navigation
@@ -2132,41 +1837,7 @@
       }
     });
 
-    // Drag & Drop para el Smart Upload Area
-    document.addEventListener('DOMContentLoaded', function() {
-      const smartUploadArea = document.getElementById('smartUploadArea');
-      if (smartUploadArea) {
-        smartUploadArea.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          smartUploadArea.classList.add('dragover');
-        });
-        
-        smartUploadArea.addEventListener('dragleave', (e) => {
-          e.preventDefault();
-          smartUploadArea.classList.remove('dragover');
-        });
-        
-        smartUploadArea.addEventListener('drop', (e) => {
-          e.preventDefault();
-          smartUploadArea.classList.remove('dragover');
-          
-          const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-          if (files.length > 0) {
-            // Simular selección de archivos
-            const input = document.getElementById('smart-upload');
-            const dt = new DataTransfer();
-            files.forEach(file => dt.items.add(file));
-            input.files = dt.files;
-            
-            // Trigger change event
-            const event = new Event('change', { bubbles: true });
-            input.dispatchEvent(event);
-          }
-        });
-      }
-    });
-
-    // INITIALIZATION COMPLETA
+    // INITIALIZATION COMPLETA - CON CONTROL DE GOOGLE BUTTON
     document.addEventListener('DOMContentLoaded', function() {
       console.log('🚀 NoShopiA con Closet Inteligente REAL iniciado');
       
@@ -2185,204 +1856,15 @@
         }
       }, 10000);
 
-      // Animate impact bars on scroll
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const fills = entry.target.querySelectorAll('.impact-fill');
-            fills.forEach(fill => {
-              const width = fill.dataset.width;
-              if (width) {
-                setTimeout(() => {
-                  fill.style.width = width + '%';
-                }, 500);
-              }
-            });
-          }
-        });
-      });
-
-      const impactSection = document.getElementById('impacto');
-      if (impactSection) {
-        observer.observe(impactSection);
-      }
-
       // Welcome message después de un tiempo
       setTimeout(() => {
         if (!isLoggedIn) {
           showNotification('¡Bienvenido a NoShopiA! Inicia sesión para comenzar.', 'info');
         }
       }, 2000);
-
-      // Preload some demo detection results for better UX
-      if (window.sessionStorage) {
-        const demoDetections = {
-          'shirt.jpg': { type: 'tops', category: 'shirt', item: 'Camisa formal' },
-          'jeans.jpg': { type: 'bottoms', category: 'jeans', item: 'Jeans azules' },
-          'sneakers.jpg': { type: 'shoes', category: 'sneakers', item: 'Zapatillas deportivas' },
-          'blouse.jpg': { type: 'tops', category: 'blouse', item: 'Blusa elegante' },
-          'dress.jpg': { type: 'tops', category: 'dress', item: 'Vestido casual' },
-          'boots.jpg': { type: 'shoes', category: 'boots', item: 'Botas de cuero' }
-        };
-        window.sessionStorage.setItem('noshopia_demo_detections', JSON.stringify(demoDetections));
-      }
-    });
-
-    // FUNCIONES ADICIONALES PARA MEJORAR LA EXPERIENCIA
-
-    // Auto-save user data every 30 seconds if there are changes
-    let dataChanged = false;
-    setInterval(() => {
-      if (dataChanged && isLoggedIn) {
-        saveUserData();
-        dataChanged = false;
-        console.log('💾 Auto-guardado de datos del usuario');
-      }
-    }, 30000);
-
-    // Mark data as changed
-    function markDataChanged() {
-      dataChanged = true;
-    }
-
-    // Enhanced AI simulation with better detection
-    async function simulateEnhancedAIDetection(file) {
-      const fileName = file.name.toLowerCase();
-      
-      // Check demo detections first
-      if (window.sessionStorage) {
-        const demoDetections = JSON.parse(window.sessionStorage.getItem('noshopia_demo_detections') || '{}');
-        if (demoDetections[fileName]) {
-          return { ...demoDetections[fileName], confidence: 0.95 };
-        }
-      }
-      
-      // Enhanced keyword detection
-      let detectedType = 'tops';
-      let detectedCategory = 'tshirt';
-      let detectedItem = 'Prenda superior';
-      let confidence = 0.85;
-      
-      // Bottoms detection
-      if (fileName.includes('jean') || fileName.includes('pantalon') || fileName.includes('pants')) {
-        detectedType = 'bottoms';
-        detectedCategory = 'jeans';
-        detectedItem = 'Jeans';
-        confidence = 0.92;
-      } else if (fileName.includes('falda') || fileName.includes('skirt')) {
-        detectedType = 'bottoms';
-        detectedCategory = 'skirt';
-        detectedItem = 'Falda';
-        confidence = 0.90;
-      } else if (fileName.includes('short')) {
-        detectedType = 'bottoms';
-        detectedCategory = 'shorts';
-        detectedItem = 'Shorts';
-        confidence = 0.88;
-      }
-      
-      // Shoes detection
-      else if (fileName.includes('zapato') || fileName.includes('shoe')) {
-        detectedType = 'shoes';
-        detectedCategory = 'dress_shoes';
-        detectedItem = 'Zapatos formales';
-        confidence = 0.91;
-      } else if (fileName.includes('zapatilla') || fileName.includes('sneaker')) {
-        detectedType = 'shoes';
-        detectedCategory = 'sneakers';
-        detectedItem = 'Zapatillas';
-        confidence = 0.94;
-      } else if (fileName.includes('bota') || fileName.includes('boot')) {
-        detectedType = 'shoes';
-        detectedCategory = 'boots';
-        detectedItem = 'Botas';
-        confidence = 0.89;
-      }
-      
-      // Tops detection (more specific)
-      else if (fileName.includes('camisa') || fileName.includes('shirt')) {
-        detectedCategory = 'shirt';
-        detectedItem = 'Camisa';
-        confidence = 0.93;
-      } else if (fileName.includes('polera') || fileName.includes('tshirt') || fileName.includes('tee')) {
-        detectedCategory = 'tshirt';
-        detectedItem = 'Polera';
-        confidence = 0.95;
-      } else if (fileName.includes('sweater') || fileName.includes('sueter')) {
-        detectedCategory = 'sweater';
-        detectedItem = 'Suéter';
-        confidence = 0.87;
-      } else if (fileName.includes('vestido') || fileName.includes('dress')) {
-        detectedCategory = 'dress';
-        detectedItem = 'Vestido';
-        confidence = 0.92;
-      } else if (fileName.includes('blusa') || fileName.includes('blouse')) {
-        detectedCategory = 'blouse';
-        detectedItem = 'Blusa';
-        confidence = 0.89;
-      }
-      
-      return {
-        type: detectedType,
-        category: detectedCategory,
-        item: detectedItem,
-        confidence
-      };
-    }
-
-    // Keyboard shortcuts for power users
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case '1':
-            if (intelligentClosetMode) {
-              e.preventDefault();
-              document.querySelector('[data-type="tops"]')?.click();
-            }
-            break;
-          case '2':
-            if (intelligentClosetMode) {
-              e.preventDefault();
-              document.querySelector('[data-type="bottoms"]')?.click();
-            }
-            break;
-          case '3':
-            if (intelligentClosetMode) {
-              e.preventDefault();
-              document.querySelector('[data-type="shoes"]')?.click();
-            }
-            break;
-          case 'u':
-            if (intelligentClosetMode) {
-              e.preventDefault();
-              triggerSmartUpload();
-            }
-            break;
-        }
-      }
-    });
-
-    // Performance monitoring
-    let performanceMetrics = {
-      uploadTime: 0,
-      detectionTime: 0,
-      renderTime: 0
-    };
-
-    function logPerformance(metric, time) {
-      performanceMetrics[metric] = time;
-      console.log(`📊 Performance - ${metric}: ${time}ms`);
-    }
-
-    // Enhanced error handling
-    window.addEventListener('error', (e) => {
-      console.error('❌ Error global capturado:', e.error);
-      showNotification('Se produjo un error inesperado. Intenta recargar la página.', 'error');
-    });
-
-    window.addEventListener('unhandledrejection', (e) => {
-      console.error('❌ Promise rechazada:', e.reason);
-      showNotification('Error de conexión. Verifica tu internet.', 'error');
     });
 
     console.log('✅ NoShopiA con Closet Inteligente REAL completamente cargado y funcional');
+  </script>
+</body>
+</html>
