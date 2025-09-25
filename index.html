@@ -1792,4 +1792,192 @@
   <script src="api.js"></script>
   <script src="recommendations.js"></script>
 </body>
+<script>
+// SCRIPT DIRECTO PARA ARREGLAR EL FORMULARIO DE PERFIL
+console.log('Iniciando script de reparación del formulario...');
+
+function fixProfileForm() {
+  console.log('Intentando reparar formulario de perfil...');
+  
+  const profileOptions = document.querySelectorAll('.profile-option');
+  const createBtn = document.getElementById('createProfileBtn');
+  
+  if (profileOptions.length === 0) {
+    console.log('No se encontraron opciones de perfil, reintentando...');
+    return false;
+  }
+  
+  console.log('Encontradas', profileOptions.length, 'opciones de perfil');
+  
+  let selectedData = {
+    skin_color: null,
+    age_range: null,
+    gender: null
+  };
+  
+  // CONFIGURAR CADA OPCIÓN CON CLICK DIRECTO
+  profileOptions.forEach((option, index) => {
+    console.log('Configurando opción', index + 1);
+    
+    // FORZAR CURSOR POINTER
+    option.style.cursor = 'pointer';
+    
+    // REMOVER LISTENERS EXISTENTES Y AGREGAR NUEVO
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+    
+    newOption.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const field = this.dataset.field;
+      const value = this.dataset.value;
+      
+      console.log('CLICK EN:', field, '=', value);
+      
+      if (!field || !value) {
+        console.log('ERROR: datos incompletos', this.dataset);
+        return;
+      }
+      
+      // DESELECCIONAR TODAS LAS DEL MISMO CAMPO
+      const sameFieldOptions = document.querySelectorAll(`[data-field="${field}"]`);
+      sameFieldOptions.forEach(opt => {
+        opt.classList.remove('selected');
+        opt.style.borderColor = '#e5e7eb';
+        opt.style.backgroundColor = 'var(--background)';
+      });
+      
+      // SELECCIONAR ESTA OPCIÓN
+      this.classList.add('selected');
+      this.style.borderColor = '#3b82f6';
+      this.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+      this.style.transform = 'translateY(-3px)';
+      this.style.boxShadow = '0 5px 15px rgba(59, 130, 246, 0.3)';
+      
+      // GUARDAR SELECCIÓN
+      selectedData[field] = value;
+      
+      console.log('Datos actuales:', selectedData);
+      
+      // VERIFICAR SI TODAS ESTÁN SELECCIONADAS
+      const allSelected = selectedData.skin_color && 
+                         selectedData.age_range && 
+                         selectedData.gender;
+      
+      console.log('Todas seleccionadas:', allSelected);
+      
+      // ACTUALIZAR BOTÓN
+      if (createBtn) {
+        if (allSelected) {
+          createBtn.disabled = false;
+          createBtn.style.opacity = '1';
+          createBtn.style.cursor = 'pointer';
+          createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
+          createBtn.style.backgroundColor = 'var(--success)';
+          
+          // CONFIGURAR CLICK DEL BOTÓN
+          createBtn.onclick = function() {
+            console.log('COMPLETANDO PERFIL...');
+            
+            // GUARDAR PARA SIEMPRE
+            try {
+              const email = window.currentUser ? window.currentUser().email : 'default';
+              localStorage.setItem(`noshopia_profile_${email}`, JSON.stringify(selectedData));
+              localStorage.setItem(`noshopia_profile_completed_${email}`, 'true');
+              console.log('Perfil guardado para:', email);
+            } catch (e) {
+              console.log('Error guardando:', e);
+            }
+            
+            // OCULTAR FORMULARIO
+            const profileForm = document.getElementById('profileForm');
+            const welcomeSection = document.getElementById('welcomeSection');
+            if (profileForm) profileForm.style.display = 'none';
+            if (welcomeSection) welcomeSection.style.display = 'none';
+            
+            // MOSTRAR OPCIONES DEL CLOSET
+            const closetQuestion = document.getElementById('closetQuestion');
+            if (closetQuestion) closetQuestion.style.display = 'block';
+            
+            alert('¡Perfil completado! No volverás a ver este formulario.');
+          };
+        } else {
+          createBtn.disabled = true;
+          createBtn.style.opacity = '0.6';
+          createBtn.style.cursor = 'not-allowed';
+          createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+        }
+      }
+    };
+    
+    // AGREGAR HOVER EFFECTS
+    newOption.onmouseenter = function() {
+      if (!this.classList.contains('selected')) {
+        this.style.transform = 'translateY(-3px)';
+        this.style.borderColor = '#3b82f6';
+        this.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+      }
+    };
+    
+    newOption.onmouseleave = function() {
+      if (!this.classList.contains('selected')) {
+        this.style.transform = 'translateY(0)';
+        this.style.borderColor = '#e5e7eb';
+        this.style.backgroundColor = 'var(--background)';
+      }
+    };
+  });
+  
+  console.log('✅ Formulario de perfil reparado exitosamente');
+  return true;
+}
+
+// EJECUTAR REPARACIÓN CON MÚLTIPLES INTENTOS
+function startProfileRepair() {
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  const repairInterval = setInterval(() => {
+    attempts++;
+    console.log(`Intento de reparación ${attempts}/${maxAttempts}`);
+    
+    if (fixProfileForm()) {
+      console.log('✅ REPARACIÓN EXITOSA');
+      clearInterval(repairInterval);
+    } else if (attempts >= maxAttempts) {
+      console.log('❌ No se pudo reparar el formulario después de', maxAttempts, 'intentos');
+      clearInterval(repairInterval);
+    }
+  }, 1000);
+}
+
+// INICIAR CUANDO LA PÁGINA ESTÉ LISTA
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startProfileRepair);
+} else {
+  startProfileRepair();
+}
+
+// TAMBIÉN EJECUTAR CUANDO SE MUESTRE EL FORMULARIO
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+      const target = mutation.target;
+      if (target.id === 'profileForm' && target.style.display === 'block') {
+        console.log('Formulario de perfil detectado, ejecutando reparación...');
+        setTimeout(fixProfileForm, 500);
+      }
+    }
+  });
+});
+
+observer.observe(document.body, {
+  attributes: true,
+  subtree: true,
+  attributeFilter: ['style']
+});
+
+console.log('Script de reparación del formulario cargado');
+</script>
 </html>
