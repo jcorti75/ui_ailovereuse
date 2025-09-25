@@ -11,7 +11,8 @@ const INTELLIGENT_CATEGORIES = {
     "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer"], color: "#6b7280", confidence: 0.88 },
     "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown"], color: "#8b5cf6", confidence: 0.94 },
     "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded"], color: "#ef4444", confidence: 0.93 },
-    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench"], color: "#1f2937", confidence: 0.91 }
+    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench"], color: "#1f2937", confidence: 0.91 },
+    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat"], color: "#84cc16", confidence: 0.88 } // ← AGREGAR ESTA LÍNEA
   },
   bottoms: {
     "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af", confidence: 0.97 },
