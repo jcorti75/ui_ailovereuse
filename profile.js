@@ -1,4 +1,4 @@
-// profile.js - Gestión del Perfil de Usuario (Versión Limpia)
+// profile.js - Sistema de Perfilamiento Corregido
 
 // Estado del formulario
 let profileData = {
@@ -7,7 +7,7 @@ let profileData = {
   gender: null
 };
 
-// NOTIFICACIÓN PERSONALIZADA MEJORADA
+// NOTIFICACIÓN PERSONALIZADA MEJORADA CON NAVEGACIÓN
 function showCustomProfileNotification() {
   // Eliminar notificación anterior si existe
   const existing = document.querySelector('.profile-success-overlay');
@@ -82,20 +82,249 @@ function showCustomProfileNotification() {
     if (e.target === overlay) closeProfileNotification();
   };
 
-  // Auto-cerrar después de 10 segundos
-  setTimeout(closeProfileNotification, 10000);
+  // Auto-cerrar después de 8 segundos y navegar automáticamente
+  setTimeout(() => {
+    closeProfileNotification();
+  }, 8000);
 }
 
-// Cerrar notificación con animación
+// Cerrar notificación con navegación automática
 function closeProfileNotification() {
   const overlay = document.querySelector('.profile-success-overlay');
   if (overlay) {
     overlay.style.animation = 'fadeOut 0.3s ease';
-    setTimeout(() => overlay.remove(), 300);
+    setTimeout(() => {
+      overlay.remove();
+      
+      // NAVEGACIÓN AUTOMÁTICA CRUCIAL POST-PERFIL
+      navigateToClosetOptions();
+      
+    }, 300);
   }
 }
 
-// Agregar estilos CSS necesarios
+// NAVEGACIÓN AUTOMÁTICA A OPCIONES DEL CLOSET (función crítica)
+function navigateToClosetOptions() {
+  console.log('🎯 Navegando automáticamente a opciones del closet...');
+  
+  try {
+    // 1. Ocultar formulario de perfil y bienvenida
+    const profileForm = document.getElementById('profileForm');
+    const welcomeSection = document.getElementById('welcomeSection');
+    
+    if (profileForm) profileForm.style.display = 'none';
+    if (welcomeSection) welcomeSection.style.display = 'none';
+    
+    // 2. Mostrar opciones del closet
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'block';
+      
+      // 3. SCROLL AUTOMÁTICO SUAVE A LAS OPCIONES
+      setTimeout(() => {
+        closetQuestion.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // 4. DESTACAR OPCIONES DESPUÉS DEL SCROLL
+        setTimeout(() => {
+          highlightClosetOptions();
+          setupClosetOptionButtons(); // Asegurar que los botones funcionen
+        }, 800);
+        
+      }, 500);
+    }
+    
+    // 5. Mostrar mensaje contextual
+    setTimeout(() => {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Elige tu método preferido de recomendaciones', 'info');
+      }
+    }, 1500);
+    
+    console.log('✅ Navegación automática completada');
+    
+  } catch (error) {
+    console.error('Error en navegación automática:', error);
+    
+    // Fallback: mostrar opciones sin animación
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'block';
+      setupClosetOptionButtons();
+    }
+  }
+}
+
+// DESTACAR OPCIONES DEL CLOSET VISUALMENTE
+function highlightClosetOptions() {
+  console.log('✨ Destacando opciones del closet...');
+  
+  const options = document.querySelectorAll('.closet-option');
+  
+  options.forEach((option, index) => {
+    // Animación escalonada para cada opción
+    setTimeout(() => {
+      // Efecto de pulse con escala
+      option.style.animation = 'pulse 1s ease-in-out';
+      option.style.transform = 'scale(1.05)';
+      option.style.boxShadow = '0 15px 40px rgba(59, 130, 246, 0.3)';
+      option.style.borderColor = 'var(--primary)';
+      
+      // Volver al estado normal después de la animación
+      setTimeout(() => {
+        option.style.transform = 'scale(1)';
+        option.style.boxShadow = 'none';
+        option.style.borderColor = 'var(--border)';
+      }, 1000);
+      
+    }, index * 300); // 300ms de delay entre cada opción
+  });
+  
+  // Agregar estilos de animación si no existen
+  if (!document.getElementById('highlightStyles')) {
+    const style = document.createElement('style');
+    style.id = 'highlightStyles';
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+// CONFIGURAR BOTONES DE OPCIONES DEL CLOSET
+function setupClosetOptionButtons() {
+  console.log('🔧 Configurando botones de opciones desde profile.js...');
+  
+  const enableBtn = document.getElementById('enableClosetBtn') || 
+                   document.querySelector('.closet-option:first-child');
+  const directBtn = document.getElementById('useDirectModeBtn') || 
+                   document.querySelector('.closet-option:last-child');
+  
+  if (enableBtn && directBtn) {
+    // Limpiar event listeners anteriores clonando elementos
+    const newEnableBtn = enableBtn.cloneNode(true);
+    const newDirectBtn = directBtn.cloneNode(true);
+    
+    enableBtn.parentNode.replaceChild(newEnableBtn, enableBtn);
+    directBtn.parentNode.replaceChild(newDirectBtn, directBtn);
+    
+    // MI CLOSET DIGITAL
+    newEnableBtn.onclick = function(e) {
+      e.preventDefault();
+      console.log('🎯 CLICK desde profile.js: Mi Closet Digital');
+      
+      if (typeof window.enableCloset === 'function') {
+        window.enableCloset();
+      } else {
+        enableClosetFromProfile();
+      }
+    };
+    
+    // RECOMENDACIONES RÁPIDAS
+    newDirectBtn.onclick = function(e) {
+      e.preventDefault();
+      console.log('⚡ CLICK desde profile.js: Recomendaciones Rápidas');
+      
+      if (typeof window.useDirectMode === 'function') {
+        window.useDirectMode();
+      } else {
+        useDirectModeFromProfile();
+      }
+    };
+    
+    // Mejorar estilos hover
+    [newEnableBtn, newDirectBtn].forEach(btn => {
+      btn.style.cursor = 'pointer';
+      btn.style.transition = 'all 0.3s ease';
+      
+      btn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+        this.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.2)';
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+      });
+    });
+    
+    console.log('✅ Botones configurados desde profile.js');
+    
+  } else {
+    console.warn('❌ No se encontraron botones de opciones');
+  }
+}
+
+// FALLBACK: ACTIVAR MI CLOSET DIGITAL DESDE PROFILE
+function enableClosetFromProfile() {
+  console.log('🔧 Activando Mi Closet Digital desde profile...');
+  
+  const closetQuestion = document.getElementById('closetQuestion');
+  const closetContainer = document.getElementById('closetContainer');
+  
+  if (closetQuestion) closetQuestion.style.display = 'none';
+  
+  if (closetContainer) {
+    closetContainer.style.display = 'block';
+    
+    // Configurar información del usuario
+    const userEmail = document.getElementById('userEmail');
+    if (userEmail && window.currentUser && typeof window.currentUser === 'function') {
+      const user = window.currentUser();
+      if (user) {
+        userEmail.textContent = `${user.name} (${user.email})`;
+      }
+    }
+    
+    // Scroll al closet
+    setTimeout(() => {
+      closetContainer.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+    
+    if (typeof window.showNotification === 'function') {
+      window.showNotification('Mi Closet Digital activado', 'success');
+    }
+    
+    console.log('✅ Mi Closet Digital activado desde profile');
+  }
+}
+
+// FALLBACK: ACTIVAR RECOMENDACIONES RÁPIDAS DESDE PROFILE
+function useDirectModeFromProfile() {
+  console.log('⚡ Activando Recomendaciones Rápidas desde profile...');
+  
+  const closetQuestion = document.getElementById('closetQuestion');
+  const occasionSelector = document.getElementById('occasionSelector');
+  const uploadArea = document.getElementById('uploadArea');
+  
+  if (closetQuestion) closetQuestion.style.display = 'none';
+  
+  if (occasionSelector) {
+    occasionSelector.style.display = 'block';
+  }
+  
+  if (uploadArea) {
+    uploadArea.style.display = 'block';
+    
+    // Scroll al área de upload
+    setTimeout(() => {
+      uploadArea.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+  
+  if (typeof window.showNotification === 'function') {
+    window.showNotification('Recomendaciones Rápidas activado', 'success');
+  }
+  
+  console.log('✅ Recomendaciones Rápidas activado desde profile');
+}
+
+// AGREGAR ESTILOS CSS NECESARIOS
 function addProfileStyles() {
   const existingStyle = document.getElementById('profileStyles');
   if (existingStyle) return;
@@ -227,23 +456,31 @@ function addProfileStyles() {
   document.head.appendChild(style);
 }
 
-// CONFIGURAR FORMULARIO DE PERFIL
+// CONFIGURAR FORMULARIO DE PERFIL (mejorado)
 function setupProfileForm() {
+  console.log('📋 Configurando formulario de perfil...');
+  
+  // Verificar que los elementos existen
   const profileOptions = document.querySelectorAll('.profile-option');
   const createBtn = document.getElementById('createProfileBtn');
   
-  if (profileOptions.length === 0) return false;
+  if (profileOptions.length === 0) {
+    console.warn('No se encontraron opciones de perfil');
+    return false;
+  }
   
-  console.log('Configurando formulario de perfil...');
+  // Limpiar selecciones anteriores
+  profileData = { skin_color: null, age_range: null, gender: null };
   
+  // Remover listeners anteriores clonando elementos
+  const newOptions = [];
   profileOptions.forEach(option => {
-    // Remover listeners anteriores
-    option.replaceWith(option.cloneNode(true));
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+    newOptions.push(newOption);
   });
   
-  // Reseleccionar después del clone
-  const newOptions = document.querySelectorAll('.profile-option');
-  
+  // Configurar nuevos listeners
   newOptions.forEach(option => {
     option.addEventListener('click', function(e) {
       e.preventDefault();
@@ -251,7 +488,10 @@ function setupProfileForm() {
       const field = this.dataset.field;
       const value = this.dataset.value;
       
-      if (!field || !value) return;
+      if (!field || !value) {
+        console.warn('Opción sin field o value:', this);
+        return;
+      }
       
       // Limpiar selecciones del mismo campo
       const sameFieldOptions = document.querySelectorAll(`[data-field="${field}"]`);
@@ -263,26 +503,21 @@ function setupProfileForm() {
       this.classList.add('selected');
       profileData[field] = value;
       
-      console.log('Seleccionado:', field, '=', value);
+      console.log('Selección actualizada:', field, '=', value);
       
-      // Verificar si está completo
+      // Verificar completación
       checkFormCompletion();
     });
   });
   
-  // Configurar botón de crear perfil
-  if (createBtn) {
-    createBtn.addEventListener('click', function() {
-      if (this.disabled) return;
-      
-      submitProfile();
-    });
-  }
+  // Verificar botón inicialmente
+  checkFormCompletion();
   
+  console.log('✅ Formulario de perfil configurado');
   return true;
 }
 
-// Verificar completación del formulario
+// VERIFICAR COMPLETACIÓN DEL FORMULARIO
 function checkFormCompletion() {
   const createBtn = document.getElementById('createProfileBtn');
   if (!createBtn) return;
@@ -297,607 +532,149 @@ function checkFormCompletion() {
     createBtn.style.cursor = 'pointer';
     createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
     createBtn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
+    
+    // Configurar click del botón
+    createBtn.onclick = function() {
+      if (!this.disabled) {
+        submitProfile();
+      }
+    };
+    
   } else {
     createBtn.disabled = true;
     createBtn.style.opacity = '0.6';
     createBtn.style.cursor = 'not-allowed';
     createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
-    createBtn.style.background = 'linear-gradient(135deg, var(--primary), #1d4ed8)';
+    createBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+    createBtn.onclick = null;
   }
 }
 
-// Enviar perfil
+// ENVIAR PERFIL (función principal)
 function submitProfile() {
-  console.log('Enviando perfil...', profileData);
+  console.log('📤 Enviando perfil...', profileData);
   
   try {
     // Obtener email del usuario actual
-    const email = (window.currentUser && window.currentUser()) ? 
-                  window.currentUser().email : 
-                  'default_user';
+    let email = 'default_user';
+    if (window.currentUser && typeof window.currentUser === 'function') {
+      const user = window.currentUser();
+      if (user && user.email) {
+        email = user.email;
+      }
+    }
     
-    // Guardar en localStorage
+    // Guardar datos de perfil
     localStorage.setItem(`noshopia_profile_${email}`, JSON.stringify(profileData));
     localStorage.setItem(`noshopia_profile_completed_${email}`, 'true');
     
-    console.log('Perfil guardado para:', email);
+    console.log('💾 Perfil guardado para:', email);
     
-    // Ocultar formulario
-    const profileForm = document.getElementById('profileForm');
-    const welcomeSection = document.getElementById('welcomeSection');
+    // Deshabilitar botón durante el proceso
+    const createBtn = document.getElementById('createProfileBtn');
+    if (createBtn) {
+      createBtn.disabled = true;
+      createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    }
     
-    if (profileForm) profileForm.style.display = 'none';
-    if (welcomeSection) welcomeSection.style.display = 'none';
+    // Mostrar notificación de éxito con navegación automática
+    setTimeout(() => {
+      showCustomProfileNotification();
+    }, 500);
     
-    // Mostrar siguiente paso
-    const closetQuestion = document.getElementById('closetQuestion');
-    if (closetQuestion) closetQuestion.style.display = 'block';
-    
-    // Mostrar notificación de éxito
-    showCustomProfileNotification();
-    
-    console.log('Perfil completado exitosamente');
+    console.log('✅ Perfil completado exitosamente');
     
   } catch (error) {
-    console.error('Error guardando perfil:', error);
-    window.showNotification('Error al guardar perfil', 'error');
+    console.error('❌ Error guardando perfil:', error);
+    
+    if (typeof window.showNotification === 'function') {
+      window.showNotification('Error al guardar perfil. Intenta de nuevo.', 'error');
+    }
+    
+    // Rehabilitar botón
+    const createBtn = document.getElementById('createProfileBtn');
+    if (createBtn) {
+      createBtn.disabled = false;
+      createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Completar Perfil';
+    }
   }
 }
 
-// Cargar perfil existente
-function loadExistingProfile() {
-  if (!window.currentUser || !window.currentUser()) return;
+// CARGAR PERFIL EXISTENTE
+function loadExistingProfile(email) {
+  if (!email) return false;
   
-  const email = window.currentUser().email;
-  const savedProfile = localStorage.getItem(`noshopia_profile_${email}`);
-  
-  if (savedProfile) {
-    try {
+  try {
+    const savedProfile = localStorage.getItem(`noshopia_profile_${email}`);
+    if (savedProfile) {
       profileData = JSON.parse(savedProfile);
-      console.log('Perfil cargado:', profileData);
+      console.log('📂 Perfil existente cargado:', profileData);
       return true;
-    } catch (error) {
-      console.error('Error cargando perfil:', error);
     }
+  } catch (error) {
+    console.error('Error cargando perfil existente:', error);
   }
   
   return false;
 }
 
-// Inicializar sistema de perfiles
+// INICIALIZACIÓN DEL SISTEMA DE PERFILES
 function initializeProfileSystem() {
-  console.log('Inicializando sistema de perfiles...');
+  console.log('🚀 Inicializando sistema de perfiles...');
   
   // Agregar estilos
   addProfileStyles();
   
-  // Intentar configurar formulario
-  let attempts = 0;
-  const maxAttempts = 5;
+  // Configurar formulario si está visible
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm && profileForm.style.display !== 'none') {
+    setTimeout(() => {
+      setupProfileForm();
+    }, 500);
+  }
   
-  const setupInterval = setInterval(() => {
-    attempts++;
-    
-    if (setupProfileForm()) {
-      console.log('Formulario de perfil configurado exitosamente');
-      clearInterval(setupInterval);
-    } else if (attempts >= maxAttempts) {
-      console.log('No se pudo configurar el formulario después de', maxAttempts, 'intentos');
-      clearInterval(setupInterval);
-    }
-  }, 1000);
+  console.log('✅ Sistema de perfiles inicializado');
 }
 
-// Observer para detectar cuando aparece el formulario
+// OBSERVER PARA DETECTAR CUANDO APARECE EL FORMULARIO
 const profileObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type === 'attributes' && 
         mutation.target.id === 'profileForm' && 
         mutation.target.style.display === 'block') {
       
-      console.log('Formulario de perfil detectado');
-      setTimeout(setupProfileForm, 200);
+      console.log('👁️ Formulario de perfil detectado visible');
+      setTimeout(() => {
+        setupProfileForm();
+      }, 200);
     }
   });
 });
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('profile.js cargado');
-  
-  setTimeout(initializeProfileSystem, 500);
-  
-  // Iniciar observer
-  profileObserver.observe(document.body, {
-    attributes: true,
-    subtree: true,
-    attributeFilter: ['style']
-  });
-});
-
-// Exponer funciones globalmente si es necesario
-window.showCustomProfileNotification = showCustomProfileNotification;
-window.submitProfile = submitProfile;
-window.loadExistingProfile = loadExistingProfile;
-
-console.log('🔧 Iniciando solución de botones...');
-
-// FUNCIÓN PRINCIPAL PARA ACTIVAR BOTONES
-function activatePostLoginButtons() {
-  console.log('🎯 Activando botones post-login...');
-  
-  // FORZAR configuración de botones con retry
-  let attempts = 0;
-  const maxAttempts = 10;
-  
-  const setupInterval = setInterval(() => {
-    attempts++;
-    console.log(`🔄 Intento ${attempts}/${maxAttempts} - configurando botones...`);
-    
-    // Buscar botones por múltiples métodos
-    const enableBtn = document.getElementById('enableClosetBtn') || 
-                      document.querySelector('[id*="closet"]') ||
-                      document.querySelector('.closet-option:first-child');
-                      
-    const directBtn = document.getElementById('useDirectModeBtn') ||
-                      document.querySelector('[id*="direct"]') ||
-                      document.querySelector('.closet-option:last-child');
-    
-    console.log('Botones encontrados:', { enableBtn: !!enableBtn, directBtn: !!directBtn });
-    
-    if (enableBtn && directBtn) {
-      // CONFIGURAR BOTÓN MI CLOSET DIGITAL
-      const newEnableBtn = enableBtn.cloneNode(true);
-      enableBtn.parentNode.replaceChild(newEnableBtn, enableBtn);
-      
-      newEnableBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🎯 CLICK: Mi Closet Digital');
-        
-        try {
-          // Ejecutar función desde closet.js
-          if (typeof window.enableCloset === 'function') {
-            window.enableCloset();
-          } else if (typeof enableCloset === 'function') {
-            enableCloset();
-          } else {
-            // Fallback manual
-            enableClosetManual();
-          }
-        } catch (error) {
-          console.error('Error en enableCloset:', error);
-          enableClosetManual();
-        }
-      });
-      
-      // CONFIGURAR BOTÓN RECOMENDACIONES RÁPIDAS
-      const newDirectBtn = directBtn.cloneNode(true);
-      directBtn.parentNode.replaceChild(newDirectBtn, directBtn);
-      
-      newDirectBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🎯 CLICK: Recomendaciones Rápidas');
-        
-        try {
-          // Ejecutar función desde closet.js
-          if (typeof window.useDirectMode === 'function') {
-            window.useDirectMode();
-          } else if (typeof useDirectMode === 'function') {
-            useDirectMode();
-          } else {
-            // Fallback manual
-            useDirectModeManual();
-          }
-        } catch (error) {
-          console.error('Error en useDirectMode:', error);
-          useDirectModeManual();
-        }
-      });
-      
-      // Marcar como configurados
-      newEnableBtn.setAttribute('data-configured', 'true');
-      newDirectBtn.setAttribute('data-configured', 'true');
-      
-      // Mejorar estilos visuales
-      [newEnableBtn, newDirectBtn].forEach(btn => {
-        btn.style.cursor = 'pointer';
-        btn.style.transition = 'all 0.3s ease';
-        
-        btn.addEventListener('mouseenter', function() {
-          this.style.transform = 'translateY(-5px)';
-          this.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.3)';
-        });
-        
-        btn.addEventListener('mouseleave', function() {
-          this.style.transform = 'translateY(0)';
-          this.style.boxShadow = 'none';
-        });
-      });
-      
-      clearInterval(setupInterval);
-      console.log('✅ Botones configurados exitosamente');
-      showNotificationSafe('Botones activados correctamente', 'success');
-      
-    } else if (attempts >= maxAttempts) {
-      clearInterval(setupInterval);
-      console.log('⚠️ Máximo de intentos alcanzado - configuración parcial');
-    }
-  }, 500);
-}
-
-// FALLBACK MANUAL PARA MI CLOSET DIGITAL
-function enableClosetManual() {
-  console.log('🔧 Ejecutando enableCloset manual...');
-  
-  try {
-    // Ocultar pregunta del closet
-    const closetQuestion = document.getElementById('closetQuestion');
-    if (closetQuestion) {
-      closetQuestion.style.display = 'none';
-    }
-    
-    // Mostrar contenedor del closet
-    const closetContainer = document.getElementById('closetContainer');
-    if (closetContainer) {
-      closetContainer.style.display = 'block';
-      
-      // Configurar email del usuario
-      const userEmail = document.getElementById('userEmail');
-      if (userEmail) {
-        const user = getCurrentUserSafe();
-        userEmail.textContent = user && user.email ? user.email : 'Usuario';
-      }
-      
-      // Activar primera pestaña
-      showClosetTabManual('superiores');
-      
-      showNotificationSafe('Mi Closet Digital activado', 'success');
-    } else {
-      console.error('No se encontró closetContainer');
-      showNotificationSafe('Error: No se pudo activar el closet', 'error');
-    }
-  } catch (error) {
-    console.error('Error en enableClosetManual:', error);
-    showNotificationSafe('Error activando closet', 'error');
-  }
-}
-
-// FALLBACK MANUAL PARA RECOMENDACIONES RÁPIDAS
-function useDirectModeManual() {
-  console.log('🔧 Ejecutando useDirectMode manual...');
-  
-  try {
-    // Ocultar pregunta del closet
-    const closetQuestion = document.getElementById('closetQuestion');
-    if (closetQuestion) {
-      closetQuestion.style.display = 'none';
-    }
-    
-    // Mostrar selector de ocasiones
-    const occasionSelector = document.getElementById('occasionSelector');
-    if (occasionSelector) {
-      occasionSelector.style.display = 'block';
-      setupOccasionButtonsManual();
-    }
-    
-    // Mostrar área de upload
-    const uploadArea = document.getElementById('uploadArea');
-    if (uploadArea) {
-      uploadArea.style.display = 'block';
-      setupFileInputsManual();
-    }
-    
-    showNotificationSafe('Recomendaciones Rápidas activado', 'success');
-    
-  } catch (error) {
-    console.error('Error en useDirectModeManual:', error);
-    showNotificationSafe('Error activando modo directo', 'error');
-  }
-}
-
-// CONFIGURAR PESTAÑAS DEL CLOSET MANUAL
-function showClosetTabManual(tabId) {
-  console.log('📂 Mostrando pestaña manual:', tabId);
-  
-  // Ocultar todas las pestañas
-  document.querySelectorAll('.closet-tab-content').forEach(content => {
-    content.style.display = 'none';
-  });
-  
-  // Remover clase active
-  document.querySelectorAll('.closet-tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  // Mostrar pestaña seleccionada
-  const selectedContent = document.getElementById(tabId);
-  if (selectedContent) {
-    selectedContent.style.display = 'block';
-  }
-  
-  // Activar tab
-  const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-  if (selectedTab) {
-    selectedTab.classList.add('active');
-  }
-  
-  // Configurar clicks en pestañas
-  document.querySelectorAll('.closet-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      const newTabId = this.dataset.tab;
-      if (newTabId) {
-        showClosetTabManual(newTabId);
-      }
-    });
-  });
-}
-
-// CONFIGURAR BOTONES DE OCASIÓN MANUAL
-function setupOccasionButtonsManual() {
-  console.log('🎯 Configurando botones de ocasión manual...');
-  
-  const occasionBtns = document.querySelectorAll('.occasion-btn');
-  
-  occasionBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      // Remover selección anterior
-      occasionBtns.forEach(b => {
-        b.classList.remove('selected');
-        b.style.borderColor = 'var(--border)';
-        b.style.background = 'var(--background)';
-      });
-      
-      // Seleccionar actual
-      this.classList.add('selected');
-      this.style.borderColor = 'var(--primary)';
-      this.style.background = 'rgba(59, 130, 246, 0.1)';
-      
-      // Guardar ocasión
-      const occasion = this.dataset.occasion;
-      window.selectedOccasion = occasion;
-      
-      console.log('Ocasión seleccionada:', occasion);
-      showNotificationSafe(`Ocasión: ${occasion}`, 'success');
-      
-      // Actualizar botón de generar
-      updateGenerateButtonManual();
-    });
-  });
-}
-
-// CONFIGURAR FILE INPUTS MANUAL
-function setupFileInputsManual() {
-  console.log('📁 Configurando file inputs manual...');
-  
-  const inputs = ['tops-upload', 'bottoms-upload', 'shoes-upload'];
-  
-  inputs.forEach(inputId => {
-    const input = document.getElementById(inputId);
-    if (input) {
-      input.addEventListener('change', function(e) {
-        const type = inputId.split('-')[0]; // tops, bottoms, shoes
-        handleFileUploadManual(type, this);
-      });
-    }
-  });
-}
-
-// MANEJAR UPLOAD DE ARCHIVOS MANUAL
-function handleFileUploadManual(type, input) {
-  const files = Array.from(input.files);
-  if (files.length === 0) return;
-  
-  console.log(`📷 Archivos para ${type}:`, files.length);
-  
-  // Inicializar arrays globales
-  if (!window.uploadedFiles) window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  if (!window.uploadedImages) window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
-  
-  // Limpiar archivos anteriores
-  window.uploadedFiles[type] = [];
-  window.uploadedImages[type] = [];
-  
-  let processed = 0;
-  
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      window.uploadedFiles[type].push(file);
-      window.uploadedImages[type].push(e.target.result);
-      
-      processed++;
-      if (processed === files.length) {
-        updatePreviewManual(type);
-        updateGenerateButtonManual();
-        showNotificationSafe(`${files.length} archivo(s) agregado(s)`, 'success');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// ACTUALIZAR PREVIEW MANUAL
-function updatePreviewManual(type) {
-  const previewContainer = document.getElementById(`${type}-preview`);
-  if (!previewContainer || !window.uploadedImages) return;
-  
-  const images = window.uploadedImages[type] || [];
-  
-  previewContainer.innerHTML = images.map((imageUrl, index) => `
-    <div style="position: relative; display: inline-block; margin: 5px;">
-      <img src="${imageUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 2px solid var(--primary);">
-      <button onclick="removeImageManual('${type}', ${index})" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px;">×</button>
-    </div>
-  `).join('');
-}
-
-// REMOVER IMAGEN MANUAL
-function removeImageManual(type, index) {
-  if (window.uploadedFiles && window.uploadedFiles[type]) {
-    window.uploadedFiles[type].splice(index, 1);
-    window.uploadedImages[type].splice(index, 1);
-    
-    updatePreviewManual(type);
-    updateGenerateButtonManual();
-    showNotificationSafe('Imagen eliminada', 'info');
-  }
-}
-
-// ACTUALIZAR BOTÓN DE GENERAR MANUAL
-function updateGenerateButtonManual() {
-  const generateBtn = document.getElementById('generateBtn');
-  if (!generateBtn) return;
-  
-  const hasOccasion = window.selectedOccasion;
-  
-  let hasAllFiles = false;
-  if (window.uploadedFiles) {
-    const hasTops = window.uploadedFiles.tops && window.uploadedFiles.tops.length > 0;
-    const hasBottoms = window.uploadedFiles.bottoms && window.uploadedFiles.bottoms.length > 0;
-    const hasShoes = window.uploadedFiles.shoes && window.uploadedFiles.shoes.length > 0;
-    hasAllFiles = hasTops && hasBottoms && hasShoes;
-  }
-  
-  if (hasOccasion && hasAllFiles) {
-    generateBtn.disabled = false;
-    generateBtn.style.opacity = '1';
-    generateBtn.style.cursor = 'pointer';
-    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
-    
-    // Configurar click del botón generar
-    generateBtn.onclick = function() {
-      console.log('🚀 Generando recomendaciones...');
-      
-      if (typeof window.getRecommendation === 'function') {
-        window.getRecommendation();
-      } else {
-        showNotificationSafe('Generando recomendaciones...', 'info');
-        // Aquí puedes agregar la lógica de generación
-      }
-    };
-    
-  } else {
-    generateBtn.disabled = true;
-    generateBtn.style.opacity = '0.6';
-    generateBtn.style.cursor = 'not-allowed';
-    
-    if (!hasOccasion) {
-      generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
-    } else {
-      generateBtn.innerHTML = '<i class="fas fa-upload"></i> Sube fotos de cada categoría';
-    }
-  }
-}
-
-// FUNCIÓN DE NOTIFICACIÓN SEGURA
-function showNotificationSafe(message, type = 'info') {
-  console.log(`📢 ${type.toUpperCase()}: ${message}`);
-  
-  try {
-    if (typeof window.showNotification === 'function') {
-      window.showNotification(message, type);
-      return;
-    }
-    
-    // Crear notificación propia
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      z-index: 10000;
-      font-weight: 600;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      max-width: 300px;
-    `;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 3000);
-    
-  } catch (error) {
-    console.error('Error mostrando notificación:', error);
-  }
-}
-
-// OBTENER USUARIO ACTUAL SEGURO
-function getCurrentUserSafe() {
-  try {
-    if (window.currentUser && typeof window.currentUser === 'object') {
-      return window.currentUser;
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-}
 
 // EXPONER FUNCIONES GLOBALMENTE
-window.activatePostLoginButtons = activatePostLoginButtons;
-window.removeImageManual = removeImageManual;
+window.setupProfileForm = setupProfileForm;
+window.submitProfile = submitProfile;
+window.loadExistingProfile = loadExistingProfile;
+window.navigateToClosetOptions = navigateToClosetOptions;
 
-// AUTO-INICIALIZACIÓN CON OBSERVERS
-const initObserver = new MutationObserver(() => {
-  const closetQuestion = document.getElementById('closetQuestion');
-  if (closetQuestion && closetQuestion.style.display === 'block') {
-    console.log('👁️ Observer detectó closetQuestion visible');
-    setTimeout(activatePostLoginButtons, 200);
-  }
-});
-
-// Iniciar observer
-setTimeout(() => {
-  const body = document.body;
-  if (body) {
-    initObserver.observe(body, {
-      childList: true,
-      subtree: true,
+// INICIALIZACIÓN PRINCIPAL
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('📄 profile.js cargando...');
+  
+  // Inicializar sistema
+  setTimeout(initializeProfileSystem, 100);
+  
+  // Iniciar observer
+  if (document.body) {
+    profileObserver.observe(document.body, {
       attributes: true,
+      subtree: true,
       attributeFilter: ['style']
     });
-    console.log('👁️ Observer iniciado para detectar cambios');
+    console.log('👁️ Observer de perfil iniciado');
   }
-}, 1000);
-
-// MODIFICAR LA FUNCIÓN submitUserProfile EN profile.js
-// Agregar al final de la función existente:
-function enhanceSubmitUserProfile() {
-  // Buscar la función original
-  const originalSubmit = window.submitUserProfile;
   
-  if (originalSubmit) {
-    window.submitUserProfile = function() {
-      // Ejecutar función original
-      const result = originalSubmit.apply(this, arguments);
-      
-      // CRÍTICO: Activar botones después del perfil
-      setTimeout(() => {
-        console.log('🎯 Activando botones post-perfil...');
-        activatePostLoginButtons();
-      }, 1000);
-      
-      return result;
-    };
-    
-    console.log('✅ submitUserProfile mejorado para activar botones');
-  }
-}
+  console.log('✅ profile.js cargado completamente');
+});
 
-// Ejecutar mejora cuando el DOM esté listo
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', enhanceSubmitUserProfile);
-} else {
-  enhanceSubmitUserProfile();
-}
-console.log('✅ profile.js - Sistema de Perfiles cargado');
+console.log('✅ profile.js - Sistema de Perfilamiento Corregido cargado');
