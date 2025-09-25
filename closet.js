@@ -1,6 +1,13 @@
-// closet.js - Sistema Inteligente con Detección IA Alineado con Backend
+// closet.js - Sistema Completo del Closet con Detección IA
+// Versión corregida y robusta para NoshopiA
 
-// CATEGORÍAS INTELIGENTES EXACTAS DEL BACKEND (clip_services_local.py)
+console.log('🚀 Iniciando sistema completo del closet...');
+
+// =======================================================
+// CONFIGURACIÓN Y VARIABLES GLOBALES
+// =======================================================
+
+// CATEGORÍAS INTELIGENTES EXACTAS DEL BACKEND
 const INTELLIGENT_CATEGORIES = {
   tops: {
     "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top"], color: "#10b981" },
@@ -30,40 +37,173 @@ const INTELLIGENT_CATEGORIES = {
   }
 };
 
-// MAPEO DE TRADUCCIÓN DEL BACKEND (CATEGORY_TRANSLATION)
-const BACKEND_CATEGORY_MAPPING = {
-  // TOPS
-  "t-shirt": "tshirt", "graphic t-shirt": "tshirt", "tank top": "tshirt",
-  "shirt": "shirt", "dress shirt": "shirt", 
-  "blouse": "blouse", "silk blouse": "blouse",
-  "sweater": "sweater", "knitted sweater": "sweater", "wool pullover": "sweater", "cardigan": "sweater",
-  "hoodie": "hoodie", "zip-up hoodie": "hoodie", "sweatshirt": "hoodie",
-  "jacket": "jacket", "leather jacket": "jacket", "denim jacket": "jacket", "blazer": "jacket",
-  "coat": "coat", "winter coat": "coat", "overcoat": "coat", "trench": "coat",
-  "dress": "dress", "summer dress": "dress", "evening dress": "dress", "gown": "dress",
-  "vest": "vest",
-  
-  // BOTTOMS
-  "jeans": "jeans", "blue denim jeans": "jeans", "ripped jeans": "jeans",
-  "pants": "pants", "trousers": "pants", "dress pants": "pants", "formal pants": "pants", "chinos": "pants", "slacks": "pants",
-  "skirt": "skirt", "midi skirt": "skirt", "pencil skirt": "skirt", "mini skirt": "skirt",
-  "shorts": "shorts", "athletic shorts": "shorts", "bermuda": "shorts",
-  "leggings": "leggings", "sweatpants": "leggings", "athletic pants": "leggings", "yoga pants": "leggings",
-  
-  // SHOES
-  "sneakers": "sneakers", "running shoes": "sneakers", "athletic shoes": "sneakers", "trainers": "sneakers",
-  "dress shoes": "dress_shoes", "leather shoes": "dress_shoes", "formal shoes": "dress_shoes", "oxfords": "dress_shoes", "shoes": "dress_shoes",
-  "boots": "boots", "ankle boots": "boots", "hiking boots": "boots", "combat boots": "boots",
-  "heels": "heels", "stiletto heels": "heels", "pumps": "heels", "high heels": "heels",
-  "sandals": "sandals", "leather sandals": "sandals", "flip flops": "sandals",
-  "flats": "flats", "ballet flats": "flats", "loafers": "flats"
+// CONFIGURACIÓN GLOBAL (con valores por defecto seguros)
+const CONFIG = window.CONFIG || {
+  TOTAL_CLOSET_LIMIT: 15,
+  FILE_LIMITS: { tops: 3, bottoms: 3, shoes: 5 },
+  API_BASE: 'https://api.noshopia.com'
 };
 
-// Variables del sistema inteligente (usando variables globales unificadas)
+// Variables del sistema de closet
+let closetMode = false;
 let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
 let selectedClosetItems = { tops: new Set(), bottoms: new Set(), shoes: new Set() };
 let closetSelectionMode = false;
 let activeClosetType = 'tops';
+
+// Variables globales de estado (con inicialización segura)
+let currentUser = null;
+let isLoggedIn = false;
+let selectedOccasion = null;
+let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+let uploadedImages = { tops: [], bottoms: [], shoes: [] };
+let closetItems = { tops: [], bottoms: [], shoes: [] };
+let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+
+// =======================================================
+// FUNCIONES AUXILIARES Y UTILIDADES
+// =======================================================
+
+// Función de notificación robusta
+function showNotification(message, type = 'info') {
+  console.log(`📢 ${type.toUpperCase()}: ${message}`);
+  
+  try {
+    // Intentar usar la función global si existe
+    if (typeof window.showNotification === 'function') {
+      return window.showNotification(message, type);
+    }
+    
+    // Crear notificación propia si no existe
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      z-index: 10000;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: slideInRight 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    // Agregar animación si no existe
+    if (!document.getElementById('notificationStyles')) {
+      const style = document.createElement('style');
+      style.id = 'notificationStyles';
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Error mostrando notificación:', error);
+  }
+}
+
+// Obtener usuario actual de manera segura
+function getCurrentUser() {
+  try {
+    if (typeof window.currentUser === 'function') {
+      return window.currentUser();
+    } else if (window.currentUser && typeof window.currentUser === 'object') {
+      return window.currentUser;
+    } else {
+      return currentUser;
+    }
+  } catch (error) {
+    console.warn('Error obteniendo usuario:', error);
+    return null;
+  }
+}
+
+// Verificar si está logueado de manera segura
+function checkIsLoggedIn() {
+  try {
+    if (typeof window.isLoggedIn === 'function') {
+      return window.isLoggedIn();
+    } else if (typeof window.isLoggedIn === 'boolean') {
+      return window.isLoggedIn;
+    } else {
+      const user = getCurrentUser();
+      return user && user.email;
+    }
+  } catch (error) {
+    console.warn('Error verificando login:', error);
+    return false;
+  }
+}
+
+// Obtener ocasión seleccionada de manera segura
+function getSelectedOccasion() {
+  try {
+    if (typeof window.selectedOccasion === 'function') {
+      return window.selectedOccasion();
+    } else if (window.selectedOccasion) {
+      return window.selectedOccasion;
+    } else {
+      return selectedOccasion;
+    }
+  } catch (error) {
+    console.warn('Error obteniendo ocasión:', error);
+    return null;
+  }
+}
+
+// Obtener espacios restantes en el closet
+function getRemainingClosetSlots() {
+  const total = getTotalClosetItems();
+  return Math.max(0, CONFIG.TOTAL_CLOSET_LIMIT - total);
+}
+
+// Obtener total de items en closet
+function getTotalClosetItems() {
+  let total = 0;
+  ['tops', 'bottoms', 'shoes'].forEach(type => {
+    if (closetItems[type] && Array.isArray(closetItems[type])) {
+      total += closetItems[type].length;
+    }
+    // También contar items inteligentes
+    if (intelligentClosetItems[type]) {
+      Object.values(intelligentClosetItems[type]).forEach(category => {
+        if (Array.isArray(category)) {
+          total += category.length;
+        }
+      });
+    }
+  });
+  return total;
+}
+
+// Convertir archivo a Data URL
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// =======================================================
+// SISTEMA DE DETECCIÓN IA
+// =======================================================
 
 // DETECCIÓN AUTOMÁTICA DE PRENDAS ALINEADA CON BACKEND
 async function simulateAIDetection(file) {
@@ -130,22 +270,15 @@ async function simulateAIDetection(file) {
   
   console.log(`🎯 IA detectó: ${detectedItem} (${detectedType}/${detectedCategory}) - Confianza: ${Math.round(confidence * 100)}%`);
   
+  // Simular tiempo de procesamiento
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
   return {
     type: detectedType,
     category: detectedCategory,
     item: detectedItem,
     confidence
   };
-}
-
-// Convertir archivo a Data URL
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 // CATEGORIZAR PRENDA INTELIGENTEMENTE
@@ -167,6 +300,10 @@ function categorizeIntelligentItem(type, categoryId, detectedItem, imageUrl, fil
   intelligentClosetItems[type][categoryId].push(item);
   
   // TAMBIÉN agregar a arrays globales para compatibilidad
+  if (!uploadedFiles[type]) uploadedFiles[type] = [];
+  if (!uploadedImages[type]) uploadedImages[type] = [];
+  if (!closetItems[type]) closetItems[type] = [];
+  
   uploadedFiles[type].push(file);
   uploadedImages[type].push(imageUrl);
   closetItems[type].push(imageUrl);
@@ -175,25 +312,45 @@ function categorizeIntelligentItem(type, categoryId, detectedItem, imageUrl, fil
   return item;
 }
 
+// =======================================================
+// SISTEMA DE NAVEGACIÓN Y UI
+// =======================================================
+
 // NAVEGACIÓN AUTOMÁTICA AL TIPO DETECTADO
 function navigateToDetectedType(type) {
   console.log(`📍 Navegando automáticamente a: ${type}`);
   
-  // Cambiar pestaña activa
-  document.querySelectorAll('.closet-tab').forEach(tab => tab.classList.remove('active'));
-  const targetTab = document.querySelector(`[data-tab="${type === 'tops' ? 'superiores' : type === 'bottoms' ? 'inferiores' : 'calzado'}"]`);
-  if (targetTab) {
-    targetTab.classList.add('active');
+  try {
+    // Cambiar pestaña activa
+    document.querySelectorAll('.closet-tab').forEach(tab => tab.classList.remove('active'));
+    
+    const tabMap = { 'tops': 'superiores', 'bottoms': 'inferiores', 'shoes': 'calzado' };
+    const targetTab = document.querySelector(`[data-tab="${tabMap[type]}"]`);
+    if (targetTab) {
+      targetTab.classList.add('active');
+    }
+    
+    // Mostrar contenido de pestaña
+    document.querySelectorAll('.closet-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    
+    const targetContent = document.getElementById(tabMap[type]);
+    if (targetContent) {
+      targetContent.style.display = 'block';
+    }
+    
+    // Actualizar tipo activo
+    activeClosetType = type;
+    
+    // Renderizar categorías
+    renderIntelligentCategories();
+    
+    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
+    showNotification(`📍 Navegando a ${typeNames[type]}`, 'info');
+  } catch (error) {
+    console.error('Error navegando:', error);
   }
-  
-  // Actualizar tipo activo
-  activeClosetType = type;
-  
-  // Renderizar categorías
-  renderIntelligentCategories();
-  
-  const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-  window.showNotification(`📍 Navegando a ${typeNames[type]}`, 'info');
 }
 
 // UPLOAD INTELIGENTE CON IA (función principal)
@@ -201,35 +358,20 @@ async function handleIntelligentUpload(event) {
   const files = Array.from(event.target.files);
   if (files.length === 0) return;
   
-  // Verificar límites usando función unificada
-  const remaining = window.getRemainingClosetSlots();
+  // Verificar límites
+  const remaining = getRemainingClosetSlots();
   if (files.length > remaining) {
-    window.showNotification(`Solo puedes subir ${remaining} prendas más`, 'error');
+    showNotification(`Solo puedes subir ${remaining} prendas más`, 'error');
     event.target.value = '';
     return;
   }
   
-  // Activar indicadores de IA
-  const aiStatus = document.getElementById('aiDetectionStatus');
-  const autoNav = document.getElementById('autoNavigation');
-  const progressBar = document.getElementById('aiProgressBar');
-  const statusText = document.getElementById('aiStatusText');
-  const autoNavText = document.getElementById('autoNavText');
-  
-  if (aiStatus) aiStatus.classList.add('active');
-  if (progressBar) progressBar.style.width = '0%';
-  
-  window.showNotification('🤖 IA analizando y categorizando prendas...', 'info');
+  showNotification('🤖 IA analizando y categorizando prendas...', 'info');
   
   let detectedTypes = new Set();
   
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    const progress = ((i + 1) / files.length) * 100;
-    
-    // Actualizar progreso
-    if (statusText) statusText.textContent = `Analizando prenda ${i + 1} de ${files.length}...`;
-    if (progressBar) progressBar.style.width = progress + '%';
     
     try {
       // DETECCIÓN IA
@@ -242,56 +384,44 @@ async function handleIntelligentUpload(event) {
       // CATEGORIZAR AUTOMÁTICAMENTE
       categorizeIntelligentItem(detectionResult.type, detectionResult.category, detectionResult.item, imageUrl, file);
       
-      // Mostrar navegación automática
-      if (autoNav && autoNavText) {
-        autoNav.classList.add('show');
-        autoNavText.textContent = `IA detectó: ${detectionResult.item} (${Math.round(detectionResult.confidence * 100)}% confianza)`;
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 800)); // Pausa visual
-      
     } catch (error) {
       console.error('Error en detección IA:', error);
-      window.showNotification(`Error procesando ${file.name}`, 'error');
+      showNotification(`Error procesando ${file.name}`, 'error');
     }
   }
   
   // Navegación automática al tipo más común detectado
   if (detectedTypes.size > 0) {
-    const mostCommonType = Array.from(detectedTypes)[0]; // Tomar el primero
+    const mostCommonType = Array.from(detectedTypes)[0];
     setTimeout(() => {
       navigateToDetectedType(mostCommonType);
     }, 1500);
   }
   
   // Finalizar proceso
-  setTimeout(() => {
-    if (aiStatus) aiStatus.classList.remove('active');
-    if (autoNav) autoNav.classList.remove('show');
-    finishIntelligentUpload(files.length);
-  }, 2500);
+  finishIntelligentUpload(files.length);
   
   event.target.value = '';
 }
 
 // FINALIZAR UPLOAD INTELIGENTE
 function finishIntelligentUpload(count) {
-  // Guardar datos usando función unificada
-  window.saveUserClosetData();
+  // Guardar datos
+  saveUserClosetData();
   
   // Actualizar UI
   updateIntelligentClosetUI();
   renderIntelligentCategories();
   
-  const remaining = window.getRemainingClosetSlots();
-  window.showNotification(`🤖 ${count} prenda${count !== 1 ? 's' : ''} detectada${count !== 1 ? 's' : ''} y categorizada${count !== 1 ? 's' : ''} automáticamente! Quedan ${remaining} espacios.`, 'success');
+  const remaining = getRemainingClosetSlots();
+  showNotification(`🤖 ${count} prenda${count !== 1 ? 's' : ''} detectada${count !== 1 ? 's' : ''} y categorizada${count !== 1 ? 's' : ''} automáticamente! Quedan ${remaining} espacios.`, 'success');
 }
 
 // RENDERIZAR CATEGORÍAS INTELIGENTES
 function renderIntelligentCategories() {
   const container = document.getElementById('intelligentCategories');
   if (!container) {
-    console.log('Contenedor intelligentCategories no encontrado, usando sistema de pestañas estándar');
+    console.log('Contenedor intelligentCategories no encontrado');
     return;
   }
   
@@ -319,7 +449,7 @@ function renderIntelligentCategories() {
     const allAiDetected = categoryItems.every(item => item.aiDetected);
     
     html += `
-      <div class="smart-category ${categoryItems.length > 0 ? 'has-items' : ''} ${allAiDetected ? 'auto-detected' : ''}" style="background: white; border: 1px solid #e5e7eb; border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem;">
+      <div class="smart-category" style="background: white; border: 1px solid #e5e7eb; border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem;">
         <div class="category-header" style="display: flex; align-items: center; margin-bottom: 1rem;">
           <div class="category-icon" style="background: ${categoryInfo.color}; color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-right: 1rem;">
             ${categoryInfo.icon}
@@ -354,26 +484,30 @@ function renderIntelligentCategories() {
   updateSelectionUI();
 }
 
+// =======================================================
+// SISTEMA DE SELECCIÓN Y GENERACIÓN
+// =======================================================
+
 // SISTEMA DE SELECCIÓN MEJORADO
-window.toggleItemSelection = function(type, itemId) {
+function toggleItemSelection(type, itemId) {
   const selectedSet = selectedClosetItems[type];
   
   if (selectedSet.has(itemId)) {
     // DESELECCIONAR
     selectedSet.delete(itemId);
-    window.showNotification('Prenda deseleccionada', 'info');
+    showNotification('Prenda deseleccionada', 'info');
   } else {
     // SELECCIONAR
     selectedSet.add(itemId);
-    window.showNotification('Prenda seleccionada', 'success');
+    showNotification('Prenda seleccionada', 'success');
   }
   
   renderIntelligentCategories();
   updateIntelligentGenerateButton();
-};
+}
 
 // ELIMINAR PRENDA DEL CLOSET INTELIGENTE
-window.removeIntelligentItem = function(type, categoryId, index) {
+function removeIntelligentItem(type, categoryId, index) {
   const categoryInfo = INTELLIGENT_CATEGORIES[type][categoryId];
   const itemName = categoryInfo ? categoryInfo.name : categoryId;
   
@@ -401,21 +535,21 @@ window.removeIntelligentItem = function(type, categoryId, index) {
   }
   
   // Guardar y actualizar
-  window.saveUserClosetData();
+  saveUserClosetData();
   updateIntelligentClosetUI();
   renderIntelligentCategories();
   
-  window.showNotification(`Prenda eliminada de ${itemName}`, 'info');
-};
+  showNotification(`Prenda eliminada de ${itemName}`, 'info');
+}
 
 // ACTUALIZAR UI DEL CLOSET INTELIGENTE
 function updateIntelligentClosetUI() {
-  const total = getTotalIntelligentClosetItems();
+  const total = getTotalClosetItems();
   const remaining = Math.max(0, CONFIG.TOTAL_CLOSET_LIMIT - total);
   
   // Actualizar contadores de navegación
   ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const count = Object.values(intelligentClosetItems[type]).reduce((sum, category) => sum + category.length, 0);
+    const count = Object.values(intelligentClosetItems[type]).reduce((sum, category) => sum + (Array.isArray(category) ? category.length : 0), 0);
     const badge = document.getElementById(`${type}CountNav`);
     if (badge) {
       badge.textContent = count;
@@ -427,17 +561,6 @@ function updateIntelligentClosetUI() {
   updateSelectionUI();
   
   console.log(`📊 Closet Inteligente: ${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas`);
-}
-
-// OBTENER TOTAL DE ITEMS EN CLOSET INTELIGENTE
-function getTotalIntelligentClosetItems() {
-  let total = 0;
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    Object.values(intelligentClosetItems[type]).forEach(category => {
-      total += category.length;
-    });
-  });
-  return total;
 }
 
 // ACTUALIZAR UI DE SELECCIONES
@@ -461,7 +584,9 @@ function updateIntelligentGenerateButton() {
                        selectedClosetItems.bottoms.size > 0 && 
                        selectedClosetItems.shoes.size > 0;
   
-  if (hasSelections && window.selectedOccasion && window.selectedOccasion()) {
+  const occasion = getSelectedOccasion();
+  
+  if (hasSelections && occasion) {
     const totalCombinations = selectedClosetItems.tops.size * selectedClosetItems.bottoms.size * selectedClosetItems.shoes.size;
     btn.disabled = false;
     btn.style.opacity = '1';
@@ -469,7 +594,7 @@ function updateIntelligentGenerateButton() {
   } else {
     btn.disabled = true;
     btn.style.opacity = '0.6';
-    if (!window.selectedOccasion || !window.selectedOccasion()) {
+    if (!occasion) {
       btn.innerHTML = '<i class="fas fa-magic"></i> Selecciona una ocasión primero';
     } else {
       btn.innerHTML = '<i class="fas fa-magic"></i> Selecciona al menos 1 prenda de cada tipo';
@@ -478,9 +603,11 @@ function updateIntelligentGenerateButton() {
 }
 
 // GENERAR RECOMENDACIONES DESDE CLOSET INTELIGENTE
-window.generateFromIntelligentCloset = function() {
-  if (!window.selectedOccasion || !window.selectedOccasion()) {
-    window.showNotification('Primero selecciona una ocasión', 'info');
+function generateFromIntelligentCloset() {
+  const occasion = getSelectedOccasion();
+  
+  if (!occasion) {
+    showNotification('Primero selecciona una ocasión', 'info');
     return;
   }
   
@@ -489,7 +616,7 @@ window.generateFromIntelligentCloset = function() {
                        selectedClosetItems.shoes.size > 0;
   
   if (!hasSelections) {
-    window.showNotification('Selecciona al menos 1 prenda de cada tipo', 'error');
+    showNotification('Selecciona al menos 1 prenda de cada tipo', 'error');
     return;
   }
   
@@ -510,454 +637,290 @@ window.generateFromIntelligentCloset = function() {
     });
   });
   
-  // Usar función de generación de API
-  if (typeof generateRecommendationsWithFiles === 'function') {
-    generateRecommendationsWithFiles(selectedFiles);
-  } else {
-    window.showNotification('Error: Sistema de recomendaciones no disponible', 'error');
+  // Usar función de generación de API si existe
+  try {
+    if (typeof window.generateRecommendationsWithFiles === 'function') {
+      window.generateRecommendationsWithFiles(selectedFiles);
+    } else if (typeof generateRecommendationsWithFiles === 'function') {
+      generateRecommendationsWithFiles(selectedFiles);
+    } else {
+      showNotification('Generando recomendaciones simuladas...', 'info');
+      simulateRecommendations(selectedFiles);
+    }
+  } catch (error) {
+    console.error('Error generando recomendaciones:', error);
+    showNotification('Error: Sistema de recomendaciones no disponible', 'error');
   }
-};
+}
 
-// TRIGGER UPLOAD INTELIGENTE
-window.triggerSmartUpload = function() {
-  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalIntelligentClosetItems();
-  
-  if (remaining <= 0) {
-    window.showNotification(`🤖 Closet lleno (${CONFIG.TOTAL_CLOSET_LIMIT}/15). Elimina prendas para agregar nuevas.`, 'error');
-    return;
-  }
-  
-  const input = document.getElementById('smart-upload');
-  if (input) {
-    input.onchange = handleIntelligentUpload;
-    input.click();
-  }
-};
+// Simular generación de recomendaciones (fallback)
+function simulateRecommendations(files) {
+  setTimeout(() => {
+    showNotification(`Recomendaciones generadas con ${files.tops.length} superiores, ${files.bottoms.length} inferiores y ${files.shoes.length} calzados`, 'success');
+  }, 2000);
+}
+
+// =======================================================
+// SISTEMA DE DATOS Y PERSISTENCIA
+// =======================================================
 
 // CARGAR DATOS DEL USUARIO
-function loadUserData() {
-  if (!window.currentUser || !window.currentUser().email) return;
-  
-  const closetData = localStorage.getItem(`noshopia_intelligent_closet_${window.currentUser().email}`);
-  if (closetData) {
-    const data = JSON.parse(closetData);
-    intelligentClosetItems = data.intelligentClosetItems || { tops: {}, bottoms: {}, shoes: {} };
-    console.log('🤖 Closet Inteligente cargado:', getTotalIntelligentClosetItems(), 'prendas');
+function loadUserClosetData() {
+  try {
+    const user = getCurrentUser();
+    if (!user || !user.email) {
+      console.log('No hay usuario logueado para cargar datos');
+      return;
+    }
+    
+    const closetData = localStorage.getItem(`noshopia_intelligent_closet_${user.email}`);
+    if (closetData) {
+      const data = JSON.parse(closetData);
+      intelligentClosetItems = data.intelligentClosetItems || { tops: {}, bottoms: {}, shoes: {} };
+      closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
+      uploadedFiles = data.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
+      uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
+      userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
+      
+      console.log('🤖 Closet Inteligente cargado:', getTotalClosetItems(), 'prendas');
+    }
+  } catch (error) {
+    console.error('Error cargando datos del closet:', error);
   }
 }
 
 // GUARDAR DATOS DEL USUARIO
-function saveUserData() {
-  if (!window.currentUser || !window.currentUser().email) return;
-  
-  const closetData = {
-    email: window.currentUser().email,
-    intelligentClosetItems,
-    lastUpdated: new Date().toISOString(),
-    totalItems: getTotalIntelligentClosetItems()
-  };
-  localStorage.setItem(`noshopia_intelligent_closet_${window.currentUser().email}`, JSON.stringify(closetData));
-}
-
-// INICIALIZAR SISTEMA INTELIGENTE
-function initializeIntelligentCloset() {
-  console.log('🤖 Inicializando Closet Inteligente con IA...');
-  
-  // Cargar datos si hay usuario logueado
-  if (window.isLoggedIn && window.isLoggedIn() && window.currentUser && window.currentUser()) {
-    loadUserData();
-    updateIntelligentClosetUI();
-    renderIntelligentCategories();
+function saveUserClosetData() {
+  try {
+    const user = getCurrentUser();
+    if (!user || !user.email) {
+      console.log('No hay usuario logueado para guardar datos');
+      return;
+    }
+    
+    const closetData = {
+      email: user.email,
+      intelligentClosetItems,
+      closetItems,
+      uploadedFiles,
+      uploadedImages,
+      userStats,
+      lastUpdated: new Date().toISOString(),
+      totalItems: getTotalClosetItems()
+    };
+    
+    localStorage.setItem(`noshopia_intelligent_closet_${user.email}`, JSON.stringify(closetData));
+    console.log('💾 Datos del closet guardados');
+  } catch (error) {
+    console.error('Error guardando datos del closet:', error);
   }
-  
-  console.log('✅ Closet Inteligente inicializado con detección IA');
 }
 
-// COMPATIBILIDAD CON SISTEMA ESTÁNDAR DE CLOSET
+// =======================================================
+// FUNCIONES PRINCIPALES DEL CLOSET
+// =======================================================
+
+// ACTIVAR MODO CLOSET
 function enableCloset() {
-  console.log('📁 Activando modo closet con IA...');
+  console.log('✨ Activando modo closet...');
   
-  window.setClosetMode(true);
+  closetMode = true;
   
-  // Mostrar contenedor del closet
-  const closetContainer = document.getElementById('closetContainer');
-  if (closetContainer) {
-    closetContainer.style.display = 'block';
+  try {
+    // Ocultar pregunta del closet
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'none';
+    }
     
-    const userEmail = document.getElementById('userEmail');
-    if (userEmail && window.currentUser && window.currentUser()) {
-      userEmail.textContent = window.currentUser().email;
-    }
-  }
-  
-  // Inicializar sistema inteligente
-  initializeIntelligentCloset();
-  
-  // Configurar upload inteligente si hay input específico
-  setTimeout(() => {
-    const smartInput = document.getElementById('smart-upload');
-    if (smartInput) {
-      smartInput.onchange = handleIntelligentUpload;
-    }
-  }, 500);
-  
-  window.showNotification('Closet Inteligente con IA activado', 'success');
-}
-
-// EXPONER FUNCIONES GLOBALMENTE
-window.enableCloset = enableCloset;
-window.initializeIntelligentCloset = initializeIntelligentCloset;
-window.loadUserData = loadUserData;
-window.saveUserData = saveUserData;
-window.updateIntelligentClosetUI = updateIntelligentClosetUI;
-window.renderIntelligentCategories = renderIntelligentCategories;
-window.triggerSmartUpload = triggerSmartUpload;
-
-// AUTO-INICIALIZACIÓN
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🤖 Closet Inteligente JS cargado con detección IA');
-  
-  // Inicializar si ya está en modo closet
-  setTimeout(() => {
-    if (window.closetMode && window.closetMode()) {
-      initializeIntelligentCloset();
-    }
-  }, 1000);
-});
-// =======================================================
-// FUNCIONES DE REPARACIÓN DE UI - AGREGAR ANTES DEL CONSOLE.LOG FINAL
-// =======================================================
-
-// Notificación personalizada mejorada
-function showCustomProfileNotification() {
-  // Eliminar notificación anterior si existe
-  const existing = document.querySelector('.custom-profile-notification');
-  if (existing) existing.remove();
-
-  const notification = document.createElement('div');
-  notification.className = 'custom-profile-notification';
-  notification.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    padding: 2rem 3rem;
-    border-radius: 20px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    z-index: 10001;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    max-width: 90vw;
-    animation: profileSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  `;
-
-  notification.innerHTML = `
-    <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
-    <h3 style="margin: 0 0 1rem 0; font-weight: 700; font-size: 1.5rem;">¡Perfil Completado!</h3>
-    <p style="margin: 0 0 1.5rem 0; opacity: 0.9; font-size: 1.1rem;">
-      Tu perfil ha sido guardado exitosamente.<br>
-      Ahora puedes comenzar a usar tu Closet IA.
-    </p>
-    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;">
-      <div style="font-weight: 600; margin-bottom: 0.5rem;">🎯 ¿Qué sigue?</div>
-      <div style="font-size: 0.95rem; line-height: 1.5;">
-        1️⃣ Elige si crear tu Closet IA<br>
-        2️⃣ O ve directo a generar recomendaciones
-      </div>
-    </div>
-    <button onclick="this.parentElement.remove()" style="
-      background: rgba(255,255,255,0.2); 
-      border: none; 
-      color: white; 
-      padding: 0.8rem 2rem; 
-      border-radius: 25px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-      ¡Perfecto! 🚀
-    </button>
-  `;
-
-  // Agregar animación CSS
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes profileSlideIn {
-      0% { 
-        opacity: 0; 
-        transform: translate(-50%, -50%) scale(0.8) rotateY(90deg); 
+    // Mostrar contenedor del closet
+    const closetContainer = document.getElementById('closetContainer');
+    if (closetContainer) {
+      closetContainer.style.display = 'block';
+      
+      // Mostrar email del usuario
+      const userEmail = document.getElementById('userEmail');
+      if (userEmail) {
+        const user = getCurrentUser();
+        userEmail.textContent = user && user.email ? user.email : 'Usuario';
       }
-      100% { 
-        opacity: 1; 
-        transform: translate(-50%, -50%) scale(1) rotateY(0deg); 
-      }
-    }
-  `;
-  document.head.appendChild(style);
-
-  document.body.appendChild(notification);
-
-  // Auto-remover después de 8 segundos
-  setTimeout(() => {
-    if (notification.parentElement) {
-      notification.style.animation = 'profileSlideOut 0.5s ease-out forwards';
-      setTimeout(() => notification.remove(), 500);
-    }
-  }, 8000);
-}
-
-// Reparar formulario de perfil
-function fixProfileForm() {
-  const profileForm = document.getElementById('profileForm');
-  if (!profileForm) return;
-
-  // Mejorar estilos del formulario
-  profileForm.style.cssText += `
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
-    border: 2px solid rgba(59, 130, 246, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-  `;
-
-  // Mejorar botones de opción
-  const options = profileForm.querySelectorAll('.profile-option');
-  options.forEach(option => {
-    // Mejorar hover
-    option.addEventListener('mouseenter', function() {
-      if (!this.classList.contains('selected')) {
-        this.style.transform = 'translateY(-3px) scale(1.02)';
-        this.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)';
-      }
-    });
-
-    option.addEventListener('mouseleave', function() {
-      if (!this.classList.contains('selected')) {
-        this.style.transform = 'translateY(0) scale(1)';
-        this.style.boxShadow = 'none';
-      }
-    });
-
-    // Mejorar selección
-    option.addEventListener('click', function() {
-      const field = this.dataset.field;
-      const fieldOptions = profileForm.querySelectorAll(`[data-field="${field}"]`);
       
-      // Remover selección anterior
-      fieldOptions.forEach(opt => {
-        opt.classList.remove('selected');
-        opt.style.transform = 'translateY(0) scale(1)';
-        opt.style.borderColor = 'var(--border)';
-        opt.style.background = 'var(--background)';
-        opt.style.boxShadow = 'none';
-      });
+      // Cargar datos del usuario
+      loadUserClosetData();
+      updateIntelligentClosetUI();
       
-      // Agregar nueva selección con animación
-      this.classList.add('selected');
-      this.style.transform = 'translateY(-2px) scale(1.05)';
-      this.style.borderColor = 'var(--primary)';
-      this.style.background = 'rgba(59, 130, 246, 0.1)';
-      this.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.2)';
-
-      // Verificar si todas las opciones están seleccionadas
-      checkProfileCompletion();
-    });
-  });
-}
-
-// Verificar completación del perfil
-function checkProfileCompletion() {
-  const fields = ['skin_color', 'age_range', 'gender'];
-  const allSelected = fields.every(field => {
-    return document.querySelector(`.profile-option[data-field="${field}"].selected`);
-  });
-
-  const createBtn = document.getElementById('createProfileBtn');
-  if (createBtn) {
-    if (allSelected) {
-      createBtn.disabled = false;
-      createBtn.style.opacity = '1';
-      createBtn.style.cursor = 'pointer';
-      createBtn.innerHTML = '<i class="fas fa-user-plus"></i> 🚀 Crear Mi Perfil';
-      createBtn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
-      
-      // Animación de pulsado
-      createBtn.style.animation = 'pulse 2s infinite';
-    } else {
-      createBtn.disabled = true;
-      createBtn.style.opacity = '0.6';
-      createBtn.style.cursor = 'not-allowed';
-      createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
-      createBtn.style.background = 'linear-gradient(135deg, var(--primary), #1d4ed8)';
-      createBtn.style.animation = 'none';
-    }
-  }
-}
-
-// Reparar opciones del closet
-function fixClosetOptions() {
-  const closetOptions = document.querySelectorAll('.closet-option');
-  closetOptions.forEach((option, index) => {
-    // Mejorar estilos
-    option.style.cssText += `
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      overflow: hidden;
-    `;
-
-    // Efecto de ondas al click
-    option.addEventListener('click', function(e) {
-      const ripple = document.createElement('span');
-      const rect = this.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-      
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        left: ${x}px;
-        top: ${y}px;
-        background: rgba(59, 130, 246, 0.3);
-        border-radius: 50%;
-        transform: scale(0);
-        animation: rippleEffect 0.6s ease-out;
-        pointer-events: none;
-        z-index: 0;
-      `;
-      
-      this.appendChild(ripple);
-      
+      // Configurar upload inteligente
       setTimeout(() => {
-        if (ripple.parentElement) ripple.remove();
-      }, 600);
-    });
-
-    // Animación de entrada escalonada
-    option.style.opacity = '0';
-    option.style.transform = 'translateY(50px)';
-    
-    setTimeout(() => {
-      option.style.opacity = '1';
-      option.style.transform = 'translateY(0)';
-    }, index * 150);
-  });
+        setupClosetFolderUploads();
+      }, 500);
+      
+      showNotification('Mi Closet Favorito activado', 'success');
+    } else {
+      console.error('No se encontró closetContainer');
+      showNotification('Error: No se pudo activar el closet', 'error');
+    }
+  } catch (error) {
+    console.error('Error activando closet:', error);
+    showNotification('Error activando closet', 'error');
+  }
 }
 
-// Agregar animaciones CSS necesarias
-function addUIAnimations() {
-  const existingStyle = document.getElementById('uiFixStyles');
-  if (existingStyle) return;
-
-  const style = document.createElement('style');
-  style.id = 'uiFixStyles';
-  style.textContent = `
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
-    @keyframes rippleEffect {
-      to {
-        transform: scale(4);
-        opacity: 0;
-      }
-    }
-    
-    @keyframes profileSlideOut {
-      0% { 
-        opacity: 1; 
-        transform: translate(-50%, -50%) scale(1); 
-      }
-      100% { 
-        opacity: 0; 
-        transform: translate(-50%, -60%) scale(0.9); 
-      }
-    }
-    
-    .profile-option {
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    }
-    
-    .closet-option {
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-// Inicializar todas las reparaciones
-function initializeUIFixes() {
-  console.log('🔧 Iniciando reparaciones de UI...');
-  
-  addUIAnimations();
-  
-  // Reparar formulario de perfil
-  setTimeout(() => {
-    fixProfileForm();
-    console.log('✅ Formulario de perfil reparado');
-  }, 500);
-  
-  // Reparar opciones de closet
-  setTimeout(() => {
-    fixClosetOptions();
-    console.log('✅ Opciones de closet reparadas');
-  }, 1000);
-  
-  // Verificar estado inicial del perfil
-  setTimeout(() => {
-    checkProfileCompletion();
-    console.log('✅ Estado del perfil verificado');
-  }, 1500);
-}
-
-// Función para activar notificación después de crear perfil
-window.showProfileCompletedNotification = function() {
-  showCustomProfileNotification();
-};
-
-// Exponer función para uso global
-window.initializeUIFixes = initializeUIFixes;
-window.checkProfileCompletion = checkProfileCompletion;
-
-// Auto-inicializar reparaciones
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(initializeUIFixes, 1000);
-});
-// =======================================================
-// EVENT LISTENERS PARA BOTONES DEL CLOSET - AGREGAR AL FINAL DE closet.js
-// =======================================================
-
-// Función para modo directo (que faltaba)
+// USAR MODO DIRECTO
 function useDirectMode() {
   console.log('⚡ Activando modo directo...');
   
-  // Ocultar pregunta del closet
-  const closetQuestion = document.getElementById('closetQuestion');
-  if (closetQuestion) closetQuestion.style.display = 'none';
+  closetMode = false;
   
-  // Mostrar selector de ocasiones
-  const occasionSelector = document.getElementById('occasionSelector');
-  if (occasionSelector) {
-    occasionSelector.style.display = 'block';
-    setupOccasionSelector();
+  try {
+    // Ocultar pregunta del closet
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'none';
+    }
+    
+    // Mostrar selector de ocasiones
+    const occasionSelector = document.getElementById('occasionSelector');
+    if (occasionSelector) {
+      occasionSelector.style.display = 'block';
+      setupOccasionSelector();
+    }
+    
+    // Mostrar área de upload
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+      uploadArea.style.display = 'block';
+    }
+    
+    showNotification('Modo directo activado', 'success');
+  } catch (error) {
+    console.error('Error activando modo directo:', error);
+    showNotification('Error activando modo directo', 'error');
   }
-  
-  // Mostrar área de upload
-  const uploadArea = document.getElementById('uploadArea');
-  if (uploadArea) {
-    uploadArea.style.display = 'block';
-    setupDirectUpload();
-  }
-  
-  window.showNotification('Modo directo activado', 'success');
 }
 
-// Configurar selector de ocasiones
+// MOSTRAR PESTAÑA DEL CLOSET
+function showClosetTab(tabId) {
+  console.log('📂 Mostrando pestaña:', tabId);
+  
+  try {
+    // Ocultar todas las pestañas de contenido
+    document.querySelectorAll('.closet-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    
+    // Remover clase active de todas las pestañas
+    document.querySelectorAll('.closet-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    // Mostrar pestaña seleccionada
+    const selectedContent = document.getElementById(tabId);
+    if (selectedContent) {
+      selectedContent.style.display = 'block';
+    }
+    
+    // Activar tab correspondiente
+    const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
+    
+    // Actualizar tipo activo para el sistema inteligente
+    const typeMap = { 'superiores': 'tops', 'inferiores': 'bottoms', 'calzado': 'shoes' };
+    if (typeMap[tabId]) {
+      activeClosetType = typeMap[tabId];
+      renderIntelligentCategories();
+    }
+    
+    // Configurar carpetas para upload
+    setTimeout(() => {
+      setupClosetFolderUploads();
+    }, 200);
+  } catch (error) {
+    console.error('Error mostrando pestaña:', error);
+  }
+}
+
+// =======================================================
+// CONFIGURACIÓN DE UPLOADS Y CARPETAS
+// =======================================================
+
+// CONFIGURAR SUBIDA DESDE CARPETAS DEL CLOSET
+function setupClosetFolderUploads() {
+  console.log('🗂️ Configurando subida desde carpetas del closet...');
+  
+  const allFolders = document.querySelectorAll('.folder-item');
+  
+  allFolders.forEach((folder, index) => {
+    // Clonar elemento para limpiar listeners anteriores
+    const newFolder = folder.cloneNode(true);
+    folder.parentNode.replaceChild(newFolder, folder);
+    
+    // Agregar nuevo listener
+    newFolder.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (!checkIsLoggedIn()) {
+        showNotification('Debes iniciar sesión primero', 'error');
+        return;
+      }
+      
+      // Verificar límite total
+      const remaining = getRemainingClosetSlots();
+      if (remaining <= 0) {
+        showNotification(`⚠️ Armario lleno (${getTotalClosetItems()}/${CONFIG.TOTAL_CLOSET_LIMIT}). Elimina prendas para agregar nuevas.`, 'error');
+        return;
+      }
+      
+      const folderName = this.querySelector('.folder-name')?.textContent || 'Carpeta';
+      
+      // Crear input de archivo temporal
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      fileInput.style.display = 'none';
+      
+      // Cuando se seleccionen archivos
+      fileInput.onchange = function(e) {
+        handleIntelligentUpload(e);
+      };
+      
+      // Agregar al DOM y hacer click
+      document.body.appendChild(fileInput);
+      fileInput.click();
+      
+      // Limpiar después de uso
+      setTimeout(() => {
+        if (document.body.contains(fileInput)) {
+          document.body.removeChild(fileInput);
+        }
+      }, 1000);
+    });
+    
+    // Mejorar estilos hover
+    newFolder.style.cursor = 'pointer';
+    newFolder.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+      this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+      this.style.borderColor = 'var(--primary)';
+    });
+    
+    newFolder.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+      this.style.borderColor = 'var(--border)';
+    });
+  });
+  
+  console.log('✅ Todas las carpetas configuradas para subida');
+}
+
+// CONFIGURAR SELECTOR DE OCASIONES
 function setupOccasionSelector() {
+  console.log('🎯 Configurando selector de ocasiones...');
+  
   const occasionBtns = document.querySelectorAll('.occasion-btn');
   occasionBtns.forEach(btn => {
     btn.addEventListener('click', function() {
@@ -969,303 +932,84 @@ function setupOccasionSelector() {
       
       // Guardar ocasión
       const occasion = this.dataset.occasion;
-      window.selectedOccasion = occasion;
+      selectedOccasion = occasion;
+      
+      // Intentar también guardar globalmente
+      if (window.selectedOccasion !== undefined) {
+        window.selectedOccasion = occasion;
+      }
       
       console.log('Ocasión seleccionada:', occasion);
+      showNotification(`Ocasión: ${occasion}`, 'success');
       
-      // Actualizar botón de generar
-      updateGenerateButton();
-      
-      window.showNotification(`Ocasión: ${occasion}`, 'success');
+      // Actualizar botones de generar
+      updateIntelligentGenerateButton();
     });
   });
 }
 
-// Configurar upload directo
-function setupDirectUpload() {
-  const fileInputs = document.querySelectorAll('.file-input');
-  fileInputs.forEach(input => {
-    input.addEventListener('change', function(e) {
-      const type = this.id.replace('-upload', '');
-      handleFileUpload(type, this);
-    });
-  });
-}
-
-// Actualizar botón de generar
-function updateGenerateButton() {
-  const generateBtn = document.getElementById('generateBtn');
-  if (!generateBtn) return;
+// TRIGGER UPLOAD INTELIGENTE
+function triggerSmartUpload() {
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
   
-  const hasOccasion = window.selectedOccasion;
-  const hasFiles = (window.uploadedFiles?.tops?.length > 0) && 
-                   (window.uploadedFiles?.bottoms?.length > 0) && 
-                   (window.uploadedFiles?.shoes?.length > 0);
-  
-  if (hasOccasion && hasFiles) {
-    generateBtn.disabled = false;
-    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
-  } else if (!hasOccasion) {
-    generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
-  } else {
-    generateBtn.innerHTML = '<i class="fas fa-upload"></i> Sube fotos de cada categoría';
+  if (remaining <= 0) {
+    showNotification(`🤖 Closet lleno (${CONFIG.TOTAL_CLOSET_LIMIT}/15). Elimina prendas para agregar nuevas.`, 'error');
+    return;
   }
+  
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.style.display = 'none';
+  
+  input.onchange = handleIntelligentUpload;
+  
+  document.body.appendChild(input);
+  input.click();
+  
+  setTimeout(() => {
+    if (document.body.contains(input)) {
+      document.body.removeChild(input);
+    }
+  }, 1000);
 }
 
-// Configurar event listeners de los botones del closet
+// =======================================================
+// CONFIGURACIÓN DE EVENT LISTENERS Y BOTONES
+// =======================================================
+
+// CONFIGURACIÓN ROBUSTA DE BOTONES DEL CLOSET
 function setupClosetButtons() {
   console.log('🔧 Configurando botones del closet...');
   
-  // Botón "Mi Closet Digital"
-  const enableClosetBtn = document.getElementById('enableClosetBtn');
-  if (enableClosetBtn) {
-    enableClosetBtn.addEventListener('click', function() {
-      console.log('🎯 Click en Mi Closet Digital');
-      enableCloset();
-    });
-    console.log('✅ Botón Mi Closet Digital configurado');
-  } else {
-    console.warn('❌ No se encontró enableClosetBtn');
-  }
-  
-  // Botón "Recomendaciones Rápidas"
-  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
-  if (useDirectModeBtn) {
-    useDirectModeBtn.addEventListener('click', function() {
-      console.log('🎯 Click en Recomendaciones Rápidas');
-      useDirectMode();
-    });
-    console.log('✅ Botón Recomendaciones Rápidas configurado');
-  } else {
-    console.warn('❌ No se encontró useDirectModeBtn');
-  }
-}
-
-// Configurar pestañas del closet
-function setupClosetTabs() {
-  const tabs = document.querySelectorAll('.closet-tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      const tabId = this.dataset.tab;
-      showClosetTab(tabId);
-    });
-  });
-}
-
-// Mostrar pestaña del closet
-function showClosetTab(tabId) {
-  console.log('📂 Mostrando pestaña:', tabId);
-  
-  // Ocultar todas las pestañas
-  document.querySelectorAll('.closet-tab-content').forEach(content => {
-    content.classList.remove('active');
-    content.style.display = 'none';
-  });
-  
-  // Remover clase active de tabs
-  document.querySelectorAll('.closet-tab').forEach(tab => {
-    tab.classList.remove('active');
-  });
-  
-  // Mostrar pestaña seleccionada
-  const selectedContent = document.getElementById(tabId);
-  if (selectedContent) {
-    selectedContent.classList.add('active');
-    selectedContent.style.display = 'block';
-  }
-  
-  // Activar tab
-  const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-  if (selectedTab) {
-    selectedTab.classList.add('active');
-  }
-  
-  // Configurar carpetas si es necesario
-  setTimeout(() => {
-    setupFolderUploads(tabId);
-  }, 200);
-}
-
-// Configurar upload desde carpetas
-function setupFolderUploads(tabId) {
-  const folders = document.querySelectorAll(`#${tabId} .folder-item`);
-  folders.forEach((folder, index) => {
-    // Remover listeners anteriores
-    const newFolder = folder.cloneNode(true);
-    folder.parentNode.replaceChild(newFolder, folder);
-    
-    newFolder.addEventListener('click', function() {
-      console.log('📁 Click en carpeta:', this.querySelector('.folder-name')?.textContent);
-      
-      // Crear input de archivo
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.multiple = true;
-      input.style.display = 'none';
-      
-      input.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-        
-        console.log('📷 Archivos seleccionados:', files.length);
-        
-        // Procesar archivos
-        files.forEach(async (file) => {
-          try {
-            const imageUrl = await fileToDataUrl(file);
-            
-            // Agregar a arrays globales
-            const typeMap = {
-              'superiores': 'tops',
-              'inferiores': 'bottoms', 
-              'calzado': 'shoes'
-            };
-            
-            const type = typeMap[tabId];
-            if (type) {
-              if (!window.uploadedFiles) window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-              if (!window.uploadedImages) window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
-              
-              window.uploadedFiles[type].push(file);
-              window.uploadedImages[type].push(imageUrl);
-              
-              console.log(`✅ Archivo agregado a ${type}`);
-            }
-          } catch (error) {
-            console.error('Error procesando archivo:', error);
-          }
-        });
-        
-        window.showNotification(`${files.length} foto(s) agregadas`, 'success');
-        
-        // Limpiar
-        document.body.removeChild(input);
-      });
-      
-      document.body.appendChild(input);
-      input.click();
-    });
-  });
-}
-
-// Inicializar todos los event listeners
-function initializeEventListeners() {
-  console.log('🚀 Inicializando event listeners...');
-  
-  // Esperar a que el DOM esté listo
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(setupClosetButtons, 500);
-      setTimeout(setupClosetTabs, 700);
-    });
-  } else {
-    setTimeout(setupClosetButtons, 500);
-    setTimeout(setupClosetTabs, 700);
-  }
-}
-
-// Exponer funciones globalmente
-window.useDirectMode = useDirectMode;
-window.setupClosetButtons = setupClosetButtons;
-window.showClosetTab = showClosetTab;
-
-// AUTO-INICIALIZAR
-initializeEventListeners();
-
-console.log('✅ Event listeners del closet configurados');
-
-// =======================================================
-// DEBUGGING Y CORRECCIÓN FINAL - AGREGAR AL FINAL DE closet.js
-// =======================================================
-
-// Debug: Verificar que funciones necesarias existen
-function debugClosetSystem() {
-  console.log('🔍 DEBUGGING CLOSET SYSTEM...');
-  
-  // Verificar elementos del DOM
-  const enableBtn = document.getElementById('enableClosetBtn');
-  const directBtn = document.getElementById('useDirectModeBtn');
-  const closetQuestion = document.getElementById('closetQuestion');
-  
-  console.log('DOM Elements found:');
-  console.log('- enableClosetBtn:', !!enableBtn, enableBtn);
-  console.log('- useDirectModeBtn:', !!directBtn, directBtn);
-  console.log('- closetQuestion:', !!closetQuestion, closetQuestion);
-  
-  if (closetQuestion) {
-    console.log('- closetQuestion display:', closetQuestion.style.display);
-  }
-  
-  // Verificar funciones globales
-  console.log('Global functions:');
-  console.log('- window.showNotification:', typeof window.showNotification);
-  console.log('- window.currentUser:', typeof window.currentUser);
-  console.log('- window.isLoggedIn:', typeof window.isLoggedIn);
-}
-
-// Función de notificación de respaldo
-function ensureNotificationFunction() {
-  if (typeof window.showNotification !== 'function') {
-    console.log('⚠️ window.showNotification no existe, creando función de respaldo');
-    
-    window.showNotification = function(message, type = 'info') {
-      console.log(`📢 ${type.toUpperCase()}: ${message}`);
-      
-      // Crear notificación simple
-      const notification = document.createElement('div');
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        z-index: 10000;
-        font-weight: 600;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      `;
-      notification.textContent = message;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        if (notification.parentElement) {
-          notification.remove();
-        }
-      }, 3000);
-    };
-  }
-}
-
-// Configuración ROBUSTA de botones del closet
-function forceSetupClosetButtons() {
-  console.log('🚀 CONFIGURACIÓN FORZADA DE BOTONES...');
-  
-  // Asegurar que la función de notificación existe
-  ensureNotificationFunction();
-  
   // Buscar botones con múltiples métodos
-  let enableBtn = document.getElementById('enableClosetBtn');
-  let directBtn = document.getElementById('useDirectModeBtn');
+  let enableBtn = document.getElementById('enableClosetBtn') || 
+                  document.querySelector('.closet-option:first-child') ||
+                  document.querySelector('[onclick*="enableCloset"]');
+                  
+  let directBtn = document.getElementById('useDirectModeBtn') || 
+                  document.querySelector('.closet-option:last-child') ||
+                  document.querySelector('[onclick*="useDirectMode"]');
   
-  // Si no se encuentran por ID, buscar por clase o contenido
-  if (!enableBtn) {
-    enableBtn = document.querySelector('.closet-option:first-child');
-    console.log('🔍 enableBtn encontrado por selector:', !!enableBtn);
-  }
-  
-  if (!directBtn) {
-    directBtn = document.querySelector('.closet-option:last-child');
-    console.log('🔍 directBtn encontrado por selector:', !!directBtn);
+  // También buscar por contenido de texto
+  if (!enableBtn || !directBtn) {
+    const options = document.querySelectorAll('.closet-option');
+    options.forEach(option => {
+      const text = option.textContent.toLowerCase();
+      if (text.includes('closet') || text.includes('digital')) {
+        enableBtn = option;
+      } else if (text.includes('directo') || text.includes('rápid')) {
+        directBtn = option;
+      }
+    });
   }
   
   // Configurar botón Mi Closet Digital
   if (enableBtn) {
     console.log('✅ Configurando botón Mi Closet Digital...');
     
-    // Remover listeners anteriores
+    // Remover listeners anteriores clonando el elemento
     const newEnableBtn = enableBtn.cloneNode(true);
     enableBtn.parentNode.replaceChild(newEnableBtn, enableBtn);
     
@@ -1275,49 +1019,20 @@ function forceSetupClosetButtons() {
       e.stopPropagation();
       
       console.log('🎯 CLICK DETECTADO: Mi Closet Digital');
-      window.showNotification('Activando Mi Closet Digital...', 'info');
-      
-      try {
-        // Ocultar pregunta del closet
-        const closetQuestion = document.getElementById('closetQuestion');
-        if (closetQuestion) closetQuestion.style.display = 'none';
-        
-        // Mostrar closet container
-        const closetContainer = document.getElementById('closetContainer');
-        if (closetContainer) {
-          closetContainer.style.display = 'block';
-          
-          // Mostrar email del usuario si está disponible
-          const userEmail = document.getElementById('userEmail');
-          if (userEmail) {
-            const email = (window.currentUser && typeof window.currentUser === 'function') ? 
-                         window.currentUser().email : 
-                         'usuario@ejemplo.com';
-            userEmail.textContent = email;
-          }
-          
-          window.showNotification('Mi Closet Digital activado', 'success');
-        }
-      } catch (error) {
-        console.error('❌ Error activando closet:', error);
-        window.showNotification('Error activando closet', 'error');
-      }
+      enableCloset();
     });
     
-    // Mejorar estilos visuales
     newEnableBtn.style.cursor = 'pointer';
-    newEnableBtn.style.opacity = '1';
-    
     console.log('✅ Botón Mi Closet Digital configurado exitosamente');
   } else {
-    console.error('❌ No se pudo encontrar el botón enableCloset');
+    console.warn('❌ No se pudo encontrar el botón enableCloset');
   }
   
   // Configurar botón Recomendaciones Rápidas
   if (directBtn) {
     console.log('✅ Configurando botón Recomendaciones Rápidas...');
     
-    // Remover listeners anteriores
+    // Remover listeners anteriores clonando el elemento
     const newDirectBtn = directBtn.cloneNode(true);
     directBtn.parentNode.replaceChild(newDirectBtn, directBtn);
     
@@ -1327,111 +1042,97 @@ function forceSetupClosetButtons() {
       e.stopPropagation();
       
       console.log('🎯 CLICK DETECTADO: Recomendaciones Rápidas');
-      window.showNotification('Activando Recomendaciones Rápidas...', 'info');
-      
-      try {
-        // Ocultar pregunta del closet
-        const closetQuestion = document.getElementById('closetQuestion');
-        if (closetQuestion) closetQuestion.style.display = 'none';
-        
-        // Mostrar selector de ocasiones
-        const occasionSelector = document.getElementById('occasionSelector');
-        if (occasionSelector) {
-          occasionSelector.style.display = 'block';
-          setupOccasionSelectors();
-        }
-        
-        // Mostrar área de upload
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-          uploadArea.style.display = 'block';
-        }
-        
-        window.showNotification('Recomendaciones Rápidas activado', 'success');
-      } catch (error) {
-        console.error('❌ Error activando modo directo:', error);
-        window.showNotification('Error activando modo directo', 'error');
-      }
+      useDirectMode();
     });
     
-    // Mejorar estilos visuales
     newDirectBtn.style.cursor = 'pointer';
-    newDirectBtn.style.opacity = '1';
-    
     console.log('✅ Botón Recomendaciones Rápidas configurado exitosamente');
   } else {
-    console.error('❌ No se pudo encontrar el botón directMode');
+    console.warn('❌ No se pudo encontrar el botón directMode');
   }
 }
 
-// Configurar selectores de ocasión
-function setupOccasionSelectors() {
-  console.log('🎯 Configurando selectores de ocasión...');
+// CONFIGURAR PESTAÑAS DEL CLOSET
+function setupClosetTabs() {
+  console.log('📂 Configurando pestañas del closet...');
   
-  const occasionBtns = document.querySelectorAll('.occasion-btn');
-  occasionBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      console.log('📅 Ocasión seleccionada:', this.dataset.occasion);
-      
-      // Remover selección anterior
-      occasionBtns.forEach(b => b.classList.remove('selected'));
-      
-      // Seleccionar actual
-      this.classList.add('selected');
-      
-      // Guardar ocasión globalmente
-      const occasion = this.dataset.occasion;
-      window.selectedOccasion = occasion;
-      
-      window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
+  const tabs = document.querySelectorAll('.closet-tab');
+  tabs.forEach(tab => {
+    // Remover listeners anteriores
+    const newTab = tab.cloneNode(true);
+    tab.parentNode.replaceChild(newTab, tab);
+    
+    // Agregar nuevo listener
+    newTab.addEventListener('click', function() {
+      const tabId = this.dataset.tab;
+      if (tabId) {
+        showClosetTab(tabId);
+      }
     });
   });
+  
+  console.log('✅ Pestañas del closet configuradas');
 }
 
-// Función para mostrar automáticamente las opciones después del perfil
-function showClosetOptionsAfterProfile() {
+// =======================================================
+// FUNCIONES EXPUESTAS GLOBALMENTE
+// =======================================================
+
+// Exponer funciones necesarias globalmente
+window.enableCloset = enableCloset;
+window.useDirectMode = useDirectMode;
+window.showClosetTab = showClosetTab;
+window.toggleItemSelection = toggleItemSelection;
+window.removeIntelligentItem = removeIntelligentItem;
+window.generateFromIntelligentCloset = generateFromIntelligentCloset;
+window.triggerSmartUpload = triggerSmartUpload;
+
+// Función para mostrar opciones después del perfil
+window.showClosetOptionsAfterProfile = function() {
   console.log('🎯 Mostrando opciones del closet después del perfil...');
   
   // Ocultar formulario de perfil
   const profileForm = document.getElementById('profileForm');
   if (profileForm) {
     profileForm.style.display = 'none';
-    console.log('✅ Formulario de perfil ocultado');
   }
   
   // Ocultar sección de bienvenida
   const welcomeSection = document.getElementById('welcomeSection');
   if (welcomeSection) {
     welcomeSection.style.display = 'none';
-    console.log('✅ Sección de bienvenida ocultada');
   }
   
   // Mostrar pregunta del closet
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) {
     closetQuestion.style.display = 'block';
-    console.log('✅ Pregunta del closet mostrada');
     
-    // Forzar reconfiguración de botones después de mostrar
-    setTimeout(() => {
-      forceSetupClosetButtons();
-    }, 500);
-  } else {
-    console.error('❌ No se encontró closetQuestion');
+    // Reconfigurar botones después de mostrar
+    setTimeout(setupClosetButtons, 500);
   }
-}
+};
 
-// Función para inicialización completa
-function initializeClosetSystemComplete() {
-  console.log('🚀 INICIALIZACIÓN COMPLETA DEL SISTEMA CLOSET...');
+// =======================================================
+// INICIALIZACIÓN Y OBSERVERS
+// =======================================================
+
+// FUNCIÓN DE INICIALIZACIÓN COMPLETA
+function initializeClosetSystem() {
+  console.log('🚀 Inicializando sistema completo del closet...');
   
-  // Debug inicial
-  debugClosetSystem();
+  // Inicializar variables globales seguras
+  if (typeof window.currentUser !== 'undefined') {
+    currentUser = window.currentUser;
+  }
+  if (typeof window.isLoggedIn !== 'undefined') {
+    isLoggedIn = window.isLoggedIn;
+  }
+  if (typeof window.selectedOccasion !== 'undefined') {
+    selectedOccasion = window.selectedOccasion;
+  }
   
-  // Configurar funciones de respaldo
-  ensureNotificationFunction();
-  
-  // Configuración múltiple con reintentos
+  // Configurar botones y pestañas
   let attempts = 0;
   const maxAttempts = 5;
   
@@ -1439,24 +1140,28 @@ function initializeClosetSystemComplete() {
     attempts++;
     console.log(`🔄 Intento de configuración ${attempts}/${maxAttempts}`);
     
-    const enableBtn = document.getElementById('enableClosetBtn');
-    const directBtn = document.getElementById('useDirectModeBtn');
+    const closetQuestion = document.getElementById('closetQuestion');
+    const closetContainer = document.getElementById('closetContainer');
     
-    if (enableBtn && directBtn) {
-      console.log('✅ Botones encontrados, configurando...');
-      forceSetupClosetButtons();
+    if (closetQuestion || closetContainer) {
+      setupClosetButtons();
+      setupClosetTabs();
       clearInterval(setupInterval);
+      console.log('✅ Sistema del closet configurado exitosamente');
     } else if (attempts >= maxAttempts) {
-      console.log('⚠️ Configurando con selectores alternativos...');
-      forceSetupClosetButtons();
+      console.log('⚠️ Configurando con elementos disponibles...');
+      setupClosetButtons();
+      setupClosetTabs();
       clearInterval(setupInterval);
     }
   }, 1000);
+  
+  // Cargar datos si hay usuario logueado
+  if (checkIsLoggedIn()) {
+    loadUserClosetData();
+    updateIntelligentClosetUI();
+  }
 }
-
-// Función global para llamar desde profile.js
-window.showClosetOptionsAfterProfile = showClosetOptionsAfterProfile;
-window.forceSetupClosetButtons = forceSetupClosetButtons;
 
 // Observer para detectar cambios en closetQuestion
 const closetObserver = new MutationObserver((mutations) => {
@@ -1465,34 +1170,353 @@ const closetObserver = new MutationObserver((mutations) => {
         mutation.target.id === 'closetQuestion' && 
         mutation.target.style.display === 'block') {
       
-      console.log('👁️ Observer detectó closetQuestion visible');
-      setTimeout(forceSetupClosetButtons, 200);
+      console.log('👁️ Observer detectó closetQuestion visible - reconfigurando botones');
+      setTimeout(setupClosetButtons, 200);
     }
   });
 });
 
-// Iniciar observer
-if (document.getElementById('closetQuestion')) {
-  closetObserver.observe(document.getElementById('closetQuestion'), {
-    attributes: true,
-    attributeFilter: ['style']
+// Iniciar observer si el elemento existe
+setTimeout(() => {
+  const closetQuestion = document.getElementById('closetQuestion');
+  if (closetQuestion) {
+    closetObserver.observe(closetQuestion, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+    console.log('👁️ Observer configurado para closetQuestion');
+  }
+}, 1000);
+
+// =======================================================
+// AUTO-INICIALIZACIÓN
+// =======================================================
+
+// Inicialización automática con múltiples puntos de entrada
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM cargado - iniciando sistema del closet');
+    setTimeout(initializeClosetSystem, 1000);
+  });
+} else {
+  console.log('📄 DOM ya listo - iniciando sistema inmediato');
+  setTimeout(initializeClosetSystem, 500);
+}
+
+// También inicializar cuando la página esté completamente cargada
+window.addEventListener('load', () => {
+  console.log('🌐 Página completamente cargada - verificando sistema');
+  setTimeout(() => {
+    if (!document.querySelector('.closet-option[data-configured="true"]')) {
+      console.log('🔄 Reconfigurando sistema después de carga completa');
+      setupClosetButtons();
+    }
+  }, 2000);
+});
+
+// FUNCIÓN CORREGIDA PARA MODO DIRECTO
+function useDirectMode() {
+  console.log('⚡ Activando modo directo...');
+  
+  closetMode = false;
+  
+  try {
+    // 1. Ocultar pregunta del closet
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'none';
+      console.log('✅ closetQuestion ocultado');
+    }
+    
+    // 2. Mostrar selector de ocasiones
+    const occasionSelector = document.getElementById('occasionSelector');
+    if (occasionSelector) {
+      occasionSelector.style.display = 'block';
+      console.log('✅ occasionSelector mostrado');
+      
+      // CRÍTICO: Configurar botones de ocasión inmediatamente
+      setupOccasionButtons();
+    } else {
+      console.error('❌ No se encontró occasionSelector');
+    }
+    
+    // 3. Mostrar área de upload
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+      uploadArea.style.display = 'block';
+      console.log('✅ uploadArea mostrado');
+      
+      // CRÍTICO: Configurar inputs de archivo
+      setupFileInputs();
+    } else {
+      console.error('❌ No se encontró uploadArea');
+    }
+    
+    // 4. Inicializar variables globales de upload si no existen
+    if (!window.uploadedFiles) {
+      window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+    }
+    
+    // 5. Verificar y actualizar botón de generar
+    setTimeout(() => {
+      updateGenerateButtonDirect();
+    }, 500);
+    
+    showNotification('Recomendaciones Rápidas activado', 'success');
+    
+  } catch (error) {
+    console.error('Error activando modo directo:', error);
+    showNotification('Error activando modo directo', 'error');
+  }
+}
+
+// CONFIGURAR BOTONES DE OCASIÓN PARA MODO DIRECTO
+function setupOccasionButtons() {
+  console.log('🎯 Configurando botones de ocasión...');
+  
+  const occasionBtns = document.querySelectorAll('.occasion-btn');
+  console.log(`Encontrados ${occasionBtns.length} botones de ocasión`);
+  
+  occasionBtns.forEach((btn, index) => {
+    // Remover listeners anteriores clonando
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', function() {
+      console.log(`🎯 Ocasión seleccionada: ${this.dataset.occasion}`);
+      
+      // Remover selección anterior
+      document.querySelectorAll('.occasion-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.style.borderColor = 'var(--border)';
+        b.style.background = 'var(--background)';
+      });
+      
+      // Seleccionar actual
+      this.classList.add('selected');
+      this.style.borderColor = 'var(--primary)';
+      this.style.background = 'rgba(59, 130, 246, 0.1)';
+      
+      // Guardar ocasión GLOBALMENTE
+      const occasion = this.dataset.occasion;
+      selectedOccasion = occasion;
+      window.selectedOccasion = occasion;
+      
+      console.log('✅ Ocasión guardada:', occasion);
+      showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
+      
+      // CRÍTICO: Actualizar botón de generar inmediatamente
+      updateGenerateButtonDirect();
+    });
+  });
+  
+  console.log('✅ Botones de ocasión configurados');
+}
+
+// CONFIGURAR INPUTS DE ARCHIVO PARA MODO DIRECTO
+function setupFileInputs() {
+  console.log('📁 Configurando inputs de archivo...');
+  
+  const fileInputs = [
+    { id: 'tops-upload', type: 'tops', label: 'tops-preview' },
+    { id: 'bottoms-upload', type: 'bottoms', label: 'bottoms-preview' },
+    { id: 'shoes-upload', type: 'shoes', label: 'shoes-preview' }
+  ];
+  
+  fileInputs.forEach(config => {
+    const input = document.getElementById(config.id);
+    if (input) {
+      // Remover listeners anteriores
+      const newInput = input.cloneNode(true);
+      input.parentNode.replaceChild(newInput, input);
+      
+      newInput.addEventListener('change', function(e) {
+        console.log(`📷 Archivos seleccionados para ${config.type}:`, e.target.files.length);
+        handleDirectFileUpload(config.type, this);
+      });
+      
+      console.log(`✅ Input configurado: ${config.id}`);
+    } else {
+      console.warn(`❌ No se encontró input: ${config.id}`);
+    }
   });
 }
 
-// AUTO-INICIALIZACIÓN con múltiples puntos de entrada
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('📄 DOM cargado, iniciando configuración del closet...');
-  setTimeout(initializeClosetSystemComplete, 1000);
-});
-
-// También inicializar inmediatamente si el DOM ya está listo
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  console.log('📄 DOM ya listo, iniciando configuración inmediata...');
-  setTimeout(initializeClosetSystemComplete, 500);
+// MANEJAR UPLOAD DE ARCHIVOS EN MODO DIRECTO
+function handleDirectFileUpload(type, input) {
+  const files = Array.from(input.files);
+  if (files.length === 0) return;
+  
+  console.log(`📤 Procesando ${files.length} archivos para ${type}`);
+  
+  // Verificar límites
+  const limits = { tops: 3, bottoms: 3, shoes: 5 };
+  if (files.length > limits[type]) {
+    showNotification(`Máximo ${limits[type]} archivos para ${type}`, 'error');
+    input.value = '';
+    return;
+  }
+  
+  // Inicializar arrays si no existen
+  if (!window.uploadedFiles) window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+  if (!window.uploadedImages) window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  
+  // Limpiar archivos anteriores del tipo
+  window.uploadedFiles[type] = [];
+  window.uploadedImages[type] = [];
+  
+  // Procesar cada archivo
+  let processedCount = 0;
+  
+  files.forEach(async (file, index) => {
+    try {
+      // Convertir a data URL
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        window.uploadedFiles[type].push(file);
+        window.uploadedImages[type].push(e.target.result);
+        
+        processedCount++;
+        
+        // Actualizar preview
+        updatePreview(type, window.uploadedImages[type]);
+        
+        // Si terminamos de procesar todos
+        if (processedCount === files.length) {
+          console.log(`✅ ${files.length} archivos procesados para ${type}`);
+          updateGenerateButtonDirect();
+          updateUploadLabel(type);
+        }
+      };
+      reader.readAsDataURL(file);
+      
+    } catch (error) {
+      console.error('Error procesando archivo:', error);
+    }
+  });
+  
+  showNotification(`${files.length} archivo(s) agregado(s) a ${type}`, 'success');
 }
 
-console.log('🔧 Sistema de debugging y corrección del closet cargado');
+// ACTUALIZAR PREVIEW DE IMÁGENES
+function updatePreview(type, images) {
+  const previewContainer = document.getElementById(`${type}-preview`);
+  if (!previewContainer) return;
+  
+  previewContainer.innerHTML = '';
+  
+  images.forEach((imageUrl, index) => {
+    const imgContainer = document.createElement('div');
+    imgContainer.style.cssText = 'position: relative; display: inline-block; margin: 5px;';
+    
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.style.cssText = 'width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 2px solid var(--primary);';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.innerHTML = '×';
+    removeBtn.style.cssText = `
+      position: absolute; top: -8px; right: -8px; 
+      background: #ef4444; color: white; border: none; 
+      border-radius: 50%; width: 20px; height: 20px; 
+      cursor: pointer; font-size: 12px;
+    `;
+    removeBtn.onclick = () => removeImage(type, index);
+    
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(removeBtn);
+    previewContainer.appendChild(imgContainer);
+  });
+}
+
+// REMOVER IMAGEN DEL PREVIEW
+function removeImage(type, index) {
+  if (window.uploadedFiles && window.uploadedFiles[type]) {
+    window.uploadedFiles[type].splice(index, 1);
+    window.uploadedImages[type].splice(index, 1);
+    
+    updatePreview(type, window.uploadedImages[type]);
+    updateGenerateButtonDirect();
+    updateUploadLabel(type);
+    
+    showNotification('Imagen eliminada', 'info');
+  }
+}
+
+// ACTUALIZAR LABEL DE UPLOAD
+function updateUploadLabel(type) {
+  const label = document.querySelector(`label[for="${type}-upload"]`);
+  if (label && window.uploadedFiles && window.uploadedFiles[type]) {
+    const count = window.uploadedFiles[type].length;
+    const limits = { tops: 3, bottoms: 3, shoes: 5 };
+    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Zapatos' };
+    
+    if (count === 0) {
+      label.innerHTML = `📤 Subir ${typeNames[type]} (máx ${limits[type]})`;
+    } else {
+      label.innerHTML = `✅ ${count}/${limits[type]} ${typeNames[type]} subido(s)`;
+    }
+  }
+}
+
+// ACTUALIZAR BOTÓN DE GENERAR PARA MODO DIRECTO
+function updateGenerateButtonDirect() {
+  const generateBtn = document.getElementById('generateBtn');
+  if (!generateBtn) {
+    console.warn('❌ No se encontró generateBtn');
+    return;
+  }
+  
+  // Verificar ocasión
+  const hasOccasion = selectedOccasion || window.selectedOccasion;
+  
+  // Verificar archivos
+  let hasAllFiles = false;
+  if (window.uploadedFiles) {
+    const hasTops = window.uploadedFiles.tops && window.uploadedFiles.tops.length > 0;
+    const hasBottoms = window.uploadedFiles.bottoms && window.uploadedFiles.bottoms.length > 0;
+    const hasShoes = window.uploadedFiles.shoes && window.uploadedFiles.shoes.length > 0;
+    hasAllFiles = hasTops && hasBottoms && hasShoes;
+  }
+  
+  console.log('Estado del botón generar:');
+  console.log('- Ocasión:', hasOccasion);
+  console.log('- Archivos completos:', hasAllFiles);
+  console.log('- uploadedFiles:', window.uploadedFiles);
+  
+  if (hasOccasion && hasAllFiles) {
+    // HABILITAR botón
+    generateBtn.disabled = false;
+    generateBtn.style.opacity = '1';
+    generateBtn.style.cursor = 'pointer';
+    generateBtn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
+    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
+    
+    console.log('✅ Botón de generar HABILITADO');
+  } else {
+    // DESHABILITAR botón
+    generateBtn.disabled = true;
+    generateBtn.style.opacity = '0.6';
+    generateBtn.style.cursor = 'not-allowed';
+    generateBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+    
+    if (!hasOccasion) {
+      generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
+    } else if (!hasAllFiles) {
+      generateBtn.innerHTML = '<i class="fas fa-upload"></i> Sube fotos de cada categoría para continuar';
+    }
+    
+    console.log('❌ Botón de generar DESHABILITADO');
+  }
+}
+
+// AGREGAR A LA FUNCIÓN useDirectMode ORIGINAL
+// Esta función debe reemplazar la que está en el código principal
+console.log('✅ Sistema completo del closet cargado - versión robusta con IA');
+
+
 
 // =======================================================
-// FIN DE DEBUGGING Y CORRECCIÓN
+// FIN DEL ARCHIVO
 // =======================================================
