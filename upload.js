@@ -1,7 +1,12 @@
-// upload.js - Sistema de Subida Unificado y Optimizado
+// upload.js - Sistema de Upload Corregido y Unificado
 
-// Manejar subida de archivos con lógica unificada
+console.log('📤 Iniciando sistema de upload corregido...');
+
+// MANEJAR SUBIDA DE ARCHIVOS UNIFICADA (función principal)
 async function handleFileUpload(type, input) {
+  console.log(`📁 Procesando upload para ${type}...`);
+  
+  // Verificar login
   if (!window.isLoggedIn()) {
     window.showNotification('Debes iniciar sesión primero', 'error');
     input.value = '';
@@ -9,85 +14,124 @@ async function handleFileUpload(type, input) {
   }
   
   const files = Array.from(input.files);
-  if (files.length === 0) return;
+  if (files.length === 0) {
+    console.log('No se seleccionaron archivos');
+    return;
+  }
   
-  // Validar límites usando funciones unificadas del config
-  const validation = window.validateUploadLimits(type, files.length);
+  console.log(`📷 ${files.length} archivos seleccionados para ${type}`);
+  
+  // VALIDAR LÍMITES Y ARCHIVOS
+  const validation = validateUploadRequest(type, files);
   if (!validation.valid) {
     window.showNotification(validation.message, 'error');
     input.value = '';
     return;
   }
   
-  // Validar tipos de archivo
-  const invalidFiles = files.filter(file => !window.validateFileType(file));
-  if (invalidFiles.length > 0) {
-    window.showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
-    input.value = '';
-    return;
-  }
-  
-  // Validar tamaño de archivos
-  const oversizedFiles = files.filter(file => !window.validateFileSize(file));
-  if (oversizedFiles.length > 0) {
-    window.showNotification('Archivos muy grandes. Máximo 5MB por imagen', 'error');
-    input.value = '';
-    return;
-  }
-  
-  // Limpiar resultados previos cuando se suben nuevas imágenes
+  // LIMPIAR RESULTADOS ANTERIORES
   clearPreviousResults();
   
-  // Procesar archivos
+  // MOSTRAR PROGRESO
+  window.showNotification(`📤 Subiendo ${files.length} archivo(s)...`, 'info');
+  
+  // PROCESAR ARCHIVOS
+  let processedCount = 0;
+  const successfulUploads = [];
+  
   for (const file of files) {
     try {
-      // Crear preview visual
-      const preview = await createPreview(file, type);
-      const previewContainer = document.getElementById(`${type}-preview`);
-      if (previewContainer) {
-        previewContainer.appendChild(preview);
-      }
+      console.log(`🔄 Procesando: ${file.name}`);
       
-      // Agregar a arrays globales
-      uploadedFiles[type].push(file);
+      // Convertir a data URL
+      const imageUrl = await convertFileToDataUrl(file);
       
-      // Convertir a data URL para display
-      const imageUrl = await getImageDataUrl(file);
-      uploadedImages[type].push(imageUrl);
+      // Agregar a arrays globales usando las variables del config
+      if (!window.uploadedFiles) window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      if (!window.uploadedImages) window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+      
+      window.uploadedFiles[type].push(file);
+      window.uploadedImages[type].push(imageUrl);
       
       // Si está en modo closet, agregar también al closet
       if (window.closetMode()) {
-        closetItems[type].push(imageUrl);
+        if (!window.closetItems) window.closetItems = { tops: [], bottoms: [], shoes: [] };
+        window.closetItems[type].push(imageUrl);
       }
       
+      // Crear preview visual
+      createPreviewElement(file, imageUrl, type, window.uploadedFiles[type].length - 1);
+      
+      successfulUploads.push(file.name);
+      processedCount++;
+      
+      console.log(`✅ Procesado: ${file.name}`);
+      
     } catch (error) {
-      console.error('Error procesando archivo:', error);
+      console.error(`❌ Error procesando ${file.name}:`, error);
       window.showNotification(`Error procesando ${file.name}`, 'error');
     }
   }
   
-  // Actualizar UI
-  updateUploadLabel(type);
-  updateGenerateButton();
-  
-  // Guardar estado si está en modo closet
-  if (window.closetMode() && typeof window.saveUserClosetData === 'function') {
-    window.saveUserClosetData();
+  // FINALIZAR PROCESO
+  if (processedCount > 0) {
+    // Actualizar UI
+    updateUploadLabel(type);
+    updateGenerateButton();
+    
+    // Guardar datos si está en modo closet
+    if (window.closetMode() && typeof window.saveUserData === 'function') {
+      window.saveUserData();
+    }
+    
+    // Mensaje de éxito
+    const successMessage = window.generateSuccessMessage(type, processedCount);
+    window.showNotification(successMessage, 'success');
+    
+    console.log(`🎉 Upload completado: ${processedCount}/${files.length} archivos procesados`);
   }
-  
-  // Mostrar mensaje de éxito
-  const successMessage = window.generateSuccessMessage(type, files.length);
-  window.showNotification(successMessage, 'success');
   
   // Limpiar input
   input.value = '';
 }
 
-// Obtener data URL de imagen de forma segura
-function getImageDataUrl(file) {
+// VALIDAR REQUEST DE UPLOAD
+function validateUploadRequest(type, files) {
+  console.log(`🔍 Validando upload: ${files.length} archivos para ${type}`);
+  
+  // Validar límites usando funciones centralizadas
+  const limitValidation = window.validateUploadLimits(type, files.length);
+  if (!limitValidation.valid) {
+    return limitValidation;
+  }
+  
+  // Validar tipos de archivo
+  const invalidFiles = files.filter(file => !window.validateFileType(file));
+  if (invalidFiles.length > 0) {
+    return {
+      valid: false,
+      message: `Archivos no válidos: ${invalidFiles.map(f => f.name).join(', ')}. Solo JPG, PNG y WebP permitidos.`
+    };
+  }
+  
+  // Validar tamaño de archivos
+  const oversizedFiles = files.filter(file => !window.validateFileSize(file));
+  if (oversizedFiles.length > 0) {
+    return {
+      valid: false,
+      message: `Archivos muy grandes: ${oversizedFiles.map(f => f.name).join(', ')}. Máximo 5MB por imagen.`
+    };
+  }
+  
+  console.log('✅ Validación de upload exitosa');
+  return { valid: true };
+}
+
+// CONVERTIR ARCHIVO A DATA URL
+function convertFileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith('image/')) {
-      reject(new Error('Archivo inválido'));
+      reject(new Error('Archivo no es una imagen válida'));
       return;
     }
     
@@ -98,222 +142,308 @@ function getImageDataUrl(file) {
   });
 }
 
-// Crear preview de imagen con controles mejorados
-function createPreview(file, type) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const container = document.createElement('div');
-      container.style.cssText = `
-        position: relative;
-        display: inline-block;
-        margin: 0.25rem;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.2s ease;
-      `;
-      
-      // Efecto hover
-      container.addEventListener('mouseenter', () => {
-        container.style.transform = 'scale(1.05)';
-      });
-      container.addEventListener('mouseleave', () => {
-        container.style.transform = 'scale(1)';
-      });
-      
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.className = 'preview-image';
-      img.alt = `${window.getTypeName(type)} - ${file.name}`;
-      img.style.cssText = `
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        display: block;
-      `;
-      
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-image';
-      removeBtn.innerHTML = '×';
-      removeBtn.title = 'Eliminar imagen';
-      removeBtn.style.cssText = `
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        transition: all 0.2s ease;
-      `;
-      
-      removeBtn.addEventListener('mouseenter', () => {
-        removeBtn.style.background = '#dc2626';
-        removeBtn.style.transform = 'scale(1.1)';
-      });
-      removeBtn.addEventListener('mouseleave', () => {
-        removeBtn.style.background = '#ef4444';
-        removeBtn.style.transform = 'scale(1)';
-      });
-      
-      removeBtn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (confirm('¿Eliminar esta imagen?')) {
-          removeImage(container, type);
-        }
-      };
-      
-      container.appendChild(img);
-      container.appendChild(removeBtn);
-      resolve(container);
-    };
-    
-    reader.onerror = () => reject(new Error('Error creando preview'));
-    reader.readAsDataURL(file);
+// CREAR ELEMENTO DE PREVIEW VISUAL
+function createPreviewElement(file, imageUrl, type, index) {
+  const previewContainer = document.getElementById(`${type}-preview`);
+  if (!previewContainer) {
+    console.warn(`Container de preview ${type}-preview no encontrado`);
+    return;
+  }
+  
+  // Crear contenedor del preview
+  const previewItem = document.createElement('div');
+  previewItem.className = 'preview-item';
+  previewItem.style.cssText = `
+    position: relative;
+    display: inline-block;
+    margin: 0.5rem 0.25rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  `;
+  
+  // Imagen
+  const img = document.createElement('img');
+  img.src = imageUrl;
+  img.alt = `${window.getTypeName(type)} ${index + 1}`;
+  img.className = 'preview-image';
+  img.style.cssText = `
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    border-radius: 10px;
+  `;
+  
+  // Botón de eliminar
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-image';
+  removeBtn.innerHTML = '×';
+  removeBtn.title = `Eliminar ${file.name}`;
+  removeBtn.style.cssText = `
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+  `;
+  
+  // Efectos hover
+  previewItem.addEventListener('mouseenter', () => {
+    previewItem.style.transform = 'scale(1.05)';
+    removeBtn.style.background = '#dc2626';
+    removeBtn.style.transform = 'scale(1.1)';
   });
+  
+  previewItem.addEventListener('mouseleave', () => {
+    previewItem.style.transform = 'scale(1)';
+    removeBtn.style.background = '#ef4444';
+    removeBtn.style.transform = 'scale(1)';
+  });
+  
+  // Evento de eliminación
+  removeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (confirm(`¿Eliminar ${file.name}?`)) {
+      removeImage(previewItem, type, index);
+    }
+  });
+  
+  // Nombre del archivo (opcional, para debug)
+  const fileName = document.createElement('div');
+  fileName.textContent = file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name;
+  fileName.style.cssText = `
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    color: white;
+    padding: 0.5rem 0.25rem 0.25rem;
+    font-size: 0.7rem;
+    text-align: center;
+    border-radius: 0 0 10px 10px;
+  `;
+  
+  // Ensamblar elementos
+  previewItem.appendChild(img);
+  previewItem.appendChild(removeBtn);
+  previewItem.appendChild(fileName);
+  
+  // Agregar al container
+  previewContainer.appendChild(previewItem);
+  
+  console.log(`🖼️ Preview creado para ${file.name}`);
 }
 
-// Eliminar imagen con limpieza completa
-function removeImage(container, type) {
-  const previewContainer = container.parentNode;
-  const index = Array.from(previewContainer.children).indexOf(container);
+// ELIMINAR IMAGEN CON LIMPIEZA COMPLETA
+function removeImage(previewElement, type, originalIndex) {
+  console.log(`🗑️ Eliminando imagen ${originalIndex} de ${type}`);
   
-  if (index !== -1) {
-    // Limpiar arrays globales
-    uploadedFiles[type].splice(index, 1);
-    uploadedImages[type].splice(index, 1);
+  // Encontrar índice actual en el DOM
+  const previewContainer = previewElement.parentNode;
+  const currentIndex = Array.from(previewContainer.children).indexOf(previewElement);
+  
+  if (currentIndex !== -1 && window.uploadedFiles && window.uploadedFiles[type]) {
+    // Eliminar de arrays globales
+    window.uploadedFiles[type].splice(currentIndex, 1);
     
-    // Limpiar closet si está en modo closet
-    if (window.closetMode() && closetItems[type]) {
-      closetItems[type].splice(index, 1);
+    if (window.uploadedImages && window.uploadedImages[type]) {
+      window.uploadedImages[type].splice(currentIndex, 1);
+    }
+    
+    // Eliminar del closet si está en modo closet
+    if (window.closetMode() && window.closetItems && window.closetItems[type]) {
+      window.closetItems[type].splice(currentIndex, 1);
     }
     
     // Actualizar UI
     updateUploadLabel(type);
     updateGenerateButton();
-    
-    // Limpiar resultados previos
     clearPreviousResults();
     
-    // Guardar estado
-    if (window.closetMode() && typeof window.saveUserClosetData === 'function') {
-      window.saveUserClosetData();
+    // Guardar cambios
+    if (window.closetMode() && typeof window.saveUserData === 'function') {
+      window.saveUserData();
     }
     
+    // Mensaje de confirmación
     window.showNotification(`Imagen eliminada de ${window.getTypeName(type)}`, 'info');
   }
   
-  container.remove();
+  // Eliminar elemento visual
+  previewElement.remove();
+  
+  console.log(`✅ Imagen eliminada y arrays actualizados`);
 }
 
-// Actualizar etiqueta de subida con información contextual
+// ACTUALIZAR LABEL DE UPLOAD CON INFORMACIÓN CONTEXTUAL
 function updateUploadLabel(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
   if (!label) return;
   
-  const count = uploadedFiles[type].length;
+  const currentCount = (window.uploadedFiles && window.uploadedFiles[type]) ? 
+                      window.uploadedFiles[type].length : 0;
   const typeName = window.getTypeName(type);
   
   let labelText = '';
-  let maxInfo = '';
+  let contextInfo = '';
   
   if (window.closetMode()) {
+    // Modo closet: mostrar espacios restantes
     const totalItems = window.getTotalClosetItems();
-    const remaining = Math.max(0, CONFIG.TOTAL_CLOSET_LIMIT - totalItems);
+    const remaining = window.getRemainingClosetSlots();
     
-    if (count === 0) {
+    if (currentCount === 0) {
       labelText = `📤 Subir ${typeName}`;
-      maxInfo = remaining > 0 ? ` (${remaining} espacios restantes)` : ' (Closet lleno)';
+      contextInfo = remaining > 0 ? 
+        ` (${remaining} espacios restantes en closet)` : 
+        ' (Closet lleno - elimina prendas)';
     } else {
-      labelText = `✅ ${count} ${typeName} subidas`;
-      maxInfo = remaining > 0 ? ` - ${remaining} espacios restantes` : ' - Closet lleno';
+      labelText = `✅ ${currentCount} ${typeName} en closet`;
+      contextInfo = remaining > 0 ? 
+        ` - ${remaining} espacios restantes` : 
+        ' - Closet lleno';
     }
-  } else {
-    const max = CONFIG.FILE_LIMITS[type];
-    const remaining = Math.max(0, max - count);
     
-    if (count === 0) {
+  } else {
+    // Modo directo: mostrar límites por tipo
+    const maxAllowed = CONFIG.FILE_LIMITS[type];
+    const remaining = Math.max(0, maxAllowed - currentCount);
+    
+    if (currentCount === 0) {
       labelText = `📤 Subir ${typeName}`;
-      maxInfo = ` (máx ${max})`;
+      contextInfo = ` (máx ${maxAllowed})`;
     } else if (remaining > 0) {
-      labelText = `✅ ${count}/${max} - Agregar más`;
-      maxInfo = ` (${remaining} restantes)`;
+      labelText = `✅ ${currentCount}/${maxAllowed} - Agregar más`;
+      contextInfo = ` (${remaining} restantes)`;
     } else {
-      labelText = `🎯 ${count}/${max} - ¡Completo!`;
-      maxInfo = '';
+      labelText = `🎯 ${currentCount}/${maxAllowed} - ¡Completo!`;
+      contextInfo = '';
     }
   }
   
-  label.innerHTML = labelText + maxInfo;
+  label.innerHTML = labelText + contextInfo;
+  
+  // Actualizar color según estado
+  if (currentCount === 0) {
+    label.style.background = 'var(--primary)';
+  } else if (window.closetMode() ? window.getRemainingClosetSlots() > 0 : currentCount < CONFIG.FILE_LIMITS[type]) {
+    label.style.background = 'var(--success)';
+  } else {
+    label.style.background = 'var(--warning)';
+  }
 }
 
-// Actualizar botón de generar con lógica unificada
+// ACTUALIZAR BOTÓN DE GENERAR CON LÓGICA COMPLETA
 function updateGenerateButton() {
   const btn = document.getElementById('generateBtn');
-  if (!btn) return;
+  if (!btn) {
+    console.warn('Botón generateBtn no encontrado');
+    return;
+  }
   
-  const hasMinimum = uploadedFiles.tops.length >= CONFIG.MIN_REQUIRED.tops &&
-                    uploadedFiles.bottoms.length >= CONFIG.MIN_REQUIRED.bottoms &&
-                    uploadedFiles.shoes.length >= CONFIG.MIN_REQUIRED.shoes;
+  // Verificar archivos mínimos requeridos
+  const hasMinimumFiles = Object.keys(CONFIG.MIN_REQUIRED).every(type => {
+    const currentCount = (window.uploadedFiles && window.uploadedFiles[type]) ? 
+                        window.uploadedFiles[type].length : 0;
+    return currentCount >= CONFIG.MIN_REQUIRED[type];
+  });
   
+  // Verificar ocasión seleccionada
   const hasOccasion = window.selectedOccasion() !== null;
   
-  if (hasMinimum && hasOccasion) {
-    const total = Math.min(
-      uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length,
-      10 // Limitar combinaciones mostradas
-    );
+  console.log('Estado del botón generar:', {
+    hasMinimumFiles,
+    hasOccasion,
+    uploadedFiles: window.uploadedFiles,
+    selectedOccasion: window.selectedOccasion()
+  });
+  
+  if (hasMinimumFiles && hasOccasion) {
+    // HABILITAR BOTÓN
+    const totalCombinations = calculatePossibleCombinations();
+    const displayCombinations = Math.min(totalCombinations, 5); // Limitar a 5 para UI
     
-    btn.innerHTML = `<i class="fas fa-magic"></i> Generar ${total} Recomendaciones con IA`;
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
-    btn.style.transform = 'none';
+    btn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
+    btn.innerHTML = `<i class="fas fa-magic"></i> Generar ${displayCombinations} Recomendación${displayCombinations !== 1 ? 'es' : ''} con IA`;
     
-    // Efecto hover mejorado
+    // Efectos hover
     btn.onmouseenter = () => {
-      btn.style.transform = 'translateY(-2px)';
-      btn.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.4)';
+      btn.style.transform = 'translateY(-3px)';
+      btn.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.4)';
     };
     btn.onmouseleave = () => {
       btn.style.transform = 'translateY(0)';
       btn.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.3)';
     };
     
-  } else if (!hasOccasion) {
-    btn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
-    btn.onmouseenter = btn.onmouseleave = null;
+    // Configurar click
+    btn.onclick = function() {
+      if (typeof window.getRecommendation === 'function') {
+        window.getRecommendation();
+      } else {
+        console.warn('Función getRecommendation no disponible');
+        window.showNotification('Sistema de recomendaciones no disponible', 'error');
+      }
+    };
     
   } else {
-    const needed = [];
-    if (uploadedFiles.tops.length === 0) needed.push('superiores');
-    if (uploadedFiles.bottoms.length === 0) needed.push('inferiores');
-    if (uploadedFiles.shoes.length === 0) needed.push('zapatos');
-    
-    btn.innerHTML = `<i class="fas fa-upload"></i> Falta subir: ${needed.join(', ')}`;
+    // DESHABILITAR BOTÓN
     btn.disabled = true;
     btn.style.opacity = '0.6';
     btn.style.cursor = 'not-allowed';
+    btn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
     btn.onmouseenter = btn.onmouseleave = null;
+    btn.onclick = null;
+    
+    if (!hasOccasion) {
+      btn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
+    } else {
+      const needed = [];
+      Object.keys(CONFIG.MIN_REQUIRED).forEach(type => {
+        const currentCount = (window.uploadedFiles && window.uploadedFiles[type]) ? 
+                            window.uploadedFiles[type].length : 0;
+        if (currentCount < CONFIG.MIN_REQUIRED[type]) {
+          needed.push(window.getTypeName(type));
+        }
+      });
+      
+      btn.innerHTML = `<i class="fas fa-upload"></i> Falta subir: ${needed.join(', ')}`;
+    }
   }
 }
 
-// Limpiar resultados previos de forma segura
+// CALCULAR COMBINACIONES POSIBLES
+function calculatePossibleCombinations() {
+  if (!window.uploadedFiles) return 0;
+  
+  const tops = window.uploadedFiles.tops?.length || 0;
+  const bottoms = window.uploadedFiles.bottoms?.length || 0;
+  const shoes = window.uploadedFiles.shoes?.length || 0;
+  
+  return tops * bottoms * shoes;
+}
+
+// LIMPIAR RESULTADOS PREVIOS
 function clearPreviousResults() {
   const resultContainer = document.getElementById('result');
   if (resultContainer) {
@@ -321,52 +451,64 @@ function clearPreviousResults() {
     resultContainer.innerHTML = '';
   }
   
-  // Limpiar variable global
-  window.currentResults = null;
+  // Limpiar variable global de resultados
+  if (typeof window.currentResults !== 'undefined') {
+    window.currentResults = null;
+  }
   
   console.log('🧹 Resultados previos limpiados');
 }
 
-// Resetear todo el estado de upload
+// RESETEAR ESTADO COMPLETO DE UPLOAD
 function resetUploadState() {
-  console.log('🔄 Reseteando estado de upload...');
+  console.log('🔄 Reseteando estado completo de upload...');
   
-  // Limpiar arrays
-  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  uploadedImages = { tops: [], bottoms: [], shoes: [] };
-  
-  // Limpiar previews visuales
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const preview = document.getElementById(`${type}-preview`);
-    if (preview) {
-      preview.innerHTML = '';
+  try {
+    // Limpiar arrays globales
+    window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+    window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+    
+    if (window.closetMode()) {
+      window.closetItems = { tops: [], bottoms: [], shoes: [] };
     }
     
-    // Resetear labels
-    updateUploadLabel(type);
-  });
-  
-  // Limpiar resultados
-  clearPreviousResults();
-  
-  // Actualizar botón
-  updateGenerateButton();
-  
-  console.log('✅ Estado de upload reseteado');
+    // Limpiar previews visuales
+    ['tops', 'bottoms', 'shoes'].forEach(type => {
+      const preview = document.getElementById(`${type}-preview`);
+      if (preview) {
+        preview.innerHTML = '';
+      }
+      updateUploadLabel(type);
+    });
+    
+    // Limpiar resultados y ocasión
+    clearPreviousResults();
+    window.setSelectedOccasion(null);
+    
+    // Actualizar botón
+    updateGenerateButton();
+    
+    console.log('✅ Estado de upload completamente reseteado');
+    
+  } catch (error) {
+    console.error('Error reseteando estado de upload:', error);
+  }
 }
 
-// Configurar event listeners de upload
-function setupUploadEventListeners() {
-  const uploadInputs = [
+// CONFIGURAR EVENT LISTENERS DE INPUTS DE ARCHIVOS
+function setupFileInputListeners() {
+  console.log('🔧 Configurando event listeners de file inputs...');
+  
+  const fileInputs = [
     { id: 'tops-upload', type: 'tops' },
     { id: 'bottoms-upload', type: 'bottoms' },
     { id: 'shoes-upload', type: 'shoes' }
   ];
   
-  uploadInputs.forEach(({ id, type }) => {
+  fileInputs.forEach(({ id, type }) => {
     const input = document.getElementById(id);
     if (input) {
-      // Remover listeners anteriores
+      // Limpiar listeners anteriores
       input.removeEventListener('change', input._uploadHandler);
       
       // Crear nuevo handler
@@ -376,45 +518,52 @@ function setupUploadEventListeners() {
       // Agregar listener
       input.addEventListener('change', handler);
       
-      console.log(`📂 Upload listener configurado para ${type}`);
+      console.log(`✅ Listener configurado para ${id}`);
     } else {
       console.warn(`⚠️ Input ${id} no encontrado`);
     }
   });
 }
 
-// Inicializar sistema de upload
+// INICIALIZAR SISTEMA DE UPLOAD
 function initializeUploadSystem() {
   console.log('🚀 Inicializando sistema de upload...');
   
-  // Configurar event listeners
-  setupUploadEventListeners();
-  
-  // Inicializar labels
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    updateUploadLabel(type);
-  });
-  
-  // Inicializar botón de generar
-  updateGenerateButton();
-  
-  console.log('✅ Sistema de upload inicializado');
+  try {
+    // Configurar event listeners
+    setupFileInputListeners();
+    
+    // Inicializar labels de todos los tipos
+    Object.keys(CONFIG.FILE_LIMITS).forEach(type => {
+      updateUploadLabel(type);
+    });
+    
+    // Inicializar botón de generar
+    updateGenerateButton();
+    
+    console.log('✅ Sistema de upload inicializado correctamente');
+    
+  } catch (error) {
+    console.error('Error inicializando sistema de upload:', error);
+  }
 }
 
-// Exponer funciones globalmente
+// EXPONER FUNCIONES GLOBALMENTE
 window.handleFileUpload = handleFileUpload;
 window.updateGenerateButton = updateGenerateButton;
+window.updateUploadLabel = updateUploadLabel;
 window.clearPreviousResults = clearPreviousResults;
 window.resetUploadState = resetUploadState;
 window.initializeUploadSystem = initializeUploadSystem;
 
-// Auto-inicializar cuando el DOM esté listo
+// AUTO-INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', function() {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeUploadSystem);
-  } else {
-    setTimeout(initializeUploadSystem, 100);
-  }
+  console.log('📄 upload.js cargando...');
+  
+  // Inicializar después de un pequeño delay para asegurar que el DOM esté listo
+  setTimeout(initializeUploadSystem, 200);
+  
+  console.log('✅ upload.js cargado');
 });
 
-console.log('✅ upload.js - Sistema de Subida Unificado cargado');
+console.log('✅ upload.js - Sistema de Upload Corregido y Unificado cargado');
