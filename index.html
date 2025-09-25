@@ -114,6 +114,38 @@
       cursor: pointer;
     }
 
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      padding: 2rem;
+      border-bottom: 1px solid var(--border);
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-nav.active {
+      transform: translateY(0);
+    }
+
+    .mobile-nav-item {
+      display: block;
+      padding: 1rem;
+      color: #000000;
+      text-decoration: none;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      transition: background 0.3s ease;
+    }
+
+    .mobile-nav-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
     .auth-container {
       display: flex;
       align-items: center;
@@ -139,7 +171,7 @@
       font-family: inherit;
     }
 
-    #headerLoginBtn:hover {
+    #headerLoginBtn:hover:not(:disabled) {
       background: linear-gradient(135deg, #2563eb, #1e40af);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
@@ -164,6 +196,12 @@
       border: 2px solid var(--primary);
     }
 
+    #userName {
+      color: #000000;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
     .logout-btn {
       background: transparent;
       border: 1px solid var(--primary);
@@ -173,11 +211,13 @@
       cursor: pointer;
       font-size: 0.9rem;
       transition: all 0.3s ease;
+      font-family: inherit;
     }
 
     .logout-btn:hover {
       background: var(--primary);
       color: white;
+      transform: translateY(-1px);
     }
 
     .hero {
@@ -597,6 +637,14 @@
     .closet-content {
       padding: 2rem;
       min-height: 300px;
+    }
+
+    .closet-tab-content {
+      display: none;
+    }
+
+    .closet-tab-content.active {
+      display: block;
     }
 
     .folder-grid {
@@ -1052,14 +1100,6 @@
       to { transform: rotate(360deg); }
     }
 
-    .closet-tab-content {
-      display: none;
-    }
-
-    .closet-tab-content.active {
-      display: block;
-    }
-
     /* Responsive Design */
     @media (max-width: 768px) {
       .nav-pills { 
@@ -1067,6 +1107,10 @@
       }
       
       .mobile-menu-toggle {
+        display: block;
+      }
+      
+      .mobile-nav {
         display: block;
       }
       
@@ -1154,6 +1198,15 @@
         </div>
       </div>
     </nav>
+    
+    <!-- Menú móvil -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#inicio" class="mobile-nav-item" data-section="inicio">🏠 Inicio</a>
+      <a href="#impacto" class="mobile-nav-item" data-section="impacto">🌍 Impacto Ambiental</a>
+      <a href="#precios" class="mobile-nav-item" data-section="precios">$ Precios</a>
+      <a href="#funcionamiento" class="mobile-nav-item" data-section="funcionamiento">⚙️ Cómo funciona</a>
+      <a href="#equipo" class="mobile-nav-item" data-section="equipo">👥 Equipo</a>
+    </div>
   </header>
 
   <!-- Hero Section -->
@@ -1491,7 +1544,7 @@
         </div>
 
         <div class="closet-content">
-          <!-- SUPERIORES - 9 CATEGORÍAS EXACTAS DE closet.js -->
+          <!-- SUPERIORES - 9 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
           <div id="superiores" class="closet-tab-content active">
             <h3 style="margin-bottom: 1rem; color: #000000;">📸 Prendas Superiores</h3>
             <div class="folder-grid">
@@ -1499,13 +1552,13 @@
               <div class="folder-item" data-type="superiores">
                 <div class="folder-icon">👕</div>
                 <div class="folder-name">Poleras</div>
-                <div class="folder-count">t-shirts, poleras lisas, con estampados</div>
+                <div class="folder-count">t-shirts, tees, poleras, tank tops</div>
               </div>
               <!-- shirt -->
               <div class="folder-item" data-type="superiores">
                 <div class="folder-icon">👔</div>
                 <div class="folder-name">Camisas</div>
-                <div class="folder-count">camisas de vestir, casuales, con botones</div>
+                <div class="folder-count">camisas de vestir, casuales, con collar</div>
               </div>
               <!-- blouse -->
               <div class="folder-item" data-type="superiores">
@@ -1513,15 +1566,15 @@
                 <div class="folder-name">Blusas</div>
                 <div class="folder-count">blusas de seda, elegantes, fluidas</div>
               </div>
-              <!-- sweater -->
+              <!-- sweater - ÍCONO CORREGIDO -->
               <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🧥</div>
+                <div class="folder-icon">🧶</div>
                 <div class="folder-name">Suéteres</div>
-                <div class="folder-count">sweaters, tejidos, cardiganes</div>
+                <div class="folder-count">sweaters, pullovers, cardiganes</div>
               </div>
-              <!-- hoodie -->
+              <!-- hoodie - ÍCONO CORREGIDO -->
               <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">👘</div>
+                <div class="folder-icon">🤘</div>
                 <div class="folder-name">Hoodies</div>
                 <div class="folder-count">con capucha, sudaderas, zip-up</div>
               </div>
@@ -1531,9 +1584,9 @@
                 <div class="folder-name">Chaquetas</div>
                 <div class="folder-count">de cuero, mezclilla, blazers</div>
               </div>
-              <!-- coat -->
+              <!-- coat - ÍCONO CORREGIDO -->
               <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🧥</div>
+                <div class="folder-icon">❄️</div>
                 <div class="folder-name">Abrigos</div>
                 <div class="folder-count">de invierno, parkas, trench</div>
               </div>
@@ -1541,18 +1594,18 @@
               <div class="folder-item" data-type="superiores">
                 <div class="folder-icon">👗</div>
                 <div class="folder-name">Vestidos</div>
-                <div class="folder-count">casuales, de verano, de gala</div>
+                <div class="folder-count">casuales, de gala, vestidos largos</div>
               </div>
               <!-- vest -->
               <div class="folder-item" data-type="superiores">
                 <div class="folder-icon">🦺</div>
                 <div class="folder-name">Chalecos</div>
-                <div class="folder-count">sin mangas, waistcoat</div>
+                <div class="folder-count">sin mangas, waistcoat, chalecos</div>
               </div>
             </div>
           </div>
 
-          <!-- INFERIORES - 5 CATEGORÍAS EXACTAS DE closet.js -->
+          <!-- INFERIORES - 5 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
           <div id="inferiores" class="closet-tab-content">
             <h3 style="margin-bottom: 1rem; color: #000000;">📸 Prendas Inferiores</h3>
             <div class="folder-grid">
@@ -1560,25 +1613,25 @@
               <div class="folder-item" data-type="inferiores">
                 <div class="folder-icon">👖</div>
                 <div class="folder-name">Jeans</div>
-                <div class="folder-count">mezclilla, jeans azules, rotos</div>
+                <div class="folder-count">mezclilla, jeans azules, denim</div>
               </div>
               <!-- pants -->
               <div class="folder-item" data-type="inferiores">
                 <div class="folder-icon">👖</div>
                 <div class="folder-name">Pantalones</div>
-                <div class="folder-count">de vestir, chinos, formales</div>
+                <div class="folder-count">de vestir, chinos, trousers</div>
               </div>
               <!-- skirt -->
               <div class="folder-item" data-type="inferiores">
                 <div class="folder-icon">👗</div>
                 <div class="folder-name">Faldas</div>
-                <div class="folder-count">midi, lápiz, minifalda</div>
+                <div class="folder-count">mini, falda tubo, midi</div>
               </div>
               <!-- shorts -->
               <div class="folder-item" data-type="inferiores">
                 <div class="folder-icon">🩳</div>
                 <div class="folder-name">Shorts</div>
-                <div class="folder-count">bermudas, deportivos, de playa</div>
+                <div class="folder-count">bermudas, shorts deportivos</div>
               </div>
               <!-- leggings -->
               <div class="folder-item" data-type="inferiores">
@@ -1589,7 +1642,7 @@
             </div>
           </div>
 
-          <!-- CALZADO - 6 CATEGORÍAS EXACTAS DE closet.js -->
+          <!-- CALZADO - 6 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
           <div id="calzado" class="closet-tab-content">
             <h3 style="margin-bottom: 1rem; color: #000000;">📸 Calzado</h3>
             <div class="folder-grid">
@@ -1792,7 +1845,273 @@
   <script src="api.js"></script>
   <script src="recommendations.js"></script>
   <script src="profile.js"></script>
-  <!-- SCRIPTS AL FINAL DEL index.html ANTES DE </body> -->
+  
+  <!-- SCRIPTS ADICIONALES PARA FLUJO CORRECTO -->
+  <script>
+    // CORRECCIÓN DEL FLUJO SECUENCIAL
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // FUNCIÓN CORREGIDA: enableCloset con ocasión PRIMERO
+      window.enableClosetWithFlow = function() {
+        console.log('✨ Activando Mi Closet Digital con flujo correcto...');
+        
+        // Ocultar opciones
+        const closetQuestion = document.getElementById('closetQuestion');
+        if (closetQuestion) closetQuestion.style.display = 'none';
+        
+        // PASO 1: Mostrar selector de ocasión PRIMERO
+        const occasionSelector = document.getElementById('occasionSelector');
+        if (occasionSelector) {
+          occasionSelector.style.display = 'block';
+          
+          // Configurar botones de ocasión para modo closet
+          setupOccasionButtonsForCloset();
+          
+          // Scroll al selector de ocasión
+          setTimeout(() => {
+            occasionSelector.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        }
+        
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Paso 1: Selecciona una ocasión para tu closet', 'info');
+        }
+      };
+      
+      // FUNCIÓN CORREGIDA: useDirectMode con flujo secuencial
+      window.useDirectModeWithFlow = function() {
+        console.log('⚡ Activando Recomendaciones Rápidas con flujo correcto...');
+        
+        // Ocultar opciones
+        const closetQuestion = document.getElementById('closetQuestion');
+        if (closetQuestion) closetQuestion.style.display = 'none';
+        
+        // PASO 1: Solo mostrar selector de ocasión
+        const occasionSelector = document.getElementById('occasionSelector');
+        if (occasionSelector) {
+          occasionSelector.style.display = 'block';
+          
+          // Configurar botones para modo directo
+          setupOccasionButtonsForDirect();
+          
+          // Scroll al selector
+          setTimeout(() => {
+            occasionSelector.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        }
+        
+        // Asegurar que el área de upload esté oculta inicialmente
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+          uploadArea.style.display = 'none';
+        }
+        
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Paso 1: Selecciona una ocasión', 'info');
+        }
+      };
+      
+      // CONFIGURAR OCASIONES PARA MODO CLOSET
+      function setupOccasionButtonsForCloset() {
+        const occasionBtns = document.querySelectorAll('.occasion-btn');
+        
+        occasionBtns.forEach(btn => {
+          // Limpiar listeners anteriores
+          const newBtn = btn.cloneNode(true);
+          btn.parentNode.replaceChild(newBtn, btn);
+          
+          newBtn.addEventListener('click', function() {
+            // Marcar selección
+            document.querySelectorAll('.occasion-btn').forEach(b => {
+              b.classList.remove('selected');
+              b.style.borderColor = 'var(--border)';
+              b.style.background = 'var(--background)';
+            });
+            
+            this.classList.add('selected');
+            this.style.borderColor = 'var(--primary)';
+            this.style.background = 'rgba(59, 130, 246, 0.1)';
+            
+            const occasion = this.dataset.occasion;
+            window.selectedOccasion = occasion;
+            
+            if (typeof window.showNotification === 'function') {
+              window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
+            }
+            
+            // PASO 2: Mostrar closet después de seleccionar ocasión
+            setTimeout(() => {
+              const closetContainer = document.getElementById('closetContainer');
+              if (closetContainer) {
+                closetContainer.style.display = 'block';
+                
+                // Configurar info del usuario
+                const userEmail = document.getElementById('userEmail');
+                if (userEmail && window.currentUser && typeof window.currentUser === 'function') {
+                  const user = window.currentUser();
+                  if (user) {
+                    userEmail.textContent = `Bienvenido ${user.name}`;
+                  }
+                }
+                
+                // Scroll al closet
+                setTimeout(() => {
+                  closetContainer.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+                if (typeof window.showNotification === 'function') {
+                  window.showNotification('Paso 2: Usa las carpetas para subir fotos', 'info');
+                }
+              }
+            }, 1000);
+          });
+        });
+      }
+      
+      // CONFIGURAR OCASIONES PARA MODO DIRECTO
+      function setupOccasionButtonsForDirect() {
+        const occasionBtns = document.querySelectorAll('.occasion-btn');
+        
+        occasionBtns.forEach(btn => {
+          // Limpiar listeners anteriores
+          const newBtn = btn.cloneNode(true);
+          btn.parentNode.replaceChild(newBtn, btn);
+          
+          newBtn.addEventListener('click', function() {
+            // Marcar selección
+            document.querySelectorAll('.occasion-btn').forEach(b => {
+              b.classList.remove('selected');
+              b.style.borderColor = 'var(--border)';
+              b.style.background = 'var(--background)';
+            });
+            
+            this.classList.add('selected');
+            this.style.borderColor = 'var(--primary)';
+            this.style.background = 'rgba(59, 130, 246, 0.1)';
+            
+            const occasion = this.dataset.occasion;
+            window.selectedOccasion = occasion;
+            
+            if (typeof window.showNotification === 'function') {
+              window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
+            }
+            
+            // PASO 2: Mostrar área de upload después de seleccionar ocasión
+            setTimeout(() => {
+              const uploadArea = document.getElementById('uploadArea');
+              if (uploadArea) {
+                uploadArea.style.display = 'block';
+                
+                // Scroll al área de upload
+                setTimeout(() => {
+                  uploadArea.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+                if (typeof window.showNotification === 'function') {
+                  window.showNotification('Paso 2: Sube fotos de cada categoría', 'info');
+                }
+              }
+            }, 1000);
+          });
+        });
+      }
+      
+      // REEMPLAZAR FUNCIONES DE LOS BOTONES
+      const enableClosetBtn = document.getElementById('enableClosetBtn');
+      if (enableClosetBtn) {
+        enableClosetBtn.onclick = function(e) {
+          e.preventDefault();
+          window.enableClosetWithFlow();
+        };
+      }
+      
+      const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+      if (useDirectModeBtn) {
+        useDirectModeBtn.onclick = function(e) {
+          e.preventDefault();
+          window.useDirectModeWithFlow();
+        };
+      }
+      
+      // NAVEGACIÓN SUAVE MEJORADA
+      function scrollToSection(sectionId) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+      
+      // CONFIGURAR NAVEGACIÓN DEL MENÚ
+      document.querySelectorAll('.nav-pill, .mobile-nav-item, .footer-column a').forEach(link => {
+        if (link.dataset.section) {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remover clase active
+            document.querySelectorAll('.nav-pill').forEach(pill => {
+              pill.classList.remove('active');
+            });
+            
+            // Agregar clase active al actual
+            if (this.classList.contains('nav-pill')) {
+              this.classList.add('active');
+            }
+            
+            // Scroll a la sección
+            scrollToSection(this.dataset.section);
+            
+            // Cerrar menú móvil si está abierto
+            const mobileNav = document.getElementById('mobileNav');
+            if (mobileNav) {
+              mobileNav.classList.remove('active');
+            }
+          });
+        }
+      });
+      
+      // TOGGLE MENÚ MÓVIL
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+      const mobileNav = document.getElementById('mobileNav');
+      
+      if (mobileMenuToggle && mobileNav) {
+        mobileMenuToggle.addEventListener('click', function() {
+          mobileNav.classList.toggle('active');
+        });
+      }
+      
+      // ANIMACIONES DE IMPACTO
+      function animateImpactBars() {
+        const impactFills = document.querySelectorAll('.impact-fill');
+        impactFills.forEach(fill => {
+          const width = fill.dataset.width;
+          if (width) {
+            setTimeout(() => {
+              fill.style.width = width + '%';
+            }, 500);
+          }
+        });
+      }
+      
+      // OBSERVER PARA ANIMACIONES
+      if (typeof IntersectionObserver !== 'undefined') {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              if (entry.target.classList.contains('impact-bars')) {
+                animateImpactBars();
+              }
+            }
+          });
+        });
+        
+        const impactSection = document.querySelector('.impact-bars');
+        if (impactSection) {
+          observer.observe(impactSection);
+        }
+      }
+      
+      console.log('✅ Flujo corregido inicializado');
+    });
+  </script>
 </body>
 </html>
-  
