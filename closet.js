@@ -624,5 +624,311 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 1000);
 });
+// =======================================================
+// FUNCIONES DE REPARACIÓN DE UI - AGREGAR ANTES DEL CONSOLE.LOG FINAL
+// =======================================================
 
+// Notificación personalizada mejorada
+function showCustomProfileNotification() {
+  // Eliminar notificación anterior si existe
+  const existing = document.querySelector('.custom-profile-notification');
+  if (existing) existing.remove();
+
+  const notification = document.createElement('div');
+  notification.className = 'custom-profile-notification';
+  notification.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 2rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    max-width: 90vw;
+    animation: profileSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  `;
+
+  notification.innerHTML = `
+    <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
+    <h3 style="margin: 0 0 1rem 0; font-weight: 700; font-size: 1.5rem;">¡Perfil Completado!</h3>
+    <p style="margin: 0 0 1.5rem 0; opacity: 0.9; font-size: 1.1rem;">
+      Tu perfil ha sido guardado exitosamente.<br>
+      Ahora puedes comenzar a usar tu Closet IA.
+    </p>
+    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;">
+      <div style="font-weight: 600; margin-bottom: 0.5rem;">🎯 ¿Qué sigue?</div>
+      <div style="font-size: 0.95rem; line-height: 1.5;">
+        1️⃣ Elige si crear tu Closet IA<br>
+        2️⃣ O ve directo a generar recomendaciones
+      </div>
+    </div>
+    <button onclick="this.parentElement.remove()" style="
+      background: rgba(255,255,255,0.2); 
+      border: none; 
+      color: white; 
+      padding: 0.8rem 2rem; 
+      border-radius: 25px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+      ¡Perfecto! 🚀
+    </button>
+  `;
+
+  // Agregar animación CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes profileSlideIn {
+      0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8) rotateY(90deg); 
+      }
+      100% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg); 
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.body.appendChild(notification);
+
+  // Auto-remover después de 8 segundos
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.style.animation = 'profileSlideOut 0.5s ease-out forwards';
+      setTimeout(() => notification.remove(), 500);
+    }
+  }, 8000);
+}
+
+// Reparar formulario de perfil
+function fixProfileForm() {
+  const profileForm = document.getElementById('profileForm');
+  if (!profileForm) return;
+
+  // Mejorar estilos del formulario
+  profileForm.style.cssText += `
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+    border: 2px solid rgba(59, 130, 246, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  `;
+
+  // Mejorar botones de opción
+  const options = profileForm.querySelectorAll('.profile-option');
+  options.forEach(option => {
+    // Mejorar hover
+    option.addEventListener('mouseenter', function() {
+      if (!this.classList.contains('selected')) {
+        this.style.transform = 'translateY(-3px) scale(1.02)';
+        this.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)';
+      }
+    });
+
+    option.addEventListener('mouseleave', function() {
+      if (!this.classList.contains('selected')) {
+        this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = 'none';
+      }
+    });
+
+    // Mejorar selección
+    option.addEventListener('click', function() {
+      const field = this.dataset.field;
+      const fieldOptions = profileForm.querySelectorAll(`[data-field="${field}"]`);
+      
+      // Remover selección anterior
+      fieldOptions.forEach(opt => {
+        opt.classList.remove('selected');
+        opt.style.transform = 'translateY(0) scale(1)';
+        opt.style.borderColor = 'var(--border)';
+        opt.style.background = 'var(--background)';
+        opt.style.boxShadow = 'none';
+      });
+      
+      // Agregar nueva selección con animación
+      this.classList.add('selected');
+      this.style.transform = 'translateY(-2px) scale(1.05)';
+      this.style.borderColor = 'var(--primary)';
+      this.style.background = 'rgba(59, 130, 246, 0.1)';
+      this.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.2)';
+
+      // Verificar si todas las opciones están seleccionadas
+      checkProfileCompletion();
+    });
+  });
+}
+
+// Verificar completación del perfil
+function checkProfileCompletion() {
+  const fields = ['skin_color', 'age_range', 'gender'];
+  const allSelected = fields.every(field => {
+    return document.querySelector(`.profile-option[data-field="${field}"].selected`);
+  });
+
+  const createBtn = document.getElementById('createProfileBtn');
+  if (createBtn) {
+    if (allSelected) {
+      createBtn.disabled = false;
+      createBtn.style.opacity = '1';
+      createBtn.style.cursor = 'pointer';
+      createBtn.innerHTML = '<i class="fas fa-user-plus"></i> 🚀 Crear Mi Perfil';
+      createBtn.style.background = 'linear-gradient(135deg, var(--success), #059669)';
+      
+      // Animación de pulsado
+      createBtn.style.animation = 'pulse 2s infinite';
+    } else {
+      createBtn.disabled = true;
+      createBtn.style.opacity = '0.6';
+      createBtn.style.cursor = 'not-allowed';
+      createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
+      createBtn.style.background = 'linear-gradient(135deg, var(--primary), #1d4ed8)';
+      createBtn.style.animation = 'none';
+    }
+  }
+}
+
+// Reparar opciones del closet
+function fixClosetOptions() {
+  const closetOptions = document.querySelectorAll('.closet-option');
+  closetOptions.forEach((option, index) => {
+    // Mejorar estilos
+    option.style.cssText += `
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    `;
+
+    // Efecto de ondas al click
+    option.addEventListener('click', function(e) {
+      const ripple = document.createElement('span');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      
+      ripple.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: ${y}px;
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        transform: scale(0);
+        animation: rippleEffect 0.6s ease-out;
+        pointer-events: none;
+        z-index: 0;
+      `;
+      
+      this.appendChild(ripple);
+      
+      setTimeout(() => {
+        if (ripple.parentElement) ripple.remove();
+      }, 600);
+    });
+
+    // Animación de entrada escalonada
+    option.style.opacity = '0';
+    option.style.transform = 'translateY(50px)';
+    
+    setTimeout(() => {
+      option.style.opacity = '1';
+      option.style.transform = 'translateY(0)';
+    }, index * 150);
+  });
+}
+
+// Agregar animaciones CSS necesarias
+function addUIAnimations() {
+  const existingStyle = document.getElementById('uiFixStyles');
+  if (existingStyle) return;
+
+  const style = document.createElement('style');
+  style.id = 'uiFixStyles';
+  style.textContent = `
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes rippleEffect {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes profileSlideOut {
+      0% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+      }
+      100% { 
+        opacity: 0; 
+        transform: translate(-50%, -60%) scale(0.9); 
+      }
+    }
+    
+    .profile-option {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    
+    .closet-option {
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Inicializar todas las reparaciones
+function initializeUIFixes() {
+  console.log('🔧 Iniciando reparaciones de UI...');
+  
+  addUIAnimations();
+  
+  // Reparar formulario de perfil
+  setTimeout(() => {
+    fixProfileForm();
+    console.log('✅ Formulario de perfil reparado');
+  }, 500);
+  
+  // Reparar opciones de closet
+  setTimeout(() => {
+    fixClosetOptions();
+    console.log('✅ Opciones de closet reparadas');
+  }, 1000);
+  
+  // Verificar estado inicial del perfil
+  setTimeout(() => {
+    checkProfileCompletion();
+    console.log('✅ Estado del perfil verificado');
+  }, 1500);
+}
+
+// Función para activar notificación después de crear perfil
+window.showProfileCompletedNotification = function() {
+  showCustomProfileNotification();
+};
+
+// Exponer función para uso global
+window.initializeUIFixes = initializeUIFixes;
+window.checkProfileCompletion = checkProfileCompletion;
+
+// Auto-inicializar reparaciones
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(initializeUIFixes, 1000);
+});
+
+// =======================================================
+// FIN DE FUNCIONES DE REPARACIÓN DE UI
+// =======================================================
 console.log('✅ closet.js - Sistema Inteligente con Detección IA Alineado con Backend cargado');
