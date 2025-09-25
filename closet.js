@@ -927,6 +927,257 @@ window.checkProfileCompletion = checkProfileCompletion;
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(initializeUIFixes, 1000);
 });
+// =======================================================
+// EVENT LISTENERS PARA BOTONES DEL CLOSET - AGREGAR AL FINAL DE closet.js
+// =======================================================
+
+// Función para modo directo (que faltaba)
+function useDirectMode() {
+  console.log('⚡ Activando modo directo...');
+  
+  // Ocultar pregunta del closet
+  const closetQuestion = document.getElementById('closetQuestion');
+  if (closetQuestion) closetQuestion.style.display = 'none';
+  
+  // Mostrar selector de ocasiones
+  const occasionSelector = document.getElementById('occasionSelector');
+  if (occasionSelector) {
+    occasionSelector.style.display = 'block';
+    setupOccasionSelector();
+  }
+  
+  // Mostrar área de upload
+  const uploadArea = document.getElementById('uploadArea');
+  if (uploadArea) {
+    uploadArea.style.display = 'block';
+    setupDirectUpload();
+  }
+  
+  window.showNotification('Modo directo activado', 'success');
+}
+
+// Configurar selector de ocasiones
+function setupOccasionSelector() {
+  const occasionBtns = document.querySelectorAll('.occasion-btn');
+  occasionBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remover selección anterior
+      occasionBtns.forEach(b => b.classList.remove('selected'));
+      
+      // Seleccionar actual
+      this.classList.add('selected');
+      
+      // Guardar ocasión
+      const occasion = this.dataset.occasion;
+      window.selectedOccasion = occasion;
+      
+      console.log('Ocasión seleccionada:', occasion);
+      
+      // Actualizar botón de generar
+      updateGenerateButton();
+      
+      window.showNotification(`Ocasión: ${occasion}`, 'success');
+    });
+  });
+}
+
+// Configurar upload directo
+function setupDirectUpload() {
+  const fileInputs = document.querySelectorAll('.file-input');
+  fileInputs.forEach(input => {
+    input.addEventListener('change', function(e) {
+      const type = this.id.replace('-upload', '');
+      handleFileUpload(type, this);
+    });
+  });
+}
+
+// Actualizar botón de generar
+function updateGenerateButton() {
+  const generateBtn = document.getElementById('generateBtn');
+  if (!generateBtn) return;
+  
+  const hasOccasion = window.selectedOccasion;
+  const hasFiles = (window.uploadedFiles?.tops?.length > 0) && 
+                   (window.uploadedFiles?.bottoms?.length > 0) && 
+                   (window.uploadedFiles?.shoes?.length > 0);
+  
+  if (hasOccasion && hasFiles) {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
+  } else if (!hasOccasion) {
+    generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona una ocasión primero';
+  } else {
+    generateBtn.innerHTML = '<i class="fas fa-upload"></i> Sube fotos de cada categoría';
+  }
+}
+
+// Configurar event listeners de los botones del closet
+function setupClosetButtons() {
+  console.log('🔧 Configurando botones del closet...');
+  
+  // Botón "Mi Closet Digital"
+  const enableClosetBtn = document.getElementById('enableClosetBtn');
+  if (enableClosetBtn) {
+    enableClosetBtn.addEventListener('click', function() {
+      console.log('🎯 Click en Mi Closet Digital');
+      enableCloset();
+    });
+    console.log('✅ Botón Mi Closet Digital configurado');
+  } else {
+    console.warn('❌ No se encontró enableClosetBtn');
+  }
+  
+  // Botón "Recomendaciones Rápidas"
+  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+  if (useDirectModeBtn) {
+    useDirectModeBtn.addEventListener('click', function() {
+      console.log('🎯 Click en Recomendaciones Rápidas');
+      useDirectMode();
+    });
+    console.log('✅ Botón Recomendaciones Rápidas configurado');
+  } else {
+    console.warn('❌ No se encontró useDirectModeBtn');
+  }
+}
+
+// Configurar pestañas del closet
+function setupClosetTabs() {
+  const tabs = document.querySelectorAll('.closet-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const tabId = this.dataset.tab;
+      showClosetTab(tabId);
+    });
+  });
+}
+
+// Mostrar pestaña del closet
+function showClosetTab(tabId) {
+  console.log('📂 Mostrando pestaña:', tabId);
+  
+  // Ocultar todas las pestañas
+  document.querySelectorAll('.closet-tab-content').forEach(content => {
+    content.classList.remove('active');
+    content.style.display = 'none';
+  });
+  
+  // Remover clase active de tabs
+  document.querySelectorAll('.closet-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Mostrar pestaña seleccionada
+  const selectedContent = document.getElementById(tabId);
+  if (selectedContent) {
+    selectedContent.classList.add('active');
+    selectedContent.style.display = 'block';
+  }
+  
+  // Activar tab
+  const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
+  if (selectedTab) {
+    selectedTab.classList.add('active');
+  }
+  
+  // Configurar carpetas si es necesario
+  setTimeout(() => {
+    setupFolderUploads(tabId);
+  }, 200);
+}
+
+// Configurar upload desde carpetas
+function setupFolderUploads(tabId) {
+  const folders = document.querySelectorAll(`#${tabId} .folder-item`);
+  folders.forEach((folder, index) => {
+    // Remover listeners anteriores
+    const newFolder = folder.cloneNode(true);
+    folder.parentNode.replaceChild(newFolder, folder);
+    
+    newFolder.addEventListener('click', function() {
+      console.log('📁 Click en carpeta:', this.querySelector('.folder-name')?.textContent);
+      
+      // Crear input de archivo
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.style.display = 'none';
+      
+      input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        console.log('📷 Archivos seleccionados:', files.length);
+        
+        // Procesar archivos
+        files.forEach(async (file) => {
+          try {
+            const imageUrl = await fileToDataUrl(file);
+            
+            // Agregar a arrays globales
+            const typeMap = {
+              'superiores': 'tops',
+              'inferiores': 'bottoms', 
+              'calzado': 'shoes'
+            };
+            
+            const type = typeMap[tabId];
+            if (type) {
+              if (!window.uploadedFiles) window.uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+              if (!window.uploadedImages) window.uploadedImages = { tops: [], bottoms: [], shoes: [] };
+              
+              window.uploadedFiles[type].push(file);
+              window.uploadedImages[type].push(imageUrl);
+              
+              console.log(`✅ Archivo agregado a ${type}`);
+            }
+          } catch (error) {
+            console.error('Error procesando archivo:', error);
+          }
+        });
+        
+        window.showNotification(`${files.length} foto(s) agregadas`, 'success');
+        
+        // Limpiar
+        document.body.removeChild(input);
+      });
+      
+      document.body.appendChild(input);
+      input.click();
+    });
+  });
+}
+
+// Inicializar todos los event listeners
+function initializeEventListeners() {
+  console.log('🚀 Inicializando event listeners...');
+  
+  // Esperar a que el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(setupClosetButtons, 500);
+      setTimeout(setupClosetTabs, 700);
+    });
+  } else {
+    setTimeout(setupClosetButtons, 500);
+    setTimeout(setupClosetTabs, 700);
+  }
+}
+
+// Exponer funciones globalmente
+window.useDirectMode = useDirectMode;
+window.setupClosetButtons = setupClosetButtons;
+window.showClosetTab = showClosetTab;
+
+// AUTO-INICIALIZAR
+initializeEventListeners();
+
+console.log('✅ Event listeners del closet configurados');
+
+// =======================================================
+// FIN DE EVENT LISTENERS
+// =======================================================
 
 // =======================================================
 // FIN DE FUNCIONES DE REPARACIÓN DE UI
