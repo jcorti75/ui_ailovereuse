@@ -199,7 +199,11 @@
     #userName {
       color: #000000;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .logout-btn {
@@ -546,12 +550,22 @@
       cursor: pointer;
       transition: all 0.3s ease;
       text-align: center;
+      position: relative;
     }
 
     .closet-option:hover {
       transform: translateY(-5px);
       border-color: var(--primary);
       background: rgba(59, 130, 246, 0.1);
+    }
+
+    .closet-option::after {
+      content: '✨';
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.2rem;
+      opacity: 0.7;
     }
 
     .option-icon {
@@ -585,6 +599,13 @@
       font-weight: 700;
     }
 
+    .closet-header #userEmail {
+      opacity: 0.9;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: white;
+    }
+
     .closet-stats {
       background: rgba(255, 255, 255, 0.1);
       padding: 1rem 2rem;
@@ -602,6 +623,132 @@
       font-size: 1.5rem;
       font-weight: 700;
       display: block;
+    }
+
+    /* NUEVO: Zona de Upload Automático Central con IA */
+    .automatic-upload-zone {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      border: 3px dashed var(--primary);
+      border-radius: 25px;
+      padding: 4rem 2rem;
+      margin: 2rem 0;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .automatic-upload-zone::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(transparent, rgba(59, 130, 246, 0.1), transparent);
+      animation: rotate 4s linear infinite;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .automatic-upload-zone:hover::before {
+      opacity: 1;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .automatic-upload-zone:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 25px 50px rgba(59, 130, 246, 0.3);
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+    }
+
+    .upload-ai-icon {
+      font-size: 5rem;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+      display: block;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .upload-ai-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #000000;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .upload-ai-subtitle {
+      font-size: 1.2rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .upload-ai-description {
+      font-size: 1rem;
+      color: #6b7280;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ai-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ai-feature {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .ai-feature:hover {
+      background: white;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .ai-feature-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .ai-feature-title {
+      font-weight: 600;
+      color: #000000;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-feature-description {
+      font-size: 0.9rem;
+      color: #6b7280;
     }
 
     .closet-tabs {
@@ -636,7 +783,7 @@
 
     .closet-content {
       padding: 2rem;
-      min-height: 300px;
+      min-height: 400px;
     }
 
     .closet-tab-content {
@@ -645,53 +792,6 @@
 
     .closet-tab-content.active {
       display: block;
-    }
-
-    .folder-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    .folder-item {
-      background: var(--background);
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .folder-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      border-color: var(--primary);
-    }
-
-    .folder-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .folder-name {
-      font-weight: 600;
-      color: #000000;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-
-    .folder-count {
-      font-size: 0.85rem;
-      color: #000000;
-      opacity: 0.7;
-      line-height: 1.4;
     }
 
     .occasion-section {
@@ -1151,11 +1251,23 @@
       .upload-grid { 
         grid-template-columns: 1fr; 
       }
+
+      .ai-features {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 480px) {
       .occasion-grid { 
         grid-template-columns: 1fr; 
+      }
+      
+      .upload-ai-title {
+        font-size: 1.5rem;
+      }
+      
+      .upload-ai-subtitle {
+        font-size: 1rem;
       }
     }
   </style>
@@ -1192,7 +1304,7 @@
 
           <div class="user-info" id="userInfo" style="display: none;">
             <img class="user-avatar" id="userAvatar" alt="Usuario"/>
-            <span id="userName" style="color: #000000;"></span>
+            <span id="userName" title="Usuario activo"></span>
             <button class="logout-btn" id="logoutBtn">Salir</button>
           </div>
         </div>
@@ -1380,6 +1492,9 @@
         <p style="color: #000000; margin-bottom: 1rem; opacity: 0.8;">
           Tu perfil ha sido creado exitosamente. Para darte mejores recomendaciones, necesitamos conocerte un poco más.
         </p>
+        <p style="color: #000000; margin-bottom: 1rem; font-weight: 600;">
+          <span id="welcomeUserName" data-user-name="true">Usuario</span>, estás listo para empezar
+        </p>
         <div class="closet-stats">
           <div class="closet-stat">
             <span class="closet-stat-number" id="visitCounter">1</span>
@@ -1481,7 +1596,7 @@
         </div>
       </div>
 
-      <!-- OPCIONES FINALES -->
+      <!-- OPCIONES DEL CLOSET -->
       <div id="closetQuestion" class="closet-question">
         <h3 style="color: #000000; margin-bottom: 1rem;">👗 ¿Cómo quieres obtener recomendaciones?</h3>
         <p style="color: #000000; margin-bottom: 2rem; opacity: 0.8;">
@@ -1489,13 +1604,13 @@
         </p>
         
         <div class="closet-options">
-          <div class="closet-option" id="enableClosetBtn">
+          <div class="closet-option upload-enabled" id="enableClosetBtn" data-mode="closet">
             <div class="option-icon">✨</div>
-            <h4 style="color: #000000; margin-bottom: 0.5rem;">Mi Closet Digital</h4>
-            <p style="color: #000000; opacity: 0.7; font-size: 0.9rem;">Sistema de carpetas inteligente</p>
+            <h4 style="color: #000000; margin-bottom: 0.5rem;">Mi Closet Inteligente</h4>
+            <p style="color: #000000; opacity: 0.7; font-size: 0.9rem;">IA detecta automáticamente el tipo de prenda</p>
           </div>
           
-          <div class="closet-option" id="useDirectModeBtn">
+          <div class="closet-option" id="useDirectModeBtn" data-mode="direct">
             <div class="option-icon">⚡</div>
             <h4 style="color: #000000; margin-bottom: 0.5rem;">Recomendaciones Rápidas</h4>
             <p style="color: #000000; opacity: 0.7; font-size: 0.9rem;">Subida directa de fotos</p>
@@ -1503,13 +1618,13 @@
         </div>
       </div>
 
-      <!-- CLOSET CONTAINER - CATEGORÍAS 100% ALINEADAS CON closet.js -->
+      <!-- CLOSET CONTAINER -->
       <div id="closetContainer" class="closet-container">
         <div class="closet-header">
-          <i class="fas fa-folder-open" style="font-size: 1.5rem;"></i>
+          <i class="fas fa-brain" style="font-size: 1.5rem;"></i>
           <div>
-            <h2>Mi Closet Favorito</h2>
-            <span id="userEmail" style="opacity: 0.8; font-size: 0.9rem;"></span>
+            <h2>Mi Closet Inteligente</h2>
+            <span id="userEmail" style="opacity: 0.9; font-size: 0.95rem; color: white;">Bienvenido Usuario</span>
           </div>
         </div>
         
@@ -1525,6 +1640,34 @@
           <div class="closet-stat">
             <span class="closet-stat-number" id="closetOutfits">0</span>
             <span>Outfits Guardados</span>
+          </div>
+        </div>
+
+        <!-- ZONA DE UPLOAD AUTOMÁTICO CENTRAL -->
+        <div class="automatic-upload-zone" id="automaticUploadZone">
+          <div class="upload-ai-icon">🤖</div>
+          <h3 class="upload-ai-title">Sube cualquier prenda</h3>
+          <p class="upload-ai-subtitle">La IA detecta automáticamente si es superior, inferior o calzado</p>
+          <p class="upload-ai-description">
+            No necesitas elegir categorías. Simplemente sube las fotos de tu ropa y nuestra inteligencia artificial las organizará automáticamente por tipo y subcategoría. ¡Haz clic aquí para empezar!
+          </p>
+          
+          <div class="ai-features">
+            <div class="ai-feature">
+              <div class="ai-feature-icon">🧠</div>
+              <div class="ai-feature-title">Detección Automática</div>
+              <div class="ai-feature-description">IA identifica el tipo automáticamente</div>
+            </div>
+            <div class="ai-feature">
+              <div class="ai-feature-icon">📂</div>
+              <div class="ai-feature-title">Organización Inteligente</div>
+              <div class="ai-feature-description">Se organizan por subcategorías</div>
+            </div>
+            <div class="ai-feature">
+              <div class="ai-feature-icon">⚡</div>
+              <div class="ai-feature-title">Navegación Automática</div>
+              <div class="ai-feature-description">Te lleva directo a donde se guardó</div>
+            </div>
           </div>
         </div>
         
@@ -1544,144 +1687,30 @@
         </div>
 
         <div class="closet-content">
-          <!-- SUPERIORES - 9 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
+          <!-- SUPERIORES -->
           <div id="superiores" class="closet-tab-content active">
-            <h3 style="margin-bottom: 1rem; color: #000000;">📸 Prendas Superiores</h3>
-            <div class="folder-grid">
-              <!-- tshirt -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">👕</div>
-                <div class="folder-name">Poleras</div>
-                <div class="folder-count">t-shirts, tees, poleras, tank tops</div>
-              </div>
-              <!-- shirt -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">👔</div>
-                <div class="folder-name">Camisas</div>
-                <div class="folder-count">camisas de vestir, casuales, con collar</div>
-              </div>
-              <!-- blouse -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">👚</div>
-                <div class="folder-name">Blusas</div>
-                <div class="folder-count">blusas de seda, elegantes, fluidas</div>
-              </div>
-              <!-- sweater - ÍCONO CORREGIDO -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🧶</div>
-                <div class="folder-name">Suéteres</div>
-                <div class="folder-count">sweaters, pullovers, cardiganes</div>
-              </div>
-              <!-- hoodie - ÍCONO CORREGIDO -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🤘</div>
-                <div class="folder-name">Hoodies</div>
-                <div class="folder-count">con capucha, sudaderas, zip-up</div>
-              </div>
-              <!-- jacket -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🧥</div>
-                <div class="folder-name">Chaquetas</div>
-                <div class="folder-count">de cuero, mezclilla, blazers</div>
-              </div>
-              <!-- coat - ÍCONO CORREGIDO -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">❄️</div>
-                <div class="folder-name">Abrigos</div>
-                <div class="folder-count">de invierno, parkas, trench</div>
-              </div>
-              <!-- dress -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">👗</div>
-                <div class="folder-name">Vestidos</div>
-                <div class="folder-count">casuales, de gala, vestidos largos</div>
-              </div>
-              <!-- vest -->
-              <div class="folder-item" data-type="superiores">
-                <div class="folder-icon">🦺</div>
-                <div class="folder-name">Chalecos</div>
-                <div class="folder-count">sin mangas, waistcoat, chalecos</div>
-              </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+              <i class="fas fa-tshirt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+              <p>No hay prendas superiores aún</p>
+              <p style="font-size: 0.9rem; opacity: 0.7;">Las prendas aparecerán aquí cuando subas fotos y la IA las detecte como superiores</p>
             </div>
           </div>
 
-          <!-- INFERIORES - 5 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
+          <!-- INFERIORES -->
           <div id="inferiores" class="closet-tab-content">
-            <h3 style="margin-bottom: 1rem; color: #000000;">📸 Prendas Inferiores</h3>
-            <div class="folder-grid">
-              <!-- jeans -->
-              <div class="folder-item" data-type="inferiores">
-                <div class="folder-icon">👖</div>
-                <div class="folder-name">Jeans</div>
-                <div class="folder-count">mezclilla, jeans azules, denim</div>
-              </div>
-              <!-- pants -->
-              <div class="folder-item" data-type="inferiores">
-                <div class="folder-icon">👖</div>
-                <div class="folder-name">Pantalones</div>
-                <div class="folder-count">de vestir, chinos, trousers</div>
-              </div>
-              <!-- skirt -->
-              <div class="folder-item" data-type="inferiores">
-                <div class="folder-icon">👗</div>
-                <div class="folder-name">Faldas</div>
-                <div class="folder-count">mini, falda tubo, midi</div>
-              </div>
-              <!-- shorts -->
-              <div class="folder-item" data-type="inferiores">
-                <div class="folder-icon">🩳</div>
-                <div class="folder-name">Shorts</div>
-                <div class="folder-count">bermudas, shorts deportivos</div>
-              </div>
-              <!-- leggings -->
-              <div class="folder-item" data-type="inferiores">
-                <div class="folder-icon">🩱</div>
-                <div class="folder-name">Calzas</div>
-                <div class="folder-count">leggings, yoga pants, deportivas</div>
-              </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+              <i class="fas fa-user-tie" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+              <p>No hay prendas inferiores aún</p>
+              <p style="font-size: 0.9rem; opacity: 0.7;">Las prendas aparecerán aquí cuando subas fotos y la IA las detecte como inferiores</p>
             </div>
           </div>
 
-          <!-- CALZADO - 6 CATEGORÍAS EXACTAS ALINEADAS CON INTELLIGENT_CATEGORIES -->
+          <!-- CALZADO -->
           <div id="calzado" class="closet-tab-content">
-            <h3 style="margin-bottom: 1rem; color: #000000;">📸 Calzado</h3>
-            <div class="folder-grid">
-              <!-- sneakers -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">👟</div>
-                <div class="folder-name">Zapatillas</div>
-                <div class="folder-count">deportivas, urbanas, running</div>
-              </div>
-              <!-- dress_shoes -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">👞</div>
-                <div class="folder-name">Zapatos Formales</div>
-                <div class="folder-count">de vestir, oxford, mocasines</div>
-              </div>
-              <!-- boots -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">🥾</div>
-                <div class="folder-name">Botas</div>
-                <div class="folder-count">botines, de lluvia, combate</div>
-              </div>
-              <!-- heels -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">👠</div>
-                <div class="folder-name">Tacones</div>
-                <div class="folder-count">stilettos, pumps, de gala</div>
-              </div>
-              <!-- sandals -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">👡</div>
-                <div class="folder-name">Sandalias</div>
-                <div class="folder-count">chalas, de cuero, deportivas</div>
-              </div>
-              <!-- flats -->
-              <div class="folder-item" data-type="calzado">
-                <div class="folder-icon">🥿</div>
-                <div class="folder-name">Ballerinas</div>
-                <div class="folder-count">zapatos planos, bailarinas</div>
-              </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+              <i class="fas fa-shoe-prints" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+              <p>No hay calzado aún</p>
+              <p style="font-size: 0.9rem; opacity: 0.7;">El calzado aparecerá aquí cuando subas fotos y la IA lo detecte automáticamente</p>
             </div>
           </div>
 
@@ -1722,7 +1751,7 @@
         </div>
       </div>
 
-      <!-- ÁREA DE SUBIDA -->
+      <!-- ÁREA DE SUBIDA DIRECTA -->
       <div class="upload-area" id="uploadArea">
         <div class="upload-grid">
           <div class="upload-item">
@@ -1837,7 +1866,7 @@
     </div>
   </footer>
 
-  <!-- SCRIPTS EN ORDEN CORRECTO -->
+  <!-- SCRIPTS -->
   <script src="config.js"></script>
   <script src="auth.js"></script>
   <script src="closet.js"></script>
@@ -1846,194 +1875,11 @@
   <script src="recommendations.js"></script>
   <script src="profile.js"></script>
   
-  <!-- SCRIPTS ADICIONALES PARA FLUJO CORRECTO -->
   <script>
-    // CORRECCIÓN DEL FLUJO SECUENCIAL
+    // Configuración de navegación
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('🔧 Configurando navegación y funcionalidad...');
       
-      // FUNCIÓN CORREGIDA: enableCloset con ocasión PRIMERO
-      window.enableClosetWithFlow = function() {
-        console.log('✨ Activando Mi Closet Digital con flujo correcto...');
-        
-        // Ocultar opciones
-        const closetQuestion = document.getElementById('closetQuestion');
-        if (closetQuestion) closetQuestion.style.display = 'none';
-        
-        // PASO 1: Mostrar selector de ocasión PRIMERO
-        const occasionSelector = document.getElementById('occasionSelector');
-        if (occasionSelector) {
-          occasionSelector.style.display = 'block';
-          
-          // Configurar botones de ocasión para modo closet
-          setupOccasionButtonsForCloset();
-          
-          // Scroll al selector de ocasión
-          setTimeout(() => {
-            occasionSelector.scrollIntoView({ behavior: 'smooth' });
-          }, 300);
-        }
-        
-        if (typeof window.showNotification === 'function') {
-          window.showNotification('Paso 1: Selecciona una ocasión para tu closet', 'info');
-        }
-      };
-      
-      // FUNCIÓN CORREGIDA: useDirectMode con flujo secuencial
-      window.useDirectModeWithFlow = function() {
-        console.log('⚡ Activando Recomendaciones Rápidas con flujo correcto...');
-        
-        // Ocultar opciones
-        const closetQuestion = document.getElementById('closetQuestion');
-        if (closetQuestion) closetQuestion.style.display = 'none';
-        
-        // PASO 1: Solo mostrar selector de ocasión
-        const occasionSelector = document.getElementById('occasionSelector');
-        if (occasionSelector) {
-          occasionSelector.style.display = 'block';
-          
-          // Configurar botones para modo directo
-          setupOccasionButtonsForDirect();
-          
-          // Scroll al selector
-          setTimeout(() => {
-            occasionSelector.scrollIntoView({ behavior: 'smooth' });
-          }, 300);
-        }
-        
-        // Asegurar que el área de upload esté oculta inicialmente
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-          uploadArea.style.display = 'none';
-        }
-        
-        if (typeof window.showNotification === 'function') {
-          window.showNotification('Paso 1: Selecciona una ocasión', 'info');
-        }
-      };
-      
-      // CONFIGURAR OCASIONES PARA MODO CLOSET
-      function setupOccasionButtonsForCloset() {
-        const occasionBtns = document.querySelectorAll('.occasion-btn');
-        
-        occasionBtns.forEach(btn => {
-          // Limpiar listeners anteriores
-          const newBtn = btn.cloneNode(true);
-          btn.parentNode.replaceChild(newBtn, btn);
-          
-          newBtn.addEventListener('click', function() {
-            // Marcar selección
-            document.querySelectorAll('.occasion-btn').forEach(b => {
-              b.classList.remove('selected');
-              b.style.borderColor = 'var(--border)';
-              b.style.background = 'var(--background)';
-            });
-            
-            this.classList.add('selected');
-            this.style.borderColor = 'var(--primary)';
-            this.style.background = 'rgba(59, 130, 246, 0.1)';
-            
-            const occasion = this.dataset.occasion;
-            window.selectedOccasion = occasion;
-            
-            if (typeof window.showNotification === 'function') {
-              window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
-            }
-            
-            // PASO 2: Mostrar closet después de seleccionar ocasión
-            setTimeout(() => {
-              const closetContainer = document.getElementById('closetContainer');
-              if (closetContainer) {
-                closetContainer.style.display = 'block';
-                
-                // Configurar info del usuario
-                const userEmail = document.getElementById('userEmail');
-                if (userEmail && window.currentUser && typeof window.currentUser === 'function') {
-                  const user = window.currentUser();
-                  if (user) {
-                    userEmail.textContent = `Bienvenido ${user.name}`;
-                  }
-                }
-                
-                // Scroll al closet
-                setTimeout(() => {
-                  closetContainer.scrollIntoView({ behavior: 'smooth' });
-                }, 500);
-                
-                if (typeof window.showNotification === 'function') {
-                  window.showNotification('Paso 2: Usa las carpetas para subir fotos', 'info');
-                }
-              }
-            }, 1000);
-          });
-        });
-      }
-      
-      // CONFIGURAR OCASIONES PARA MODO DIRECTO
-      function setupOccasionButtonsForDirect() {
-        const occasionBtns = document.querySelectorAll('.occasion-btn');
-        
-        occasionBtns.forEach(btn => {
-          // Limpiar listeners anteriores
-          const newBtn = btn.cloneNode(true);
-          btn.parentNode.replaceChild(newBtn, btn);
-          
-          newBtn.addEventListener('click', function() {
-            // Marcar selección
-            document.querySelectorAll('.occasion-btn').forEach(b => {
-              b.classList.remove('selected');
-              b.style.borderColor = 'var(--border)';
-              b.style.background = 'var(--background)';
-            });
-            
-            this.classList.add('selected');
-            this.style.borderColor = 'var(--primary)';
-            this.style.background = 'rgba(59, 130, 246, 0.1)';
-            
-            const occasion = this.dataset.occasion;
-            window.selectedOccasion = occasion;
-            
-            if (typeof window.showNotification === 'function') {
-              window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
-            }
-            
-            // PASO 2: Mostrar área de upload después de seleccionar ocasión
-            setTimeout(() => {
-              const uploadArea = document.getElementById('uploadArea');
-              if (uploadArea) {
-                uploadArea.style.display = 'block';
-                
-                // Scroll al área de upload
-                setTimeout(() => {
-                  uploadArea.scrollIntoView({ behavior: 'smooth' });
-                }, 500);
-                
-                if (typeof window.showNotification === 'function') {
-                  window.showNotification('Paso 2: Sube fotos de cada categoría', 'info');
-                }
-              }
-            }, 1000);
-          });
-        });
-      }
-      
-      // REEMPLAZAR FUNCIONES DE LOS BOTONES
-      const enableClosetBtn = document.getElementById('enableClosetBtn');
-      if (enableClosetBtn) {
-        enableClosetBtn.onclick = function(e) {
-          e.preventDefault();
-          window.enableClosetWithFlow();
-        };
-      }
-      
-      const useDirectModeBtn = document.getElementById('useDirectModeBtn');
-      if (useDirectModeBtn) {
-        useDirectModeBtn.onclick = function(e) {
-          e.preventDefault();
-          window.useDirectModeWithFlow();
-        };
-      }
-      
-      // NAVEGACIÓN SUAVE MEJORADA
       function scrollToSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (element) {
@@ -2041,35 +1887,29 @@
         }
       }
       
-      // CONFIGURAR NAVEGACIÓN DEL MENÚ
-      document.querySelectorAll('.nav-pill, .mobile-nav-item, .footer-column a').forEach(link => {
-        if (link.dataset.section) {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remover clase active
-            document.querySelectorAll('.nav-pill').forEach(pill => {
-              pill.classList.remove('active');
-            });
-            
-            // Agregar clase active al actual
-            if (this.classList.contains('nav-pill')) {
-              this.classList.add('active');
-            }
-            
-            // Scroll a la sección
-            scrollToSection(this.dataset.section);
-            
-            // Cerrar menú móvil si está abierto
-            const mobileNav = document.getElementById('mobileNav');
-            if (mobileNav) {
-              mobileNav.classList.remove('active');
-            }
+      // Configurar todos los enlaces de navegación
+      document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          document.querySelectorAll('.nav-pill').forEach(pill => {
+            pill.classList.remove('active');
           });
-        }
+          
+          if (this.classList.contains('nav-pill')) {
+            this.classList.add('active');
+          }
+          
+          scrollToSection(this.dataset.section);
+          
+          const mobileNav = document.getElementById('mobileNav');
+          if (mobileNav) {
+            mobileNav.classList.remove('active');
+          }
+        });
       });
       
-      // TOGGLE MENÚ MÓVIL
+      // Toggle menú móvil
       const mobileMenuToggle = document.getElementById('mobileMenuToggle');
       const mobileNav = document.getElementById('mobileNav');
       
@@ -2079,38 +1919,7 @@
         });
       }
       
-      // ANIMACIONES DE IMPACTO
-      function animateImpactBars() {
-        const impactFills = document.querySelectorAll('.impact-fill');
-        impactFills.forEach(fill => {
-          const width = fill.dataset.width;
-          if (width) {
-            setTimeout(() => {
-              fill.style.width = width + '%';
-            }, 500);
-          }
-        });
-      }
-      
-      // OBSERVER PARA ANIMACIONES
-      if (typeof IntersectionObserver !== 'undefined') {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              if (entry.target.classList.contains('impact-bars')) {
-                animateImpactBars();
-              }
-            }
-          });
-        });
-        
-        const impactSection = document.querySelector('.impact-bars');
-        if (impactSection) {
-          observer.observe(impactSection);
-        }
-      }
-      
-      console.log('✅ Flujo corregido inicializado');
+      console.log('✅ Navegación configurada');
     });
   </script>
 </body>
