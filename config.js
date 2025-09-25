@@ -1,232 +1,225 @@
-// config.js - Configuración Global de NoShopiA
+// config.js - Configuración Global Centralizada y Corregida
 
+console.log('🔧 Cargando configuración global centralizada...');
+
+// CONFIGURACIÓN PRINCIPAL
 const CONFIG = {
+  // Google Sign-In
   GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
+  
+  // API Backend
   API_BASE: "https://noshopia-production.up.railway.app",
+  
+  // Límites de archivos por tipo
   FILE_LIMITS: { 
     tops: 3, 
     bottoms: 3, 
     shoes: 5 
   },
-  TOTAL_CLOSET_LIMIT: 15,  // Límite total de prendas en el armario
-
-  // EMAILS PROFESIONALES NOSHOPIA (Cloudflare Email Routing)
+  
+  // Mínimo requerido para generar recomendaciones
+  MIN_REQUIRED: {
+    tops: 1,
+    bottoms: 1,  
+    shoes: 1
+  },
+  
+  // Límite total del closet
+  TOTAL_CLOSET_LIMIT: 15,
+  
+  // Tamaño máximo de archivo (5MB)
+  MAX_FILE_SIZE: 5 * 1024 * 1024,
+  
+  // Tipos de archivo válidos
+  VALID_FILE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  
+  // Emails profesionales
   EMAILS: {
-    // Emails profesionales - Lo que ven los usuarios
-    PROFESSIONAL: {
-      SUPPORT: 'soporte@noshopia.com',
-      INFO: 'info@noshopia.com',
-      PAYMENTS: 'pagos@noshopia.com',
-      CEO: 'jcorti@noshopia.com',
-      CREATIVE: 'paola@noshopia.com'
-    },
-    
-    // Emails Gmail que recibirán los mensajes (configurados en Cloudflare)
-    BACKEND_GMAIL: {
-      SUPPORT: 'soportenoshopia@gmail.com',
-      INFO: 'infonoshopia@gmail.com',
-      PAYMENTS: 'pagosrecibidosnoshopia@gmail.com',
-      CEO: 'jcorti75@gmail.com',
-      CREATIVE: 'paola.curti@gmail.com'
-    },
-    
-    // Enlaces mailto para botones en tu app
-    CONTACT_LINKS: {
-      SUPPORT: 'mailto:soporte@noshopia.com?subject=Soporte%20NoshopiA&body=Hola%20equipo%20NoshopiA,%0A%0ADescribe%20tu%20problema:%0A%0A',
-      PREMIUM_HELP: 'mailto:soporte@noshopia.com?subject=Ayuda%20Plan%20Premium&body=Hola,%0A%0ATengo%20una%20consulta%20sobre%20mi%20plan%20premium:%0A%0A',
-      BUG_REPORT: 'mailto:soporte@noshopia.com?subject=Reporte%20de%20Bug&body=Hola,%0A%0AEncontré%20un%20problema:%0A%0APasos%20para%20reproducir:%0A1.%20%0A2.%20%0A3.%20%0A%0ANavegador:%20%0ADispositivo:%20%0A',
-      GENERAL_INFO: 'mailto:info@noshopia.com?subject=Consulta%20NoshopiA&body=Hola,%0A%0AMe%20gustaría%20saber%20más%20sobre:%0A%0A',
-      PARTNERSHIP: 'mailto:info@noshopia.com?subject=Propuesta%20de%20Partnership&body=Hola,%0A%0AMe%20gustaría%20proponer%20una%20colaboración:%0A%0A',
-      PAYMENT_ISSUE: 'mailto:pagos@noshopia.com?subject=Problema%20con%20Pago&body=Hola,%0A%0ATengo%20un%20problema%20con%20mi%20pago:%0A%0AID%20de%20transacción:%20%0AProblema:%20%0A',
-      CEO_CONTACT: 'mailto:jcorti@noshopia.com?subject=Contacto%20Directo&body=Hola%20José,%0A%0A',
-      CREATIVE_FEEDBACK: 'mailto:paola@noshopia.com?subject=Feedback%20de%20Diseño&body=Hola%20Paola,%0A%0ATengo%20feedback%20sobre%20el%20diseño:%0A%0A'
-    },
-    
-    // Templates de respuestas rápidas
-    QUICK_RESPONSES: {
-      WELCOME: '¡Bienvenido a NoshopiA! 🌱 Estamos aquí para ayudarte a maximizar tu ropa y minimizar tu impacto ambiental.',
-      PREMIUM_THANKS: '¡Gracias por actualizar a Premium! 🚀 Ya tienes acceso completo a todas las funcionalidades.',
-      SUPPORT_ACK: 'Hemos recibido tu consulta y te responderemos en las próximas 2-4 horas. 🛠️',
-      PARTNERSHIP_THANKS: 'Gracias por tu interés en colaborar con NoshopiA. Revisaremos tu propuesta. 🤝'
-    },
-
-    // Templates de emails automáticos
-    TEMPLATES: {
-      WELCOME: {
-        subject: '🎉 ¡Bienvenido a NoshopiA!',
-        from: 'soporte@noshopia.com',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 2rem; text-align: center; color: white;">
-              <h1 style="margin: 0; font-size: 1.8rem;">
-                <span style="color: #ef4444;">No</span><span>shop</span><span style="color: #22c55e;">i</span><span style="color: #22c55e;">A</span>
-              </h1>
-              <p style="margin: 0.5rem 0;">¡Bienvenido a NoshopiA!</p>
-              <p style="font-size: 0.9rem; opacity: 0.9;">Maximiza tu ropa, minimiza tu impacto ambiental</p>
-            </div>
-            
-            <div style="padding: 2rem; background: white;">
-              <h2 style="color: #1f2937;">¡Hola {userName}! 👋</h2>
-              <p>Gracias por unirte a la revolución de la moda sostenible. Tu cuenta está lista para usar.</p>
-              
-              <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1.5rem; margin: 2rem 0;">
-                <h3 style="color: #3b82f6; margin-top: 0;">🎁 Tu Plan Gratis incluye:</h3>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                  <li>✅ 30 combinaciones mensuales</li>
-                  <li>✅ IA básica de recomendaciones</li>
-                  <li>✅ Mi Closet Favorito (15 prendas)</li>
-                  <li>✅ Análisis de compatibilidad instantáneo</li>
-                </ul>
-              </div>
-              
-              <div style="text-align: center; margin: 2rem 0;">
-                <a href="https://noshopia.com" style="background: #3b82f6; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 25px; font-weight: 600;">
-                  🚀 Comenzar a crear outfits
-                </a>
-              </div>
-              
-              <p style="color: #666;">Si tienes dudas, responde este email o escríbenos a soporte@noshopia.com</p>
-            </div>
-            
-            <div style="text-align: center; padding: 1rem; color: #999; font-size: 0.8rem;">
-              NoshopiA - Moda Sostenible con IA | https://noshopia.com
-            </div>
-          </div>
-        `
-      },
-
-      PREMIUM_ACTIVATED: {
-        subject: '⭐ ¡Tu Plan Premium está activo!',
-        from: 'pagos@noshopia.com',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #fbbf24, #f59e0b); padding: 2rem; text-align: center; color: black;">
-              <h1 style="margin: 0; font-size: 1.8rem;">⭐ ¡Premium Activado!</h1>
-              <p style="margin: 0.5rem 0;">Tu cuenta ha sido actualizada</p>
-            </div>
-            
-            <div style="padding: 2rem; background: white;">
-              <h2 style="color: #1f2937;">¡Gracias {userName}! 🎉</h2>
-              <p>Tu pago ha sido confirmado y tu Plan Premium está activo.</p>
-              
-              <div style="background: rgba(251, 191, 36, 0.1); border-radius: 10px; padding: 1.5rem; margin: 2rem 0;">
-                <h3 style="color: #f59e0b; margin-top: 0;">🚀 Ahora tienes acceso a:</h3>
-                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-                  <li>✅ Recomendaciones ILIMITADAS</li>
-                  <li>✅ IA avanzada personalizada</li>
-                  <li>✅ Prendas y zapatos ILIMITADOS</li>
-                  <li>✅ Soporte prioritario</li>
-                </ul>
-              </div>
-              
-              <div style="text-align: center; margin: 2rem 0;">
-                <a href="https://noshopia.com" style="background: #f59e0b; color: black; padding: 1rem 2rem; text-decoration: none; border-radius: 25px; font-weight: 600;">
-                  🎨 Crear outfits premium
-                </a>
-              </div>
-              
-              <p style="color: #666;">Para consultas: pagos@noshopia.com</p>
-            </div>
-          </div>
-        `
-      },
-
-      SUPPORT_TICKET: {
-        subject: '🛠️ Ticket #{ticketId} - {issueType}',
-        from: 'soporte@noshopia.com',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 2rem; text-align: center; color: white;">
-              <h1 style="margin: 0; font-size: 1.8rem;">🛠️ Ticket de Soporte</h1>
-              <p style="margin: 0.5rem 0;">Hemos recibido tu consulta</p>
-            </div>
-            
-            <div style="padding: 2rem; background: white;">
-              <h2 style="color: #1f2937;">Hola {userName} 👋</h2>
-              <p>Gracias por contactarnos. Hemos recibido tu consulta y la estamos revisando.</p>
-              
-              <div style="background: rgba(16, 185, 129, 0.1); border-radius: 10px; padding: 1.5rem; margin: 2rem 0;">
-                <h3 style="color: #10b981; margin-top: 0;">📋 Detalles del ticket:</h3>
-                <p style="margin: 0.5rem 0; color: #374151;">
-                  <strong>ID:</strong> #{ticketId}<br>
-                  <strong>Tipo:</strong> {issueType}<br>
-                  <strong>Fecha:</strong> {currentDate}
-                </p>
-                <div style="background: white; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
-                  <strong>Tu consulta:</strong><br>
-                  <em style="color: #666;">"{issueDescription}"</em>
-                </div>
-              </div>
-              
-              <p><strong>🕐 Tiempo de respuesta estimado:</strong> 2-4 horas en días hábiles</p>
-              
-              <p style="color: #666; margin-top: 2rem;">
-                Te responderemos pronto a este mismo email. Si tienes más información que agregar, 
-                responde citando el número de ticket <strong>#{ticketId}</strong>
-              </p>
-            </div>
-          </div>
-        `
-      }
-    }
+    SUPPORT: 'soporte@noshopia.com',
+    INFO: 'info@noshopia.com',
+    CEO: 'jcorti@noshopia.com'
   }
 };
 
-// Variables globales de estado
+// VARIABLES GLOBALES DE ESTADO (fuente única de verdad)
 let isLoggedIn = false;
 let currentUser = null;
-let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-let uploadedImages = { tops: [], bottoms: [], shoes: [] };
 let selectedOccasion = null;
 let closetMode = false;
-let savedRecommendations = [];
-let userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
 let processingStartTime = 0;
-let userProfile = { skin_color: null, age_range: null, gender: null };
-let profileCompleted = false; // Para evitar repetir perfilamiento
 
-// Variables para closet selection
-let closetSelectedItems = { tops: [], bottoms: [], shoes: [] };
+// Arrays de archivos y datos
+let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+let uploadedImages = { tops: [], bottoms: [], shoes: [] };
 let closetItems = { tops: [], bottoms: [], shoes: [] };
-let closetSelectionMode = false;
 
-// Función para obtener total de prendas en closet
-function getTotalClosetItems() {
-  return closetItems.tops.length + closetItems.bottoms.length + closetItems.shoes.length;
-}
+// Estadísticas del usuario
+let userStats = { 
+  visits: 1, 
+  recommendations: 0, 
+  savedOutfits: 0 
+};
 
-// Función para obtener prendas restantes
-function getRemainingClosetSlots() {
-  const total = getTotalClosetItems();
-  return CONFIG.TOTAL_CLOSET_LIMIT - total;
-}
+// Recomendaciones guardadas
+let savedRecommendations = [];
 
-// Funciones de persistencia
-function saveUserClosetData() {
-  if (!currentUser?.email) return;
+// Estado del perfil
+let userProfile = { 
+  skin_color: null, 
+  age_range: null, 
+  gender: null 
+};
+let profileCompleted = false;
+
+// FUNCIONES DE ACCESO CENTRALIZADO AL ESTADO
+window.isLoggedIn = () => isLoggedIn;
+window.currentUser = () => currentUser;
+window.selectedOccasion = () => selectedOccasion;
+window.closetMode = () => closetMode;
+
+window.setLoggedIn = (status) => { 
+  isLoggedIn = status; 
+  console.log(`🔐 Estado de login actualizado: ${status}`);
+};
+
+window.setCurrentUser = (user) => { 
+  currentUser = user; 
+  console.log(`👤 Usuario actual actualizado: ${user?.name || 'null'}`);
+};
+
+window.setSelectedOccasion = (occasion) => { 
+  selectedOccasion = occasion; 
+  console.log(`🎯 Ocasión seleccionada: ${occasion}`);
+};
+
+window.setClosetMode = (mode) => { 
+  closetMode = mode; 
+  console.log(`👗 Modo closet: ${mode}`);
+};
+
+// FUNCIONES DE VALIDACIÓN CENTRALIZADAS
+window.validateFileType = (file) => {
+  return CONFIG.VALID_FILE_TYPES.includes(file.type);
+};
+
+window.validateFileSize = (file) => {
+  return file.size <= CONFIG.MAX_FILE_SIZE;
+};
+
+window.validateUploadLimits = (type, fileCount) => {
+  const currentCount = uploadedFiles[type]?.length || 0;
+  const maxAllowed = CONFIG.FILE_LIMITS[type];
+  const totalAfterUpload = currentCount + fileCount;
   
-  const userData = {
-    email: currentUser.email,
-    closetItems: closetItems,
-    uploadedFiles: uploadedFiles,
-    uploadedImages: uploadedImages,
-    userStats: userStats,
-    profileCompleted: profileCompleted,
-    userProfile: userProfile,
-    lastSaved: Date.now()
+  if (totalAfterUpload > maxAllowed) {
+    return {
+      valid: false,
+      message: `Máximo ${maxAllowed} archivos para ${getTypeName(type)}. Actualmente tienes ${currentCount}.`
+    };
+  }
+  
+  // Verificar límite total del closet si está en modo closet
+  if (closetMode) {
+    const totalItems = getTotalClosetItems();
+    const remainingSlots = CONFIG.TOTAL_CLOSET_LIMIT - totalItems;
+    
+    if (fileCount > remainingSlots) {
+      return {
+        valid: false,
+        message: `Solo quedan ${remainingSlots} espacios en tu closet (${totalItems}/${CONFIG.TOTAL_CLOSET_LIMIT}).`
+      };
+    }
+  }
+  
+  return { valid: true };
+};
+
+// FUNCIONES AUXILIARES CENTRALIZADAS
+window.getTypeName = (type) => {
+  const names = {
+    'tops': 'superiores',
+    'bottoms': 'inferiores', 
+    'shoes': 'zapatos'
   };
-  
-  localStorage.setItem(`noshopia_user_${currentUser.email}`, JSON.stringify(userData));
-  console.log('✅ Datos del usuario guardados localmente');
-}
+  return names[type] || type;
+};
 
-// Cargar datos del usuario
-function loadUserClosetData() {
-  if (!currentUser?.email) return false;
+window.getTotalClosetItems = () => {
+  return (closetItems.tops?.length || 0) + 
+         (closetItems.bottoms?.length || 0) + 
+         (closetItems.shoes?.length || 0);
+};
+
+window.getRemainingClosetSlots = () => {
+  return Math.max(0, CONFIG.TOTAL_CLOSET_LIMIT - window.getTotalClosetItems());
+};
+
+window.generateSuccessMessage = (type, count) => {
+  const typeName = window.getTypeName(type);
+  const remaining = window.getRemainingClosetSlots();
   
+  if (closetMode) {
+    return `✅ ${count} ${typeName} agregado(s) al closet. ${remaining} espacios restantes.`;
+  } else {
+    return `✅ ${count} ${typeName} subido(s) exitosamente.`;
+  }
+};
+
+// FUNCIONES DE PERSISTENCIA CENTRALIZADAS
+window.saveUserData = () => {
   try {
-    const savedData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
-    if (!savedData) return false;
+    if (!currentUser || !currentUser.email) {
+      console.warn('No hay usuario para guardar datos');
+      return false;
+    }
+    
+    const userData = {
+      // Información del usuario
+      email: currentUser.email,
+      name: currentUser.name,
+      
+      // Datos del closet
+      closetItems,
+      uploadedFiles,
+      uploadedImages,
+      
+      // Estado del perfil
+      userProfile,
+      profileCompleted,
+      
+      // Estadísticas
+      userStats,
+      savedRecommendations,
+      
+      // Metadatos
+      totalItems: window.getTotalClosetItems(),
+      lastSaved: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    localStorage.setItem(`noshopia_user_data_${currentUser.email}`, JSON.stringify(userData));
+    console.log(`💾 Datos completos guardados para ${currentUser.name}`);
+    
+    return true;
+    
+  } catch (error) {
+    console.error('Error guardando datos del usuario:', error);
+    return false;
+  }
+};
+
+window.loadUserData = () => {
+  try {
+    if (!currentUser || !currentUser.email) {
+      console.warn('No hay usuario para cargar datos');
+      return false;
+    }
+    
+    const savedData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
+    if (!savedData) {
+      console.log('No hay datos previos para este usuario');
+      return false;
+    }
     
     const userData = JSON.parse(savedData);
     
@@ -234,24 +227,100 @@ function loadUserClosetData() {
     closetItems = userData.closetItems || { tops: [], bottoms: [], shoes: [] };
     uploadedFiles = userData.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
     uploadedImages = userData.uploadedImages || { tops: [], bottoms: [], shoes: [] };
-    userStats = userData.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
-    profileCompleted = userData.profileCompleted || false;
-    userProfile = userData.userProfile || { skin_color: null, age_range: null, gender: null };
     
-    console.log('✅ Datos del usuario cargados:', {
-      totalItems: getTotalClosetItems(),
-      profileCompleted: profileCompleted
-    });
+    userProfile = userData.userProfile || { skin_color: null, age_range: null, gender: null };
+    profileCompleted = userData.profileCompleted || false;
+    
+    userStats = userData.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
+    savedRecommendations = userData.savedRecommendations || [];
+    
+    console.log(`📂 Datos completos cargados para ${userData.name}: ${userData.totalItems || 0} prendas`);
     
     return true;
-  } catch (e) {
-    console.error('Error cargando datos del usuario:', e);
+    
+  } catch (error) {
+    console.error('Error cargando datos del usuario:', error);
     return false;
   }
-}
+};
 
-// Función para cargar script de Google
-function loadGoogleScript() {
+window.clearUserData = (email = null) => {
+  try {
+    const targetEmail = email || (currentUser && currentUser.email);
+    
+    if (targetEmail) {
+      localStorage.removeItem(`noshopia_user_data_${targetEmail}`);
+      localStorage.removeItem(`noshopia_profile_${targetEmail}`);
+      localStorage.removeItem(`noshopia_profile_completed_${targetEmail}`);
+      localStorage.removeItem(`noshopia_closet_${targetEmail}`);
+      localStorage.removeItem(`noshopia_current_user`);
+      localStorage.removeItem(`noshopia_logged_in`);
+      
+      console.log(`🗑️ Datos limpiados para ${targetEmail}`);
+    }
+    
+    // Resetear variables globales
+    isLoggedIn = false;
+    currentUser = null;
+    selectedOccasion = null;
+    closetMode = false;
+    
+    uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+    uploadedImages = { tops: [], bottoms: [], shoes: [] };
+    closetItems = { tops: [], bottoms: [], shoes: [] };
+    
+    userStats = { visits: 1, recommendations: 0, savedOutfits: 0 };
+    savedRecommendations = [];
+    userProfile = { skin_color: null, age_range: null, gender: null };
+    profileCompleted = false;
+    
+    console.log('🔄 Estado global reseteado');
+    
+    return true;
+    
+  } catch (error) {
+    console.error('Error limpiando datos:', error);
+    return false;
+  }
+};
+
+// FUNCIONES DE VERIFICACIÓN DE PERFIL CENTRALIZADAS
+window.hasCompletedProfile = (email = null) => {
+  try {
+    const targetEmail = email || (currentUser && currentUser.email);
+    if (!targetEmail) return false;
+    
+    // Verificar flag de perfil completado
+    const profileCompleted = localStorage.getItem(`noshopia_profile_completed_${targetEmail}`);
+    if (profileCompleted === 'true') {
+      return true;
+    }
+    
+    // Verificar datos de perfil como fallback
+    const profileData = localStorage.getItem(`noshopia_profile_${targetEmail}`);
+    if (profileData) {
+      try {
+        const data = JSON.parse(profileData);
+        if (data.skin_color && data.age_range && data.gender) {
+          // Asegurar que el flag esté presente
+          localStorage.setItem(`noshopia_profile_completed_${targetEmail}`, 'true');
+          return true;
+        }
+      } catch (e) {
+        console.warn('Error parseando datos de perfil');
+      }
+    }
+    
+    return false;
+    
+  } catch (error) {
+    console.error('Error verificando perfil:', error);
+    return false;
+  }
+};
+
+// FUNCIÓN DE CARGA DE GOOGLE SCRIPT CENTRALIZADA
+window.loadGoogleScript = () => {
   return new Promise((resolve, reject) => {
     // Verificar si ya está cargado
     if (typeof google !== 'undefined' && google.accounts?.id) {
@@ -259,53 +328,196 @@ function loadGoogleScript() {
       return;
     }
     
-    console.log('🔥 Cargando script de Google...');
-    console.log('🔍 URL del script:', 'https://accounts.google.com/gsi/client');
-    console.log('🔍 User Agent:', navigator.userAgent);
-    console.log('🔍 Protocolo:', window.location.protocol);
-    
-    // Verificar conectividad básica
-    fetch('https://www.google.com', { mode: 'no-cors' })
-      .then(() => console.log('✅ Google.com accesible'))
-      .catch(() => console.log('❌ Google.com no accesible'));
+    console.log('🔄 Cargando Google Sign-In...');
     
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
     
-    let timeoutId = setTimeout(() => {
-      console.log('⏰ Timeout: Script tardó más de 10 segundos');
+    const timeoutId = setTimeout(() => {
       script.remove();
-      reject('Timeout cargando script');
+      reject(new Error('Timeout loading Google script'));
     }, 10000);
     
     script.onload = () => {
       clearTimeout(timeoutId);
-      console.log('✅ Script de Google cargado');
-      
-      // Esperar inicialización
       setTimeout(() => {
         if (typeof google !== 'undefined' && google.accounts?.id) {
-          console.log('✅ Google Auth disponible');
+          console.log('✅ Google Sign-In cargado exitosamente');
           resolve();
         } else {
-          console.log('❌ Google Auth no disponible después de cargar');
-          reject('Google Auth no inicializado');
+          reject(new Error('Google Auth no disponible'));
         }
       }, 1000);
     };
     
-    script.onerror = (error) => {
+    script.onerror = () => {
       clearTimeout(timeoutId);
-      console.log('❌ Error cargando script de Google');
-      console.log('❌ Error details:', error);
-      console.log('❌ Script src:', script.src);
       script.remove();
-      reject('Error cargando script');
+      reject(new Error('Error loading Google script'));
     };
     
     document.head.appendChild(script);
-    console.log('📤 Script agregado al DOM');
   });
-}
+};
+
+// FUNCIONES DE OCASIONES
+const OCCASION_NAMES = {
+  'oficina': 'Oficina/Trabajo',
+  'deportivo': 'Deportes/Gym',
+  'casual': 'Casual',
+  'formal': 'Formal',
+  'matrimonio': 'Matrimonio'
+};
+
+window.getOccasionName = (occasion) => {
+  return OCCASION_NAMES[occasion] || occasion;
+};
+
+// FUNCIÓN DE NOTIFICACIÓN GLOBAL MEJORADA
+window.showNotification = (message, type = 'info') => {
+  console.log(`📢 ${type.toUpperCase()}: ${message}`);
+  
+  try {
+    // Remover notificaciones anteriores
+    document.querySelectorAll('.notification').forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Estilos según el tipo
+    const colors = {
+      success: '#10b981',
+      error: '#ef4444',
+      warning: '#f59e0b',
+      info: '#3b82f6'
+    };
+    
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${colors[type] || colors.info};
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 15px;
+      z-index: 10000;
+      font-weight: 600;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: slideInRight 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    `;
+    
+    // Agregar animación si no existe
+    if (!document.getElementById('notificationStyles')) {
+      const style = document.createElement('style');
+      style.id = 'notificationStyles';
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remover después de 3 segundos
+    setTimeout(() => {
+      notification.style.animation = 'fadeOut 0.3s ease';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Error mostrando notificación:', error);
+  }
+};
+
+// FUNCIONES DE DEBUG Y DESARROLLO
+window.debugNoshopiA = () => {
+  console.log('=== DEBUG NOSHOPIA ===');
+  console.log('Estado de login:', isLoggedIn);
+  console.log('Usuario actual:', currentUser);
+  console.log('Ocasión seleccionada:', selectedOccasion);
+  console.log('Modo closet:', closetMode);
+  console.log('Perfil completado:', profileCompleted);
+  console.log('Total items closet:', window.getTotalClosetItems());
+  console.log('Archivos subidos:', uploadedFiles);
+  console.log('Stats usuario:', userStats);
+  console.log('===================');
+};
+
+window.resetNoshopiA = () => {
+  if (confirm('¿Estás seguro de que quieres resetear toda la aplicación?')) {
+    window.clearUserData();
+    location.reload();
+  }
+};
+
+// FUNCIONES DE MIGRACIÓN DE DATOS (para versiones anteriores)
+window.migrateOldData = () => {
+  console.log('🔄 Verificando datos anteriores para migrar...');
+  
+  try {
+    if (!currentUser || !currentUser.email) return false;
+    
+    const email = currentUser.email;
+    let migrated = false;
+    
+    // Migrar datos del closet antiguos
+    const oldClosetData = localStorage.getItem(`noshopia_closet_${email}`);
+    if (oldClosetData) {
+      const data = JSON.parse(oldClosetData);
+      if (data.closetItems) {
+        closetItems = data.closetItems;
+        uploadedFiles = data.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
+        uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
+        migrated = true;
+        console.log('📦 Datos de closet migrados');
+      }
+    }
+    
+    // Migrar perfil antiguo
+    const oldProfile = localStorage.getItem(`noshopia_profile_${email}`);
+    if (oldProfile) {
+      userProfile = JSON.parse(oldProfile);
+      profileCompleted = true;
+      migrated = true;
+      console.log('👤 Datos de perfil migrados');
+    }
+    
+    if (migrated) {
+      // Guardar en nuevo formato
+      window.saveUserData();
+      console.log('✅ Migración completada');
+    }
+    
+    return migrated;
+    
+  } catch (error) {
+    console.error('Error en migración:', error);
+    return false;
+  }
+};
+
+// INICIALIZACIÓN DE CONFIG
+console.log('📊 Configuración cargada:', {
+  closetLimit: CONFIG.TOTAL_CLOSET_LIMIT,
+  fileLimits: CONFIG.FILE_LIMITS,
+  apiBase: CONFIG.API_BASE
+});
+
+// Exponer CONFIG globalmente
+window.CONFIG = CONFIG;
+
+console.log('✅ config.js - Configuración Global Centralizada cargada');
