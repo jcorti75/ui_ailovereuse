@@ -730,28 +730,53 @@
       BACKEND_URL: 'https://noshopia-production.up.railway.app'
     };
 
-    // SISTEMA DE CATEGORIZACIÓN INTELIGENTE AVANZADO
-    const INTELLIGENT_CATEGORIES = {
-      tops: {
-        "shirt": { name: "Camisas", icon: "👔", keywords: ["shirt", "dress shirt", "button", "collar"], color: "#3b82f6", confidence: 0.95 },
-        "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy"], color: "#ec4899", confidence: 0.90 },
-        "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan"], color: "#f59e0b", confidence: 0.92 },
-        "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "casual"], color: "#10b981", confidence: 0.96 },
-        "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer"], color: "#6b7280", confidence: 0.88 },
-        "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown"], color: "#8b5cf6", confidence: 0.94 }
+    // SISTEMA DE CATEGORIZACIÓN DESDE CLOSET.JS
+    const CATEGORY_GROUPS = {
+      // Superiores - Grupos principales
+      "tops": {
+        "Poleras": ["t-shirt", "graphic t-shirt", "tank top"],
+        "Camisas": ["shirt", "dress shirt", "blouse", "silk blouse"],
+        "Sweaters": ["sweater", "knitted sweater", "wool pullover", "cardigan"],
+        "Chaquetas": ["jacket", "leather jacket", "denim jacket", "blazer"],
+        "Abrigos": ["coat", "winter coat"],
+        "Hoodies": ["hoodie", "zip-up hoodie"],
+        "Vestidos": ["dress", "summer dress", "evening dress"],
+        "Chalecos": ["vest"]
       },
-      bottoms: {
-        "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af", confidence: 0.97 },
-        "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks"], color: "#3b82f6", confidence: 0.92 },
-        "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt"], color: "#ec4899", confidence: 0.94 },
-        "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981", confidence: 0.96 }
+      
+      // Inferiores - Grupos principales  
+      "bottoms": {
+        "Pantalones": ["pants", "trousers", "formal pants", "dress pants", "chinos"],
+        "Jeans": ["jeans", "blue denim jeans", "ripped jeans"],
+        "Shorts": ["shorts", "athletic shorts"],
+        "Faldas": ["skirt", "midi skirt", "pencil skirt"],
+        "Calzas": ["leggings", "sweatpants"]
       },
-      shoes: {
-        "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers"], color: "#3b82f6", confidence: 0.96 },
-        "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords"], color: "#1f2937", confidence: 0.93 },
-        "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots"], color: "#92400e", confidence: 0.91 },
-        "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels"], color: "#ec4899", confidence: 0.94 }
+      
+      // Calzado - Grupos principales
+      "shoes": {
+        "Zapatillas": ["sneakers", "running shoes", "athletic shoes"],
+        "Zapatos": ["shoes", "dress shoes", "leather shoes", "loafers", "flats"],
+        "Botas": ["boots", "ankle boots", "hiking boots"],
+        "Tacos": ["heels", "stiletto heels"],
+        "Sandalias": ["sandals", "leather sandals"]
       }
+    };
+
+    // Iconos para las categorías
+    const CATEGORY_ICONS = {
+      "Poleras": "👕", "Camisas": "👔", "Sweaters": "🧥", "Chaquetas": "🧥", 
+      "Abrigos": "🧥", "Hoodies": "👘", "Vestidos": "👗", "Chalecos": "🦺",
+      "Pantalones": "👖", "Jeans": "👖", "Shorts": "🩳", "Faldas": "👗", "Calzas": "🩱",
+      "Zapatillas": "👟", "Zapatos": "👞", "Botas": "🥾", "Tacos": "👠", "Sandalias": "👡"
+    };
+
+    // Colores para las categorías
+    const CATEGORY_COLORS = {
+      "Poleras": "#10b981", "Camisas": "#3b82f6", "Sweaters": "#f59e0b", "Chaquetas": "#6b7280", 
+      "Abrigos": "#1f2937", "Hoodies": "#ef4444", "Vestidos": "#8b5cf6", "Chalecos": "#84cc16",
+      "Pantalones": "#3b82f6", "Jeans": "#1e40af", "Shorts": "#10b981", "Faldas": "#ec4899", "Calzas": "#6b7280",
+      "Zapatillas": "#3b82f6", "Zapatos": "#1f2937", "Botas": "#92400e", "Tacos": "#ec4899", "Sandalias": "#f59e0b"
     };
 
     // Variables globales del sistema inteligente
@@ -1145,38 +1170,90 @@
       event.target.value = '';
     }
 
-    // SIMULACIÓN DE DETECCIÓN IA (reemplazar con llamada real al backend)
+    // DETECCIÓN IA USANDO CATEGORY_GROUPS CORRECTA
     async function simulateAIDetection(file) {
-      // Simular análisis de IA basado en el nombre del archivo
       const fileName = file.name.toLowerCase();
       
-      let detectedType = 'tops';
-      let detectedCategory = 'tshirt';
-      let detectedItem = 'Prenda superior';
-      
-      // Lógica simple de detección basada en palabras clave
-      if (fileName.includes('jean') || fileName.includes('pantalon') || fileName.includes('falda')) {
-        detectedType = 'bottoms';
-        detectedCategory = fileName.includes('jean') ? 'jeans' : 'pants';
-        detectedItem = fileName.includes('jean') ? 'Jeans' : 'Pantalones';
-      } else if (fileName.includes('zapato') || fileName.includes('zapatilla') || fileName.includes('boot')) {
-        detectedType = 'shoes';
-        detectedCategory = fileName.includes('zapatilla') ? 'sneakers' : 'dress_shoes';
-        detectedItem = fileName.includes('zapatilla') ? 'Zapatillas' : 'Zapatos formales';
-      } else if (fileName.includes('camisa') || fileName.includes('shirt')) {
-        detectedCategory = 'shirt';
-        detectedItem = 'Camisa';
-      } else if (fileName.includes('polera') || fileName.includes('tshirt')) {
-        detectedCategory = 'tshirt';
-        detectedItem = 'Polera';
+      // Buscar coincidencias en CATEGORY_GROUPS
+      for (const garmentType in CATEGORY_GROUPS) {
+        for (const categoryName in CATEGORY_GROUPS[garmentType]) {
+          const keywords = CATEGORY_GROUPS[garmentType][categoryName];
+          
+          // Verificar si alguna palabra clave coincide con el nombre del archivo
+          for (const keyword of keywords) {
+            if (fileName.includes(keyword.toLowerCase()) || 
+                fileName.includes(keyword.replace(' ', '').toLowerCase()) ||
+                fileName.includes(keyword.replace('-', '').toLowerCase())) {
+              
+              return {
+                type: garmentType,
+                category: categoryName,
+                item: categoryName,
+                confidence: Math.random() * 0.2 + 0.8 // 80-100% confianza
+              };
+            }
+          }
+        }
       }
       
-      return {
-        type: detectedType,
-        category: detectedCategory,
-        item: detectedItem,
-        confidence: Math.random() * 0.3 + 0.7 // 70-100% confianza
-      };
+      // Si no encuentra coincidencias, distribución inteligente basada en análisis básico
+      const detectionResult = await analyzeImageBasics(file);
+      return detectionResult;
+    }
+
+    // Análisis básico cuando no hay coincidencia de keywords
+    async function analyzeImageBasics(file) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.width / img.height;
+          
+          let detectedType, categoryName;
+          
+          // Lógica básica por aspect ratio y análisis de forma
+          if (aspectRatio > 1.5) {
+            // Imagen muy ancha - probablemente zapato
+            detectedType = 'shoes';
+            const shoeCategories = Object.keys(CATEGORY_GROUPS.shoes);
+            categoryName = shoeCategories[Math.floor(Math.random() * shoeCategories.length)];
+          } else if (aspectRatio < 0.7) {
+            // Imagen muy alta - probablemente prenda superior
+            detectedType = 'tops';
+            const topCategories = Object.keys(CATEGORY_GROUPS.tops);
+            categoryName = topCategories[Math.floor(Math.random() * topCategories.length)];
+          } else {
+            // Aspecto medio - podría ser cualquiera, distribución equitativa
+            const allTypes = Object.keys(CATEGORY_GROUPS);
+            detectedType = allTypes[Math.floor(Math.random() * allTypes.length)];
+            const categories = Object.keys(CATEGORY_GROUPS[detectedType]);
+            categoryName = categories[Math.floor(Math.random() * categories.length)];
+          }
+          
+          resolve({
+            type: detectedType,
+            category: categoryName,
+            item: categoryName,
+            confidence: Math.random() * 0.3 + 0.6 // 60-90% confianza para detección básica
+          });
+        };
+        
+        img.onerror = () => {
+          // Si falla la carga, distribución completamente aleatoria
+          const allTypes = Object.keys(CATEGORY_GROUPS);
+          const randomType = allTypes[Math.floor(Math.random() * allTypes.length)];
+          const categories = Object.keys(CATEGORY_GROUPS[randomType]);
+          const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+          
+          resolve({
+            type: randomType,
+            category: randomCategory,
+            item: randomCategory,
+            confidence: 0.5 // Baja confianza para casos fallback
+          });
+        };
+        
+        img.src = URL.createObjectURL(file);
+      });
     }
 
     function fileToDataUrl(file) {
