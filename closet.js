@@ -1176,10 +1176,323 @@ initializeEventListeners();
 console.log('✅ Event listeners del closet configurados');
 
 // =======================================================
-// FIN DE EVENT LISTENERS
+// DEBUGGING Y CORRECCIÓN FINAL - AGREGAR AL FINAL DE closet.js
 // =======================================================
 
+// Debug: Verificar que funciones necesarias existen
+function debugClosetSystem() {
+  console.log('🔍 DEBUGGING CLOSET SYSTEM...');
+  
+  // Verificar elementos del DOM
+  const enableBtn = document.getElementById('enableClosetBtn');
+  const directBtn = document.getElementById('useDirectModeBtn');
+  const closetQuestion = document.getElementById('closetQuestion');
+  
+  console.log('DOM Elements found:');
+  console.log('- enableClosetBtn:', !!enableBtn, enableBtn);
+  console.log('- useDirectModeBtn:', !!directBtn, directBtn);
+  console.log('- closetQuestion:', !!closetQuestion, closetQuestion);
+  
+  if (closetQuestion) {
+    console.log('- closetQuestion display:', closetQuestion.style.display);
+  }
+  
+  // Verificar funciones globales
+  console.log('Global functions:');
+  console.log('- window.showNotification:', typeof window.showNotification);
+  console.log('- window.currentUser:', typeof window.currentUser);
+  console.log('- window.isLoggedIn:', typeof window.isLoggedIn);
+}
+
+// Función de notificación de respaldo
+function ensureNotificationFunction() {
+  if (typeof window.showNotification !== 'function') {
+    console.log('⚠️ window.showNotification no existe, creando función de respaldo');
+    
+    window.showNotification = function(message, type = 'info') {
+      console.log(`📢 ${type.toUpperCase()}: ${message}`);
+      
+      // Crear notificación simple
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        z-index: 10000;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 3000);
+    };
+  }
+}
+
+// Configuración ROBUSTA de botones del closet
+function forceSetupClosetButtons() {
+  console.log('🚀 CONFIGURACIÓN FORZADA DE BOTONES...');
+  
+  // Asegurar que la función de notificación existe
+  ensureNotificationFunction();
+  
+  // Buscar botones con múltiples métodos
+  let enableBtn = document.getElementById('enableClosetBtn');
+  let directBtn = document.getElementById('useDirectModeBtn');
+  
+  // Si no se encuentran por ID, buscar por clase o contenido
+  if (!enableBtn) {
+    enableBtn = document.querySelector('.closet-option:first-child');
+    console.log('🔍 enableBtn encontrado por selector:', !!enableBtn);
+  }
+  
+  if (!directBtn) {
+    directBtn = document.querySelector('.closet-option:last-child');
+    console.log('🔍 directBtn encontrado por selector:', !!directBtn);
+  }
+  
+  // Configurar botón Mi Closet Digital
+  if (enableBtn) {
+    console.log('✅ Configurando botón Mi Closet Digital...');
+    
+    // Remover listeners anteriores
+    const newEnableBtn = enableBtn.cloneNode(true);
+    enableBtn.parentNode.replaceChild(newEnableBtn, enableBtn);
+    
+    // Agregar nuevo listener
+    newEnableBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('🎯 CLICK DETECTADO: Mi Closet Digital');
+      window.showNotification('Activando Mi Closet Digital...', 'info');
+      
+      try {
+        // Ocultar pregunta del closet
+        const closetQuestion = document.getElementById('closetQuestion');
+        if (closetQuestion) closetQuestion.style.display = 'none';
+        
+        // Mostrar closet container
+        const closetContainer = document.getElementById('closetContainer');
+        if (closetContainer) {
+          closetContainer.style.display = 'block';
+          
+          // Mostrar email del usuario si está disponible
+          const userEmail = document.getElementById('userEmail');
+          if (userEmail) {
+            const email = (window.currentUser && typeof window.currentUser === 'function') ? 
+                         window.currentUser().email : 
+                         'usuario@ejemplo.com';
+            userEmail.textContent = email;
+          }
+          
+          window.showNotification('Mi Closet Digital activado', 'success');
+        }
+      } catch (error) {
+        console.error('❌ Error activando closet:', error);
+        window.showNotification('Error activando closet', 'error');
+      }
+    });
+    
+    // Mejorar estilos visuales
+    newEnableBtn.style.cursor = 'pointer';
+    newEnableBtn.style.opacity = '1';
+    
+    console.log('✅ Botón Mi Closet Digital configurado exitosamente');
+  } else {
+    console.error('❌ No se pudo encontrar el botón enableCloset');
+  }
+  
+  // Configurar botón Recomendaciones Rápidas
+  if (directBtn) {
+    console.log('✅ Configurando botón Recomendaciones Rápidas...');
+    
+    // Remover listeners anteriores
+    const newDirectBtn = directBtn.cloneNode(true);
+    directBtn.parentNode.replaceChild(newDirectBtn, directBtn);
+    
+    // Agregar nuevo listener
+    newDirectBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('🎯 CLICK DETECTADO: Recomendaciones Rápidas');
+      window.showNotification('Activando Recomendaciones Rápidas...', 'info');
+      
+      try {
+        // Ocultar pregunta del closet
+        const closetQuestion = document.getElementById('closetQuestion');
+        if (closetQuestion) closetQuestion.style.display = 'none';
+        
+        // Mostrar selector de ocasiones
+        const occasionSelector = document.getElementById('occasionSelector');
+        if (occasionSelector) {
+          occasionSelector.style.display = 'block';
+          setupOccasionSelectors();
+        }
+        
+        // Mostrar área de upload
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+          uploadArea.style.display = 'block';
+        }
+        
+        window.showNotification('Recomendaciones Rápidas activado', 'success');
+      } catch (error) {
+        console.error('❌ Error activando modo directo:', error);
+        window.showNotification('Error activando modo directo', 'error');
+      }
+    });
+    
+    // Mejorar estilos visuales
+    newDirectBtn.style.cursor = 'pointer';
+    newDirectBtn.style.opacity = '1';
+    
+    console.log('✅ Botón Recomendaciones Rápidas configurado exitosamente');
+  } else {
+    console.error('❌ No se pudo encontrar el botón directMode');
+  }
+}
+
+// Configurar selectores de ocasión
+function setupOccasionSelectors() {
+  console.log('🎯 Configurando selectores de ocasión...');
+  
+  const occasionBtns = document.querySelectorAll('.occasion-btn');
+  occasionBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      console.log('📅 Ocasión seleccionada:', this.dataset.occasion);
+      
+      // Remover selección anterior
+      occasionBtns.forEach(b => b.classList.remove('selected'));
+      
+      // Seleccionar actual
+      this.classList.add('selected');
+      
+      // Guardar ocasión globalmente
+      const occasion = this.dataset.occasion;
+      window.selectedOccasion = occasion;
+      
+      window.showNotification(`Ocasión seleccionada: ${occasion}`, 'success');
+    });
+  });
+}
+
+// Función para mostrar automáticamente las opciones después del perfil
+function showClosetOptionsAfterProfile() {
+  console.log('🎯 Mostrando opciones del closet después del perfil...');
+  
+  // Ocultar formulario de perfil
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    profileForm.style.display = 'none';
+    console.log('✅ Formulario de perfil ocultado');
+  }
+  
+  // Ocultar sección de bienvenida
+  const welcomeSection = document.getElementById('welcomeSection');
+  if (welcomeSection) {
+    welcomeSection.style.display = 'none';
+    console.log('✅ Sección de bienvenida ocultada');
+  }
+  
+  // Mostrar pregunta del closet
+  const closetQuestion = document.getElementById('closetQuestion');
+  if (closetQuestion) {
+    closetQuestion.style.display = 'block';
+    console.log('✅ Pregunta del closet mostrada');
+    
+    // Forzar reconfiguración de botones después de mostrar
+    setTimeout(() => {
+      forceSetupClosetButtons();
+    }, 500);
+  } else {
+    console.error('❌ No se encontró closetQuestion');
+  }
+}
+
+// Función para inicialización completa
+function initializeClosetSystemComplete() {
+  console.log('🚀 INICIALIZACIÓN COMPLETA DEL SISTEMA CLOSET...');
+  
+  // Debug inicial
+  debugClosetSystem();
+  
+  // Configurar funciones de respaldo
+  ensureNotificationFunction();
+  
+  // Configuración múltiple con reintentos
+  let attempts = 0;
+  const maxAttempts = 5;
+  
+  const setupInterval = setInterval(() => {
+    attempts++;
+    console.log(`🔄 Intento de configuración ${attempts}/${maxAttempts}`);
+    
+    const enableBtn = document.getElementById('enableClosetBtn');
+    const directBtn = document.getElementById('useDirectModeBtn');
+    
+    if (enableBtn && directBtn) {
+      console.log('✅ Botones encontrados, configurando...');
+      forceSetupClosetButtons();
+      clearInterval(setupInterval);
+    } else if (attempts >= maxAttempts) {
+      console.log('⚠️ Configurando con selectores alternativos...');
+      forceSetupClosetButtons();
+      clearInterval(setupInterval);
+    }
+  }, 1000);
+}
+
+// Función global para llamar desde profile.js
+window.showClosetOptionsAfterProfile = showClosetOptionsAfterProfile;
+window.forceSetupClosetButtons = forceSetupClosetButtons;
+
+// Observer para detectar cambios en closetQuestion
+const closetObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'attributes' && 
+        mutation.target.id === 'closetQuestion' && 
+        mutation.target.style.display === 'block') {
+      
+      console.log('👁️ Observer detectó closetQuestion visible');
+      setTimeout(forceSetupClosetButtons, 200);
+    }
+  });
+});
+
+// Iniciar observer
+if (document.getElementById('closetQuestion')) {
+  closetObserver.observe(document.getElementById('closetQuestion'), {
+    attributes: true,
+    attributeFilter: ['style']
+  });
+}
+
+// AUTO-INICIALIZACIÓN con múltiples puntos de entrada
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('📄 DOM cargado, iniciando configuración del closet...');
+  setTimeout(initializeClosetSystemComplete, 1000);
+});
+
+// También inicializar inmediatamente si el DOM ya está listo
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  console.log('📄 DOM ya listo, iniciando configuración inmediata...');
+  setTimeout(initializeClosetSystemComplete, 500);
+}
+
+console.log('🔧 Sistema de debugging y corrección del closet cargado');
+
 // =======================================================
-// FIN DE FUNCIONES DE REPARACIÓN DE UI
+// FIN DE DEBUGGING Y CORRECCIÓN
 // =======================================================
-console.log('✅ closet.js - Sistema Inteligente con Detección IA Alineado con Backend cargado');
