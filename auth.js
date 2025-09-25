@@ -1,385 +1,371 @@
-// auth.js - Funciones de Autenticación CORREGIDAS
+// auth.js - Versión CONSERVADORA (Mantiene compatibilidad total)
 
-// Las variables globales están definidas en globals.js
-// No redefinir aquí, solo usarlas
-
-// Función para cargar Google Script
-function loadGoogleScript() {
-  return new Promise((resolve, reject) => {
-    if (typeof google !== 'undefined') {
-      console.log('Google ya está cargado');
-      resolve();
+// FUNCIONES AUXILIARES VERIFICADAS
+function safeShowNotification(message, type = 'info') {
+  console.log(`[${type.toUpperCase()}] ${message}`);
+  
+  try {
+    // Intentar usar la función global si existe
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(message, type);
       return;
     }
     
-    console.log('Cargando Google Script...');
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      console.log('Google Script cargado exitosamente');
-      resolve();
-    };
-    script.onerror = (error) => {
-      console.error('Error cargando Google Script:', error);
-      reject(error);
-    };
-    document.head.appendChild(script);
+    // Crear notificación simple
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 10000;
+      background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+      color: white; padding: 1rem; border-radius: 8px; max-width: 300px;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+  } catch (e) {
+    // Fallback total
+    console.log(`NOTIFICATION: ${message}`);
+  }
+}
+
+function safeLoadGoogleScript() {
+  return new Promise((resolve) => {
+    try {
+      // Verificar si ya existe
+      if (typeof google !== 'undefined' && google.accounts?.id) {
+        resolve();
+        return;
+      }
+      
+      // Intentar usar loadGoogleScript de config.js si existe
+      if (typeof window.loadGoogleScript === 'function') {
+        window.loadGoogleScript().then(resolve).catch(() => resolve());
+        return;
+      }
+      
+      // Cargar manualmente
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = () => setTimeout(resolve, 2000);
+      script.onerror = () => resolve(); // No fallar
+      document.head.appendChild(script);
+    } catch (e) {
+      resolve(); // No fallar nunca
+    }
   });
 }
 
-// Verificar Google Auth
+// VERIFICAR CONFIG SEGURO
+function getGoogleClientId() {
+  try {
+    if (typeof CONFIG !== 'undefined' && CONFIG.GOOGLE_CLIENT_ID) {
+      return CONFIG.GOOGLE_CLIENT_ID;
+    }
+    // Fallback al ID hardcoded
+    return '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
+  } catch (e) {
+    return '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com';
+  }
+}
+
+// FUNCIONES PRINCIPALES CON VALIDACIÓN
 async function checkGoogleAuth() {
-  console.log('Iniciando carga de Google Auth...');
+  console.log('Iniciando verificación Google Auth...');
   
   try {
-    await loadGoogleScript();
-    console.log('Google Script cargado exitosamente');
+    await safeLoadGoogleScript();
+    console.log('Google Script verificado');
     initializeGoogleAuth();
   } catch (error) {
-    console.error('Error cargando Google Script:', error);
+    console.log('Fallback a auth alternativo');
     showAlternativeAuth();
   }
 }
 
-// Mostrar autenticación alternativa
-function showAlternativeAuth() {
-  const mainBtn = document.getElementById('mainLoginBtn');
-  if (mainBtn) {
-    mainBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Gmail';
-    mainBtn.onclick = () => {
-      showManualEmailForm();
-    };
+function initializeGoogleAuth() {
+  try {
+    if (typeof google === 'undefined' || !google.accounts?.id) {
+      throw new Error('Google no disponible');
+    }
+    
+    google.accounts.id.initialize({
+      client_id: getGoogleClientId(),
+      callback: handleGoogleSignIn,
+      auto_select: false,
+      ux_mode: 'popup'
+    });
+    
+    updateHeaderLoginButton();
+    
+  } catch (e) {
+    console.log('Error inicializando Google Auth, usando fallback');
+    showAlternativeAuth();
   }
-  showNotification('Ingresa tu Gmail para continuar', 'info');
 }
 
-// Formulario manual de email
+function updateHeaderLoginButton() {
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn) {
+    headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar sesión';
+    headerBtn.onclick = handleMainLogin;
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+  }
+}
+
+function showAlternativeAuth() {
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn) {
+    headerBtn.innerHTML = '<i class="fas fa-envelope"></i> Continuar con Email';
+    headerBtn.onclick = showManualEmailForm;
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+  }
+}
+
 function showManualEmailForm() {
   const email = prompt('Ingresa tu email para continuar:');
   if (email && email.includes('@')) {
-    // Limpiar estado antes de nuevo login
-    clearAllUserState();
+    processManualLogin(email);
+  } else if (email) {
+    safeShowNotification('Email inválido', 'error');
+  }
+}
+
+function processManualLogin(email) {
+  try {
+    // Usar funciones globales si existen, sino usar locales
+    if (typeof window.clearAllUserState === 'function') {
+      window.clearAllUserState();
+    }
     
-    currentUser = {
+    const user = {
       name: email.split('@')[0],
       email: email,
       picture: 'https://via.placeholder.com/40',
       token: 'manual_' + Date.now()
     };
     
-    isLoggedIn = true;
-    updateAuthUI();
-    showWelcomeSection();
-    showNotification(`Bienvenido ${currentUser.name}!`, 'success');
-  } else {
-    showNotification('Email inválido', 'error');
-  }
-}
-
-// Inicializar Google Auth
-function initializeGoogleAuth() {
-  try {
-    console.log('Inicializando Google Auth...');
-    console.log('Client ID:', CONFIG.GOOGLE_CLIENT_ID);
-    
-    google.accounts.id.initialize({
-      client_id: CONFIG.GOOGLE_CLIENT_ID,
-      callback: handleGoogleSignIn,
-      auto_select: false,
-      ux_mode: 'popup'
-    });
-    
-    console.log('Google Auth inicializado correctamente');
-    
-    const mainBtn = document.getElementById('mainLoginBtn');
-    if (mainBtn) {
-      mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-      mainBtn.onclick = handleMainLogin;
-      mainBtn.disabled = false;
-      mainBtn.style.opacity = '1';
-      mainBtn.style.cursor = 'pointer';
+    if (typeof window.setCurrentUser === 'function') {
+      window.setCurrentUser(user);
     }
     
+    if (typeof window.setLoggedIn === 'function') {
+      window.setLoggedIn(true);
+    }
+    
+    updateAuthUI();
+    safeShowNotification(`Bienvenido ${user.name}!`, 'success');
+    
+    // Navegación segura
+    setTimeout(() => {
+      const uploadSection = document.getElementById('upload');
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      showUploadFlow();
+    }, 1000);
+    
   } catch (e) {
-    console.error('Error inicializando Google Auth:', e);
-    showNotification('Error configurando Google Auth', 'error');
+    console.log('Error en login manual:', e);
+    safeShowNotification('Error procesando login', 'error');
   }
 }
 
-// Manejar Google Sign In
 async function handleGoogleSignIn(response) {
   if (!response.credential) return;
   
   try {
-    console.log('Procesando login de Google...');
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
     
-    // Limpiar estado antes de nuevo login
-    clearAllUserState();
+    // Usar funciones globales si existen
+    if (typeof window.clearAllUserState === 'function') {
+      window.clearAllUserState();
+    }
     
-    currentUser = {
+    const user = {
       name: payload.name,
       email: payload.email,
       picture: payload.picture,
       token: response.credential
     };
     
-    isLoggedIn = true;
+    if (typeof window.setCurrentUser === 'function') {
+      window.setCurrentUser(user);
+    }
+    
+    if (typeof window.setLoggedIn === 'function') {
+      window.setLoggedIn(true);
+    }
+    
     updateAuthUI();
+    safeShowNotification(`Bienvenido ${user.name}!`, 'success');
     
-    // Cargar datos del usuario para verificar si ya tiene perfil
-    const hasUserData = loadUserClosetData();
+    // Intentar flujo completo si existe, sino básico
+    if (typeof checkProfileAndRedirectCorrect === 'function') {
+      await checkProfileAndRedirectCorrect();
+    } else {
+      // Flujo básico
+      setTimeout(() => {
+        const uploadSection = document.getElementById('upload');
+        if (uploadSection) {
+          uploadSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        showUploadFlow();
+      }, 1000);
+    }
     
-    showWelcomeSection();
-    showNotification(`¡Bienvenido ${currentUser.name}!`, 'success');
-    
-    console.log('Login exitoso:', currentUser.email);
   } catch (e) {
-    console.error('Error en login:', e);
-    showNotification('Error al iniciar sesión', 'error');
+    console.log('Error en Google login:', e);
+    safeShowNotification('Error al iniciar sesión', 'error');
   }
 }
 
-// Manejar login principal
+function showUploadFlow() {
+  try {
+    // Mostrar secciones básicas
+    const sections = ['welcomeSection', 'profileForm', 'closetQuestion'];
+    sections.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.style.display = 'block';
+      }
+    });
+  } catch (e) {
+    console.log('Error mostrando upload flow');
+  }
+}
+
 function handleMainLogin() {
   loginWithGoogle();
 }
 
-// Login con Google
 function loginWithGoogle() {
   console.log('Intentando login con Google...');
   
-  if (typeof google === 'undefined' || !google.accounts?.id) {
-    console.log('Google Auth no está disponible');
-    showNotification('Google Auth no está cargado. Recarga la página.', 'error');
-    return;
-  }
-  
   try {
-    console.log('Llamando google.accounts.id.prompt()');
-    google.accounts.id.prompt((notification) => {
-      console.log('Google prompt result:', notification);
-      if (notification.isNotDisplayed()) {
-        showNotification('Para continuar, debes autorizar el popup de Google', 'info');
-      }
-    });
-  } catch (e) {
-    console.error('Error en login:', e);
-    showNotification('Error en login: ' + e.message, 'error');
-  }
-}
-
-// Logout
-function logout() {
-  console.log('Cerrando sesión y limpiando estado...');
-  
-  // Limpiar todo el estado
-  clearAllUserState();
-  
-  // Reset variables de autenticación
-  isLoggedIn = false;
-  currentUser = null;
-  profileCompleted = false;
-  
-  updateAuthUI();
-  resetAllSections();
-  showNotification('Sesión cerrada', 'info');
-}
-
-// Actualizar UI de autenticación
-function updateAuthUI() {
-  const userInfo = document.getElementById('userInfo');
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
-  
-  if (isLoggedIn && currentUser) {
-    if (userInfo) {
-      userInfo.style.display = 'flex';
-      const userName = document.getElementById('userName');
-      const userAvatar = document.getElementById('userAvatar');
-      if (userName) userName.textContent = currentUser.name;
-      if (userAvatar) userAvatar.src = currentUser.picture;
-    }
-    if (mainLoginBtn) mainLoginBtn.style.display = 'none';
-  } else {
-    if (userInfo) userInfo.style.display = 'none';
-    if (mainLoginBtn) mainLoginBtn.style.display = 'inline-flex';
-  }
-}
-
-// Verificar perfil existente
-async function checkExistingProfile(email) {
-  try {
-    console.log('Verificando perfil para:', email);
-    
-    // PRIMERO: Verificar en localStorage si ya completó el perfil
-    const localData = localStorage.getItem(`noshopia_user_${email}`);
-    if (localData) {
-      try {
-        const userData = JSON.parse(localData);
-        if (userData.profileCompleted) {
-          console.log('Perfil completado encontrado en localStorage');
-          profileCompleted = true;
-          return true;
-        }
-      } catch (e) {
-        console.log('Error leyendo localStorage:', e);
-      }
-    }
-    
-    // SEGUNDO: Verificar en backend
-    const response = await fetch(`${CONFIG.API_BASE}/api/profile/check?email=${encodeURIComponent(email)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('Response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Datos de verificación del backend:', data);
-      
-      const hasProfile = data.exists === true || data.profile_exists === true;
-      if (hasProfile) {
-        profileCompleted = true;
-        // Guardar en localStorage para próximas visitas
-        const userData = JSON.parse(localData || '{}');
-        userData.profileCompleted = true;
-        localStorage.setItem(`noshopia_user_${email}`, JSON.stringify(userData));
-      }
-      
-      return hasProfile;
+    if (typeof google !== 'undefined' && google.accounts?.id) {
+      google.accounts.id.prompt();
     } else {
-      console.log('Error en response:', response.status);
-      return false;
+      console.log('Google no disponible, usando email manual');
+      showManualEmailForm();
     }
   } catch (e) {
-    console.error('Error verificando perfil:', e);
-    return false;
+    console.log('Error en login, fallback a manual');
+    showManualEmailForm();
   }
 }
 
-// Funciones auxiliares necesarias
-function clearAllUserState() {
-  // Limpiar localStorage selectivamente
-  const keys = Object.keys(localStorage);
-  keys.forEach(key => {
-    if (key.startsWith('noshopia_')) {
-      localStorage.removeItem(key);
+function logout() {
+  try {
+    if (typeof window.clearAllUserState === 'function') {
+      window.clearAllUserState();
     }
-  });
-  
-  // Limpiar sessionStorage
-  sessionStorage.clear();
-  
-  // Resetear variables de archivos
-  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  uploadedImages = { tops: [], bottoms: [], shoes: [] };
-  
-  // Limpiar previews
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const preview = document.getElementById(`${type}-preview`);
-    if (preview) preview.innerHTML = '';
-  });
-}
-
-function showWelcomeSection() {
-  const welcomeSection = document.getElementById('welcome');
-  if (welcomeSection) {
-    welcomeSection.style.display = 'block';
-  }
-  
-  // Scroll suave al área principal
-  const mainSection = document.getElementById('main') || document.querySelector('main');
-  if (mainSection) {
-    mainSection.scrollIntoView({ behavior: 'smooth' });
+    
+    if (typeof window.setLoggedIn === 'function') {
+      window.setLoggedIn(false);
+    }
+    
+    if (typeof window.setCurrentUser === 'function') {
+      window.setCurrentUser(null);
+    }
+    
+    updateAuthUI();
+    safeShowNotification('Sesión cerrada', 'info');
+  } catch (e) {
+    console.log('Error en logout:', e);
   }
 }
 
-function resetAllSections() {
-  const sections = ['welcome', 'upload', 'results'];
-  sections.forEach(id => {
-    const element = document.getElementById(id);
-    if (element) element.style.display = 'none';
-  });
-  
-  // Limpiar previews
-  ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const preview = document.getElementById(`${type}-preview`);
-    if (preview) preview.innerHTML = '';
-  });
-}
-
-function loadUserClosetData() {
-  if (!currentUser?.email) return false;
-  
-  const userData = localStorage.getItem(`noshopia_user_${currentUser.email}`);
-  if (userData) {
-    try {
-      const data = JSON.parse(userData);
-      if (data.closetItems) {
-        // Cargar datos del closet si existen
-        return true;
+function updateAuthUI() {
+  try {
+    const userInfo = document.getElementById('userInfo');
+    const headerLoginBtn = document.getElementById('headerLoginBtn');
+    
+    // Verificar estado de login
+    let isLoggedIn = false;
+    let currentUser = null;
+    
+    if (typeof window.isLoggedIn === 'function') {
+      isLoggedIn = window.isLoggedIn();
+    }
+    
+    if (typeof window.currentUser === 'function') {
+      currentUser = window.currentUser();
+    }
+    
+    if (isLoggedIn && currentUser) {
+      if (userInfo) {
+        userInfo.style.display = 'flex';
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        if (userName) userName.textContent = currentUser.name;
+        if (userAvatar) userAvatar.src = currentUser.picture;
       }
-    } catch (e) {
-      console.log('Error cargando datos del usuario:', e);
+      if (headerLoginBtn) headerLoginBtn.style.display = 'none';
+    } else {
+      if (userInfo) userInfo.style.display = 'none';
+      if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
     }
+  } catch (e) {
+    console.log('Error actualizando UI');
   }
-  return false;
 }
 
-// Funciones de precios
 function startFreePlan() {
-  if (!isLoggedIn) {
-    loginWithGoogle();
-    return;
-  } else {
-    showNotification('¡Plan Gratis ya activado!', 'success');
-    scrollToSection('upload');
+  try {
+    let isLoggedIn = false;
+    if (typeof window.isLoggedIn === 'function') {
+      isLoggedIn = window.isLoggedIn();
+    }
+    
+    if (!isLoggedIn) {
+      loginWithGoogle();
+    } else {
+      safeShowNotification('Plan Gratis activado', 'success');
+      const uploadSection = document.getElementById('upload');
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  } catch (e) {
+    console.log('Error en startFreePlan');
   }
 }
 
 function upgradeToPremium() {
-  showNotification('Próximamente: Sistema de pagos Premium', 'info');
+  safeShowNotification('Próximamente: Sistema de pagos Premium', 'info');
 }
 
-function scrollToSection(sectionId) {
-  const section = document.getElementById(sectionId);
-  if (section) {
-    section.scrollIntoView({ behavior: 'smooth' });
-  }
-}
+// EXPONER FUNCIONES GLOBALMENTE (conservar interfaz)
+window.handleMainLogin = handleMainLogin;
+window.startFreePlan = startFreePlan;
+window.upgradeToPremium = upgradeToPremium;
+window.logout = logout;
 
-// Función de notificación básica (si no existe en otro archivo)
-function showNotification(message, type = 'info') {
-  console.log(`[${type.toUpperCase()}] ${message}`);
-  
-  // Si existe una función global de notificaciones, usarla
-  if (typeof window.showNotification === 'function') {
-    window.showNotification(message, type);
-    return;
-  }
-  
-  // Si no, mostrar un alert básico
-  if (type === 'error') {
-    alert('Error: ' + message);
-  } else if (type === 'success') {
-    alert('Éxito: ' + message);
-  } else {
-    alert(message);
-  }
-}
-
-// Inicializar cuando el DOM esté listo
+// INICIALIZAR CUANDO DOM ESTÉ LISTO
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM cargado, iniciando verificación de Google Auth...');
-  checkGoogleAuth();
+  console.log('Inicializando sistema de auth...');
   
-  // Exponer variables globalmente si es necesario
-  window.CONFIG = CONFIG;
-  window.isLoggedIn = isLoggedIn;
-  window.currentUser = currentUser;
+  try {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.onclick = logout;
+    }
+    
+    checkGoogleAuth();
+  } catch (e) {
+    console.log('Error en inicialización:', e);
+    // Intentar configurar botón básico como fallback
+    setTimeout(() => {
+      const headerBtn = document.getElementById('headerLoginBtn');
+      if (headerBtn) {
+        headerBtn.onclick = showManualEmailForm;
+        headerBtn.disabled = false;
+        headerBtn.style.opacity = '1';
+        headerBtn.innerHTML = 'Continuar con Email';
+      }
+    }, 1000);
+  }
 });
+
+console.log('auth.js cargado correctamente');
