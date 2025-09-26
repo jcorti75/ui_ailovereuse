@@ -1537,7 +1537,7 @@ function initializeGoogleLogin() {
   }
 }
 
-/ NUEVA FUNCIÓN: Activar botón de login del header
+// NUEVA FUNCION: Activar botón de login del header
 function activateHeaderLoginButton() {
   const headerLoginBtn = document.getElementById('headerLoginBtn');
   if (headerLoginBtn) {
