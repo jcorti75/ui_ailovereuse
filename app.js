@@ -1641,4 +1641,24 @@ window.addEventListener('load', () => {
 
 window.APP_INITIALIZED = true;
 
+setTimeout(() => {
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn && headerBtn.disabled) {
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+    headerBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+    
+    headerBtn.onclick = function() {
+      const userData = {
+        name: 'Usuario Demo',
+        email: 'info@noshopia.com',
+        picture: 'https://via.placeholder.com/40x40/3b82f6/ffffff?text=D'
+      };
+      processLogin(userData);
+    };
+    
+    console.log('✅ Login activado');
+  }
+}, 2000);
+
 console.log('✅ app.js cargado - NoShopiA v2.0 lista');
