@@ -75,7 +75,7 @@ function toggleMobileMenu() {
 }
 
 // ===================================================================
-// SISTEMA DE LOGIN DIRECTO PROFESIONAL
+// SISTEMA DE LOGIN DIRECTO PROFESIONAL - CORREGIDO
 // ===================================================================
 function handleMainLogin() {
   console.log('🔐 Iniciando sesión directa...');
@@ -86,27 +86,121 @@ function handleMainLogin() {
     return;
   }
   
-  // Login directo con Google - Sin popups, directo a Gmail
+  // Intentar login con Google si está disponible
   if (typeof google !== 'undefined' && google.accounts) {
-    // Configuración para login directo sin popups
     try {
+      // Usar el método estándar de Google
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Si no se muestra el prompt, iniciar flow directo
-          initiateDirectGoogleLogin();
+          console.log('Prompt no mostrado, usando botón alternativo');
+          // Si no funciona el prompt, mostrar botón manual
+          showGoogleLoginButton();
         }
       });
     } catch (error) {
       console.error('Error con Google prompt:', error);
-      initiateDirectGoogleLogin();
+      showGoogleLoginButton();
     }
   } else {
-    // Fallback para desarrollo
+    console.log('Google no disponible, usando login demo');
+    // Para desarrollo/testing
     simulateLogin();
   }
 }
 
-// Login directo a Google sin popups
+// Mostrar botón de Google como alternativa
+function showGoogleLoginButton() {
+  // Crear botón temporal de Google si no funciona el prompt
+  let googleBtn = document.getElementById('tempGoogleBtn');
+  
+  if (!googleBtn) {
+    googleBtn = document.createElement('div');
+    googleBtn.id = 'tempGoogleBtn';
+    googleBtn.style.cssText = `
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: white; padding: 2rem; border-radius: 15px; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 10000;
+      text-align: center; border: 2px solid #4285f4;
+    `;
+    
+    googleBtn.innerHTML = `
+      <h3 style="color: #000; margin-bottom: 1rem;">Iniciar Sesión</h3>
+      <p style="color: #666; margin-bottom: 2rem;">Elige una opción para continuar:</p>
+      <button onclick="tryGoogleLogin()" style="
+        background: #4285f4; color: white; border: none; padding: 1rem 2rem;
+        border-radius: 25px; font-weight: 600; cursor: pointer; margin-right: 1rem;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+      ">
+        <i class="fab fa-google"></i> Login con Google
+      </button>
+      <button onclick="simulateLogin()" style="
+        background: #10b981; color: white; border: none; padding: 1rem 2rem;
+        border-radius: 25px; font-weight: 600; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+      ">
+        <i class="fas fa-user"></i> Demo Login
+      </button>
+      <button onclick="closeGoogleLoginButton()" style="
+        position: absolute; top: 10px; right: 10px; background: #ef4444;
+        color: white; border: none; border-radius: 50%; width: 30px; height: 30px;
+        cursor: pointer; font-size: 1rem;
+      ">×</button>
+    `;
+    
+    document.body.appendChild(googleBtn);
+  }
+}
+
+// Cerrar botón de Google
+function closeGoogleLoginButton() {
+  const googleBtn = document.getElementById('tempGoogleBtn');
+  if (googleBtn) {
+    googleBtn.remove();
+  }
+}
+
+// Intentar login directo con Google
+function tryGoogleLogin() {
+  try {
+    if (typeof google !== 'undefined' && google.accounts) {
+      // Forzar renderizado del botón de Google
+      const container = document.createElement('div');
+      container.id = 'googleButtonContainer';
+      container.style.display = 'none';
+      document.body.appendChild(container);
+      
+      google.accounts.id.renderButton(container, {
+        theme: 'filled_blue',
+        size: 'large',
+        type: 'standard',
+        text: 'continue_with'
+      });
+      
+      // Simular click en el botón renderizado
+      setTimeout(() => {
+        const googleBtn = container.querySelector('div[role="button"]');
+        if (googleBtn) {
+          googleBtn.click();
+        } else {
+          console.log('No se pudo renderizar botón de Google, usando demo');
+          closeGoogleLoginButton();
+          simulateLogin();
+        }
+      }, 500);
+      
+    } else {
+      console.log('Google no disponible');
+      closeGoogleLoginButton();
+      simulateLogin();
+    }
+  } catch (error) {
+    console.error('Error en tryGoogleLogin:', error);
+    closeGoogleLoginButton();
+    simulateLogin();
+  }
+}
+
+// Login directo a Google sin popups (ALTERNATIVO - no usado por ahora)
 function initiateDirectGoogleLogin() {
   console.log('🚀 Redirigiendo directamente a Google...');
   
@@ -116,7 +210,7 @@ function initiateDirectGoogleLogin() {
     `response_type=code&` +
     `scope=openid%20email%20profile&` +
     `access_type=offline&` +
-    `prompt=select_account`; // Permite seleccionar cuenta directamente
+    `prompt=select_account`;
   
   // Redirigir directamente sin popup
   window.location.href = googleAuthUrl;
@@ -680,32 +774,17 @@ function getTotalClosetItems() {
 // Categorías inteligentes para detección automática
 const INTELLIGENT_CATEGORIES = {
   tops: {
-    "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "polera"], color: "#10b981" },
-    "shirt": { name: "Camisas", icon: "👔", keywords: ["shirt", "dress shirt", "button", "collar", "camisa"], color: "#3b82f6" },
-    "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy", "blusa"], color: "#ec4899" },
-    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan", "sueter"], color: "#f59e0b" },
-    "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded", "capucha"], color: "#ef4444" },
-    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" },
-    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench", "abrigo"], color: "#1f2937" },
-    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" },
-    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat", "chaleco"], color: "#84cc16" }
+    "polera": { name: "Poleras", icon: "👕", keywords: ["polera", "t-shirt", "tee", "camiseta"] },
+    "camisa": { name: "Camisas", icon: "👔", keywords: ["camisa", "shirt", "blouse"] },
+    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "sueter", "cardigan", "pullover"] },
+    "chaqueta": { name: "Chaquetas", icon: "🧥", keywords: ["chaqueta", "jacket", "blazer"] },
+    "vestido": { name: "Vestidos", icon: "👗", keywords: ["vestido", "dress"] }
   },
   bottoms: {
-    "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af" },
-    "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks", "pantalon"], color: "#3b82f6" },
-    "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt", "falda"], color: "#ec4899" },
-    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" },
-    "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants", "calza"], color: "#6b7280" }
-  },
-  shoes: {
-    "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers", "zapatilla"], color: "#3b82f6" },
-    "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords", "zapato"], color: "#1f2937" },
-    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" },
-    "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels", "tacos", "tacon"], color: "#ec4899" },
-    "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops", "sandalia"], color: "#f59e0b" },
-    "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers", "ballerina"], color: "#6b7280" }
-  }
-};
+    "jeans": { name: "Jeans", icon: "👖", keywords: ["jean", "jeans", "denim"] },
+    "pantalon": { name: "Pantalones", icon: "👖", keywords: ["pantalon", "pants", "trouser"] },
+    "falda": { name: "Faldas", icon: "👗", keywords: ["falda", "skirt"] },
+    "shorts": { name
 
 function setupDirectUpload() {
   ['tops', 'bottoms', 'shoes'].forEach(type => {
@@ -1227,7 +1306,7 @@ function initializeApp() {
 }
 
 // ===================================================================
-// EXPOSICIÓN GLOBAL DE FUNCIONES - INCLUYENDO IA
+// EXPOSICIÓN GLOBAL DE FUNCIONES - AL FINAL DESPUÉS DE DEFINIRLAS
 // ===================================================================
 window.scrollToSection = scrollToSection;
 window.toggleMobileMenu = toggleMobileMenu;
@@ -1242,6 +1321,8 @@ window.submitUserProfile = submitUserProfile;
 window.getRecommendation = getRecommendation;
 window.removeImage = removeImage;
 window.saveRecommendation = saveRecommendation;
+window.removeIntelligentItem = removeIntelligentItem;
+window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
