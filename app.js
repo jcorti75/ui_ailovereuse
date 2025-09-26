@@ -1537,6 +1537,25 @@ function initializeGoogleLogin() {
   }
 }
 
+/ 🆕 NUEVA FUNCIÓN: Activar botón de login del header
+function activateHeaderLoginButton() {
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.disabled = false;
+    headerLoginBtn.style.opacity = '1';
+    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar Sesión';
+    
+    // Event listener para el botón del header
+    headerLoginBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('🔐 Click en botón de header detectado');
+      handleMainLogin();
+    });
+    
+    console.log('✅ Botón de login del header activado');
+  }
+}
+
 function setupEventListeners() {
   setupOccasionButtons();
   setupClosetTabs();
