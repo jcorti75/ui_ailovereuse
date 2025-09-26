@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.3 - SINCRONIZADO CON HTML
-console.log('🚀 NoShopiA v2.3 - SINCRONIZADO CON HTML');
+// app.js - NoShopiA v2.3 - CÓDIGO COMPLETO Y CORREGIDO
+console.log('🚀 NoShopiA v2.3 - VERSIÓN COMPLETA Y CORREGIDA');
 
 // ===================================================================
 // VARIABLES GLOBALES
@@ -16,6 +16,7 @@ let processingStartTime = null;
 let currentResults = [];
 let savedRecommendations = [];
 let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
+let userProfile = { skin_color: null, age_range: null, gender: null };
 
 // ===================================================================
 // SISTEMA DE DETECCIÓN IA
@@ -43,62 +44,43 @@ const INTELLIGENT_CATEGORIES = {
 };
 
 // ===================================================================
-// FUNCIONES API BACKEND
+// TRADUCTOR DE DETECCIONES DEL BACKEND
 // ===================================================================
-async function checkUserExists(email) {
-  try {
-    const response = await fetch(`${CONFIG.API_BASE}/api/users/check/${encodeURIComponent(email)}`);
-    if (response.ok) {
-      const data = await response.json();
-      console.log('🔍 Verificación backend:', data);
-      return data;
+function translateBackendItem(detectedItem) {
+  const itemLower = detectedItem.toLowerCase();
+  
+  // Buscar en todas las categorías
+  for (const [type, categories] of Object.entries(INTELLIGENT_CATEGORIES)) {
+    for (const [categoryId, categoryInfo] of Object.entries(categories)) {
+      // Buscar por keywords
+      const found = categoryInfo.keywords.some(keyword => 
+        itemLower.includes(keyword.toLowerCase())
+      );
+      
+      if (found) {
+        return {
+          type: type,
+          category: categoryId,
+          name: categoryInfo.name
+        };
+      }
     }
-    return { exists: false, has_profile: false };
-  } catch (error) {
-    console.error('❌ Error verificando usuario:', error);
-    return { exists: false, has_profile: false };
   }
-}
-
-async function createUserProfile(userData, profileData) {
-  try {
-    const response = await fetch(`${CONFIG.API_BASE}/api/users/profile`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: userData, profile: profileData })
-    });
-    
-    if (response.ok) {
-      return await response.json();
-    }
-    throw new Error(`Error ${response.status}: ${await response.text()}`);
-  } catch (error) {
-    console.error('Error creando perfil:', error);
-    throw error;
+  
+  // Fallback - intentar determinar tipo básico
+  if (itemLower.includes('shirt') || itemLower.includes('top') || itemLower.includes('blouse')) {
+    return { type: 'tops', category: 'shirt', name: 'Camisa' };
   }
-}
-
-async function syncWithBackend(email) {
-  try {
-    console.log('🔄 Sincronización crítica con backend:', email);
-    const backendData = await checkUserExists(email);
-    
-    if (backendData.exists && backendData.has_profile) {
-      console.log('✅ PERFIL VERIFICADO EN BD - NO más formularios');
-      return backendData;
-    }
-    
-    console.log('⚠️ Perfil incompleto en BD');
-    return null;
-  } catch (error) {
-    console.error('❌ Error crítico sincronización:', error);
-    return null;
+  if (itemLower.includes('pants') || itemLower.includes('jeans') || itemLower.includes('trouser')) {
+    return { type: 'bottoms', category: 'pants', name: 'Pantalón' };
   }
+  if (itemLower.includes('shoe') || itemLower.includes('sneaker') || itemLower.includes('boot')) {
+    return { type: 'shoes', category: 'sneakers', name: 'Zapato' };
+  }
+  
+  // Fallback final
+  return { type: 'tops', category: 'unknown', name: 'Prenda Desconocida' };
 }
-
-// ===================================================================
-// DETECCIÓN IA AUTOMÁTICA
-// ===================================================================
 
 // ===================================================================
 // DETECCIÓN IA REAL - Usando endpoint correcto /api/recommend
@@ -217,6 +199,60 @@ function categorizeIntelligentItem(detection, imageUrl, file) {
 }
 
 // ===================================================================
+// FUNCIONES API BACKEND
+// ===================================================================
+async function checkUserExists(email) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/users/check/${encodeURIComponent(email)}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('🔍 Verificación backend:', data);
+      return data;
+    }
+    return { exists: false, has_profile: false };
+  } catch (error) {
+    console.error('❌ Error verificando usuario:', error);
+    return { exists: false, has_profile: false };
+  }
+}
+
+async function createUserProfile(userData, profileData) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/users/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: userData, profile: profileData })
+    });
+    
+    if (response.ok) {
+      return await response.json();
+    }
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  } catch (error) {
+    console.error('Error creando perfil:', error);
+    throw error;
+  }
+}
+
+async function syncWithBackend(email) {
+  try {
+    console.log('🔄 Sincronización con backend:', email);
+    const backendData = await checkUserExists(email);
+    
+    if (backendData.exists && backendData.has_profile) {
+      console.log('✅ PERFIL VERIFICADO EN BD');
+      return backendData;
+    }
+    
+    console.log('⚠️ Perfil incompleto en BD');
+    return null;
+  } catch (error) {
+    console.error('❌ Error sincronización:', error);
+    return null;
+  }
+}
+
+// ===================================================================
 // UTILIDADES
 // ===================================================================
 function showNotification(message, type = 'info') {
@@ -241,46 +277,41 @@ function fileToDataUrl(file) {
 }
 
 // ===================================================================
-// SISTEMA DE LOGIN SINCRONIZADO CON HTML
+// SISTEMA DE LOGIN CORREGIDO - SOLO GOOGLE REAL
 // ===================================================================
 function handleMainLogin() {
-  console.log('🔐 Login iniciado...');
+  console.log('🔐 Login iniciado - SOLO GOOGLE REAL...');
   
   if (isLoggedIn) {
     showNotification('Ya estás logueado', 'info');
     return;
   }
   
-  // Usar Google o demo
+  // SOLO usar Google Sign-In real, NO simulateLogin()
   if (typeof google !== 'undefined' && google.accounts) {
     try {
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          simulateLogin();
+          showNotification('Por favor, habilita las cookies y popup para Google Sign-In', 'error');
         }
       });
     } catch (error) {
-      simulateLogin();
+      console.error('Error Google Sign-In:', error);
+      showNotification('Error al inicializar Google Sign-In', 'error');
     }
   } else {
-    simulateLogin();
+    showNotification('Google Sign-In no disponible. Recarga la página.', 'error');
   }
-}
-
-function simulateLogin() {
-  const userData = {
-    name: 'Usuario Demo',
-    email: 'demo@noshopia.com',
-    picture: 'https://via.placeholder.com/40x40/3b82f6/ffffff?text=U'
-  };
-  
-  processLogin(userData);
 }
 
 function handleGoogleCredentialResponse(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    const userData = { name: payload.name, email: payload.email, picture: payload.picture };
+    const userData = { 
+      name: payload.name, 
+      email: payload.email, 
+      picture: payload.picture 
+    };
     processLogin(userData);
   } catch (error) {
     console.error('Error Google login:', error);
@@ -288,9 +319,9 @@ function handleGoogleCredentialResponse(response) {
   }
 }
 
-// CRÍTICO: Login sincronizado con elementos HTML reales
+// PROCESAMIENTO DE LOGIN CORREGIDO
 async function processLogin(userData) {
-  console.log('🔄 PROCESANDO LOGIN SINCRONIZADO CON HTML...');
+  console.log('🔄 PROCESANDO LOGIN REAL:', userData.name);
   
   isLoggedIn = true;
   currentUser = userData;
@@ -298,21 +329,18 @@ async function processLogin(userData) {
   localStorage.setItem('noshopia_auth', JSON.stringify(userData));
   localStorage.setItem('noshopia_logged_in', 'true');
   
-  // CRÍTICO: Verificar perfil desde BD
+  // Verificar perfil desde BD
   try {
     showNotification('Verificando perfil...', 'info');
     const backendData = await syncWithBackend(userData.email);
     
     if (backendData && backendData.has_profile) {
       console.log('✅ PERFIL COMPLETO - SALTAR FORMULARIO');
-      
       updateUserUI();
       loadUserData();
-      
       setTimeout(() => {
         showClosetQuestion();
       }, 1000);
-      
       showNotification(`Bienvenido ${userData.name}! Perfil cargado.`, 'success');
       return;
     }
@@ -330,17 +358,17 @@ async function processLogin(userData) {
   showNotification(`¡Bienvenido ${userData.name}!`, 'success');
 }
 
-// CRÍTICO: UI sincronizada con elementos HTML existentes
+// UI ACTUALIZADA CORREGIDA
 function updateUserUI() {
-  console.log('🔄 ACTUALIZANDO UI SINCRONIZADA...');
+  console.log('🔄 ACTUALIZANDO UI...');
   
-  // OCULTAR botón header login (ID real del HTML)
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  if (headerLoginBtn) {
-    headerLoginBtn.style.display = 'none';
+  // Ocultar botón login principal
+  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (mainLoginBtn) {
+    mainLoginBtn.style.display = 'none';
   }
   
-  // MOSTRAR info usuario (ID real del HTML)
+  // Mostrar info usuario
   const userInfo = document.getElementById('userInfo');
   const userName = document.getElementById('userName');
   const userAvatar = document.getElementById('userAvatar');
@@ -352,42 +380,20 @@ function updateUserUI() {
     userAvatar.alt = currentUser.name;
   }
   
-  // CONFIGURAR botón logout (ID real del HTML)
-  setupLogoutButton();
-  
-  // MOSTRAR sección welcome
+  // Mostrar sección welcome
   const welcomeSection = document.getElementById('welcomeSection');
   if (welcomeSection) {
     welcomeSection.style.display = 'block';
-    
-    // Actualizar nombre en welcome
-    const welcomeUserName = document.getElementById('welcomeUserName');
-    if (welcomeUserName) {
-      welcomeUserName.textContent = currentUser.name;
-    }
   }
   
-  console.log('✅ UI actualizada con elementos HTML reales');
+  console.log('✅ UI actualizada');
 }
 
-// CRÍTICO: Usar botón logout real del HTML
-function setupLogoutButton() {
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    // Cambiar texto a "Cerrar Sesión" (no "Salir")
-    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Cerrar Sesión';
-    logoutBtn.onclick = logout;
-    console.log('✅ Botón logout HTML configurado: "Cerrar Sesión"');
-  }
-}
-
-// CRÍTICO: Logout limpio sin F5
+// LOGOUT CORREGIDO - SIN DOBLE CONFIRMACIÓN
 function logout() {
   console.log('👋 LOGOUT LIMPIO...');
   
-  if (!confirm('¿Deseas cerrar sesión?')) return;
-  
-  // Limpiar estado
+  // Limpiar estado sin confirmación
   isLoggedIn = false;
   currentUser = null;
   selectedOccasion = null;
@@ -400,29 +406,28 @@ function logout() {
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
   
-  // RESTAURAR botón header login
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  if (headerLoginBtn) {
-    headerLoginBtn.style.display = 'inline-flex';
-    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
-    headerLoginBtn.disabled = false;
-    headerLoginBtn.onclick = handleMainLogin;
+  // Restaurar botón login principal
+  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (mainLoginBtn) {
+    mainLoginBtn.style.display = 'inline-flex';
+    mainLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    mainLoginBtn.onclick = handleMainLogin;
   }
   
-  // OCULTAR info usuario
+  // Ocultar info usuario
   const userInfo = document.getElementById('userInfo');
   if (userInfo) userInfo.style.display = 'none';
   
-  // OCULTAR secciones
+  // Ocultar secciones
   ['welcomeSection', 'profileForm', 'closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
   
-  showNotification('Sesión cerrada - SIN F5', 'success');
+  showNotification('Sesión cerrada', 'success');
   setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 500);
   
-  console.log('✅ LOGOUT COMPLETO sin F5');
+  console.log('✅ LOGOUT COMPLETO');
 }
 
 async function checkExistingSession() {
@@ -464,15 +469,29 @@ async function checkExistingSession() {
 }
 
 // ===================================================================
-// FLUJO DE PERFIL
+// FLUJO DE PERFIL CORREGIDO
 // ===================================================================
-let userProfile = { skin_color: null, age_range: null, gender: null };
-
 async function checkProfileAndRedirect() {
-  console.log('🔄 VERIFICACIÓN PERFIL BD...');
+  console.log('🔄 VERIFICACIÓN PERFIL...');
   
   if (!currentUser?.email) return;
   
+  // VERIFICAR localStorage PRIMERO
+  const savedProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
+  
+  if (savedProfile) {
+    console.log('✅ Perfil encontrado en localStorage');
+    userProfile = JSON.parse(savedProfile);
+    
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) profileForm.style.display = 'none';
+    
+    showClosetQuestion(); // IR DIRECTO a opciones
+    showNotification('Perfil cargado desde memoria', 'success');
+    return;
+  }
+  
+  // Verificar backend
   try {
     const backendData = await syncWithBackend(currentUser.email);
     
@@ -487,47 +506,23 @@ async function checkProfileAndRedirect() {
       showNotification('Perfil desde BD', 'success');
       return;
     }
-    
-    // Fallback localStorage
-    const savedProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
-    
-    if (savedProfile) {
-      console.log('⚠️ Solo localStorage → Sincronizar BD');
-      const profileData = JSON.parse(savedProfile);
-      userProfile = profileData;
-      
-      try {
-        await createUserProfile(currentUser, profileData);
-        console.log('✅ Sincronizado BD');
-        
-        const profileForm = document.getElementById('profileForm');
-        if (profileForm) profileForm.style.display = 'none';
-        
-        showClosetQuestion();
-        showNotification('Perfil sincronizado', 'success');
-        return;
-      } catch (error) {
-        console.log('⚠️ Error sincronizando');
-      }
-    }
-    
-    // Mostrar formulario solo si no hay perfil
-    console.log('📋 MOSTRAR FORMULARIO UNA VEZ');
-    
-    const welcomeSection = document.getElementById('welcomeSection');
-    if (welcomeSection) welcomeSection.style.display = 'none';
-    
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-      profileForm.style.display = 'block';
-      setTimeout(() => {
-        profileForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        showNotification('Completa tu perfil UNA vez', 'info');
-      }, 800);
-    }
-    
   } catch (error) {
-    console.error('Error verificación:', error);
+    console.error('Error verificación BD:', error);
+  }
+  
+  // Solo mostrar formulario si NO existe perfil
+  console.log('📋 MOSTRAR FORMULARIO');
+  
+  const welcomeSection = document.getElementById('welcomeSection');
+  if (welcomeSection) welcomeSection.style.display = 'none';
+  
+  const profileForm = document.getElementById('profileForm');
+  if (profileForm) {
+    profileForm.style.display = 'block';
+    setTimeout(() => {
+      profileForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showNotification('Completa tu perfil una vez', 'info');
+    }, 800);
   }
 }
 
@@ -537,40 +532,12 @@ function showClosetQuestion() {
     closetQuestion.style.display = 'block';
     
     setTimeout(() => {
-      enableClosetOptions();
       closetQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 500);
   }
 }
 
-// CRÍTICO: Habilitar opciones usando IDs reales del HTML
-function enableClosetOptions() {
-  console.log('✅ HABILITANDO OPCIONES - IDs HTML reales...');
-  
-  // Botón "Mi Closet Inteligente" (ID real del HTML)
-  const enableClosetBtn = document.getElementById('enableClosetBtn');
-  if (enableClosetBtn) {
-    enableClosetBtn.style.pointerEvents = 'auto';
-    enableClosetBtn.style.opacity = '1';
-    enableClosetBtn.style.cursor = 'pointer';
-    enableClosetBtn.onclick = enableCloset;
-    console.log('✅ "Mi Closet Inteligente" habilitado');
-  }
-  
-  // Botón "Recomendaciones Rápidas" (ID real del HTML)
-  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
-  if (useDirectModeBtn) {
-    useDirectModeBtn.style.pointerEvents = 'auto';
-    useDirectModeBtn.style.opacity = '1';
-    useDirectModeBtn.style.cursor = 'pointer';
-    useDirectModeBtn.onclick = useDirectMode;
-    console.log('✅ "Recomendaciones Rápidas" habilitado');
-  }
-  
-  console.log('✅ AMBAS opciones habilitadas con IDs HTML');
-}
-
-// CRÍTICO: Configurar formulario de perfil con ID real
+// CONFIGURAR FORMULARIO DE PERFIL CORREGIDO
 function setupProfileForm() {
   document.querySelectorAll('.profile-option').forEach(option => {
     option.addEventListener('click', function() {
@@ -585,7 +552,7 @@ function setupProfileForm() {
       userProfile[field] = value;
       
       const isComplete = userProfile.skin_color && userProfile.age_range && userProfile.gender;
-      const createBtn = document.getElementById('createProfileBtn'); // ID real HTML
+      const createBtn = document.getElementById('createProfileBtn');
       
       if (createBtn) {
         if (isComplete) {
@@ -609,7 +576,7 @@ async function submitUserProfile() {
     return;
   }
   
-  console.log('👤 ENVIANDO PERFIL BD...', userProfile);
+  console.log('👤 ENVIANDO PERFIL...', userProfile);
   
   try {
     showNotification('Guardando en servidor...', 'info');
@@ -678,7 +645,7 @@ function setupOccasionButtons() {
 }
 
 // ===================================================================
-// SISTEMA DE CLOSET
+// SISTEMA DE CLOSET CORREGIDO
 // ===================================================================
 function enableCloset() {
   console.log('✨ CLOSET INTELIGENTE ACTIVADO...');
@@ -698,16 +665,9 @@ function enableCloset() {
     closetContainer.style.display = 'block';
     setTimeout(() => {
       closetContainer.scrollIntoView({ behavior: 'smooth' });
-      
-      // CRÍTICO: Configurar zona de upload automático
-      setupAutomaticUploadZone();
-      
-      // Mostrar tab actual
       showClosetTab('superiores');
-      
-      // CRÍTICO: Configurar tabs
       setupClosetTabs();
-      
+      setupClosetFolders(); // CORREGIDO
     }, 500);
   }
   
@@ -716,7 +676,7 @@ function enableCloset() {
     userEmail.textContent = `Bienvenido ${currentUser.name}`;
   }
   
-  showNotification('Closet Inteligente - IA detecta automáticamente', 'success');
+  showNotification('Closet Inteligente activado', 'success');
   updateClosetUI();
 }
 
@@ -734,61 +694,128 @@ function useDirectMode() {
   if (occasionSelector) occasionSelector.style.display = 'block';
   if (uploadArea) uploadArea.style.display = 'block';
   
-  // CRÍTICO: Configurar upload directo
   setupDirectUpload();
   
-  showNotification('Recomendaciones Rápidas - Upload habilitado', 'success');
+  showNotification('Recomendaciones Rápidas activadas', 'success');
 }
 
-// CRÍTICO: Configurar zona de upload automático (ID real del HTML)
-function setupAutomaticUploadZone() {
-  console.log('🔧 CONFIGURANDO ZONA UPLOAD AUTOMÁTICO...');
+// CONFIGURAR FOLDERS CORREGIDO - SIN LISTENERS DUPLICADOS
+function setupClosetFolders() {
+  console.log('🔧 CONFIGURANDO FOLDERS - LIMPIEZA PREVIA...');
   
-  const automaticUploadZone = document.getElementById('automaticUploadZone'); // ID real HTML
-  if (automaticUploadZone) {
-    automaticUploadZone.style.cursor = 'pointer';
-    
-    automaticUploadZone.onclick = function(e) {
+  // LIMPIAR listeners anteriores PRIMERO
+  document.querySelectorAll('.folder-item').forEach(folder => {
+    const newFolder = folder.cloneNode(true);
+    folder.parentNode.replaceChild(newFolder, folder);
+  });
+  
+  // LUEGO agregar nuevos listeners
+  document.querySelectorAll('.folder-item').forEach(folder => {
+    folder.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       
       if (!isLoggedIn) {
-        showNotification('Debes iniciar sesión', 'error');
+        showNotification('Debes iniciar sesión primero', 'error');
         return;
       }
       
-      console.log('🤖 CLOSET INTELIGENTE: Upload universal iniciado');
+      const folderName = this.querySelector('.folder-name')?.textContent || 'Carpeta';
+      console.log('🔍 Click en folder:', folderName);
       
+      // Determinar tipo según la pestaña activa
+      const activeTab = document.querySelector('.closet-tab.active');
+      if (!activeTab) {
+        showNotification('Error: No se pudo determinar la pestaña activa', 'error');
+        return;
+      }
+      
+      const tabId = activeTab.dataset.tab;
+      const typeMap = {
+        'superiores': 'tops',
+        'inferiores': 'bottoms',
+        'calzado': 'shoes'
+      };
+      
+      const type = typeMap[tabId];
+      if (!type) {
+        showNotification('Error: No se pudo determinar el tipo de prenda', 'error');
+        return;
+      }
+      
+      // Crear input de archivo
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
       fileInput.accept = 'image/*';
       fileInput.multiple = true;
       fileInput.style.display = 'none';
       
-      fileInput.onchange = function(e) {
+      fileInput.onchange = async function(e) {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
         
-        console.log(`🤖 ${files.length} archivos para detección automática`);
-        handleIntelligentUpload(files);
+        console.log(`📷 ${files.length} archivos seleccionados para ${type}`);
+        
+        // Validar tipos de archivo
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+        
+        if (invalidFiles.length > 0) {
+          showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
+          return;
+        }
+        
+        showNotification(`Subiendo ${files.length} foto(s) a ${folderName}...`, 'info');
+        
+        // Procesar cada archivo
+        for (const file of files) {
+          try {
+            const imageUrl = await fileToDataUrl(file);
+            
+            uploadedFiles[type].push(file);
+            closetItems[type].push(imageUrl);
+            uploadedImages[type].push(imageUrl);
+            
+            console.log(`✅ Archivo procesado: ${file.name} para ${type}`);
+          } catch (error) {
+            console.error('❌ Error procesando archivo:', error);
+            showNotification(`Error procesando ${file.name}`, 'error');
+          }
+        }
+        
+        saveUserData();
+        updateClosetUI();
+        
+        showNotification(`✅ ${files.length} foto(s) agregadas`, 'success');
+        
+        // Limpiar input
+        if (document.body.contains(fileInput)) {
+          document.body.removeChild(fileInput);
+        }
       };
       
       document.body.appendChild(fileInput);
       fileInput.click();
-      
-      setTimeout(() => {
-        if (document.body.contains(fileInput)) {
-          document.body.removeChild(fileInput);
-        }
-      }, 30000);
-    };
+    });
     
-    console.log('✅ Zona upload automático configurada');
-  } else {
-    console.error('❌ No se encontró automaticUploadZone');
-  }
+    // Agregar estilos hover
+    folder.style.cursor = 'pointer';
+    folder.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+      this.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+      this.style.borderColor = 'var(--primary)';
+    });
+    
+    folder.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+      this.style.borderColor = 'var(--border)';
+    });
+  });
+  
+  console.log('✅ Folders configurados sin duplicados');
 }
 
-// CRÍTICO: Configurar tabs usando IDs reales del HTML
 function setupClosetTabs() {
   document.querySelectorAll('.closet-tab').forEach(tab => {
     tab.addEventListener('click', function() {
@@ -796,7 +823,6 @@ function setupClosetTabs() {
       if (tabId) showClosetTab(tabId);
     });
   });
-  console.log('✅ Tabs configurados');
 }
 
 function showClosetTab(tabId) {
@@ -804,7 +830,7 @@ function showClosetTab(tabId) {
   
   // Ocultar todos los contenidos
   document.querySelectorAll('.closet-tab-content').forEach(content => {
-    content.classList.remove('active');
+    content.style.display = 'none';
   });
   
   // Remover clase active de tabs
@@ -814,7 +840,7 @@ function showClosetTab(tabId) {
   
   // Mostrar contenido seleccionado
   const selectedContent = document.getElementById(tabId);
-  if (selectedContent) selectedContent.classList.add('active');
+  if (selectedContent) selectedContent.style.display = 'block';
   
   // Activar tab seleccionado
   const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
@@ -825,20 +851,23 @@ function showClosetTab(tabId) {
   const type = typeMap[tabId];
   
   if (type && tabId !== 'recomendaciones') {
-    renderIntelligentClosetTab(tabId, type);
+    renderClosetTab(tabId, type);
+    // Reconfigurar folders después de cambiar tab
+    setTimeout(() => {
+      setupClosetFolders();
+    }, 200);
   } else if (tabId === 'recomendaciones') {
     renderSavedRecommendations();
   }
 }
 
-function renderIntelligentClosetTab(tabId, type) {
+function renderClosetTab(tabId, type) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
   
-  const typeItems = intelligentClosetItems[type] || {};
-  const hasItems = Object.keys(typeItems).some(cat => typeItems[cat]?.length > 0);
+  const items = closetItems[type] || [];
   
-  if (!hasItems) {
+  if (items.length === 0) {
     const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
     const icons = { tops: 'tshirt', bottoms: 'user-tie', shoes: 'shoe-prints' };
     
@@ -846,86 +875,63 @@ function renderIntelligentClosetTab(tabId, type) {
       <div style="text-align: center; padding: 3rem; color: #666;">
         <i class="fas fa-${icons[type]}" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
         <p>No hay ${typeNames[type]} aún</p>
-        <p style="font-size: 0.9rem; opacity: 0.7;">Las prendas aparecerán aquí cuando subas fotos y la IA las detecte como ${typeNames[type]}</p>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Haz click en las carpetas de abajo para subir fotos</p>
       </div>
     `;
     return;
   }
   
-  let html = '<div style="display: grid; gap: 2rem;">';
+  let html = `
+    <div style="margin-bottom: 2rem;">
+      <h3 style="margin: 0; color: #000000;">${items.length} ${type === 'tops' ? 'Superiores' : type === 'bottoms' ? 'Inferiores' : 'Calzado'}</h3>
+      <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Gestiona tus prendas subidas</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+  `;
   
-  Object.keys(typeItems).forEach(categoryId => {
-    const categoryItems = typeItems[categoryId];
-    if (!categoryItems || categoryItems.length === 0) return;
-    
-    const categoryInfo = INTELLIGENT_CATEGORIES[type][categoryId];
-    if (!categoryInfo) return;
-    
+  items.forEach((imageUrl, index) => {
     html += `
-      <div style="background: rgba(59, 130, 246, 0.05); border-radius: 15px; padding: 1.5rem; border-left: 4px solid ${categoryInfo.color};">
-        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.8rem;">${categoryInfo.icon}</span>
-          <span style="color: ${categoryInfo.color}; font-weight: 700;">${categoryInfo.name}</span>
-          <span style="background: ${categoryInfo.color}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin-left: auto;">
-            🤖 ${categoryItems.length} detectada${categoryItems.length !== 1 ? 's' : ''}
-          </span>
-        </h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-    `;
-    
-    categoryItems.forEach((item, index) => {
-      const confidencePercent = Math.round((item.confidence || 0.75) * 100);
-      
-      html += `
-        <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-          
-          <img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover;" alt="${item.detectedItem}">
-          
-          <div style="position: absolute; top: 10px; left: 10px; background: #10b981; color: white; padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">
-            🤖 ${confidencePercent}%
-          </div>
-          
-          <div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer;" onclick="removeIntelligentItem('${type}', '${categoryId}', ${index})">×</div>
-          
-          <div style="padding: 1rem;">
-            <div style="font-weight: 600; color: #000; margin-bottom: 0.5rem;">${item.detectedItem}</div>
-            <div style="font-size: 0.8rem; color: #10b981; font-weight: 500;">✨ Detectado por IA</div>
-          </div>
+      <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+        
+        <img src="${imageUrl}" style="width: 100%; height: 200px; object-fit: cover;" alt="${type} ${index + 1}">
+        
+        <div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer;" onclick="removeClosetItem('${type}', ${index})">×</div>
+        
+        <div style="padding: 1rem;">
+          <div style="font-weight: 600; color: #000; margin-bottom: 0.5rem;">${type === 'tops' ? 'Superior' : type === 'bottoms' ? 'Inferior' : 'Calzado'} ${index + 1}</div>
         </div>
-      `;
-    });
-    
-    html += '</div></div>';
+      </div>
+    `;
   });
   
   html += '</div>';
   tabContent.innerHTML = html;
 }
 
-function removeIntelligentItem(type, categoryId, index) {
-  if (!confirm('¿Eliminar esta prenda?')) return;
+function removeClosetItem(type, index) {
+  if (!confirm('¿Estás seguro de eliminar esta prenda del closet?')) return;
   
-  console.log(`🗑️ Eliminando ${type}/${categoryId}[${index}]`);
+  console.log(`🗑️ Eliminando ${type}[${index}]`);
   
-  if (intelligentClosetItems[type][categoryId]) {
-    intelligentClosetItems[type][categoryId].splice(index, 1);
-  }
-  
-  if (uploadedFiles[type].length > 0) uploadedFiles[type].pop();
-  if (uploadedImages[type].length > 0) uploadedImages[type].pop();
-  if (closetItems[type].length > 0) closetItems[type].pop();
+  closetItems[type].splice(index, 1);
+  uploadedFiles[type].splice(index, 1);
+  uploadedImages[type].splice(index, 1);
   
   saveUserData();
   updateClosetUI();
   
-  // Re-renderizar
+  // Re-renderizar pestaña actual
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
     const typeMap = { 'superiores': 'tops', 'inferiores': 'bottoms', 'calzado': 'shoes' };
     const currentType = typeMap[tabId];
     if (currentType) {
-      renderIntelligentClosetTab(tabId, currentType);
+      renderClosetTab(tabId, currentType);
+      setTimeout(() => {
+        setupClosetFolders();
+      }, 200);
     }
   }
   
@@ -933,17 +939,14 @@ function removeIntelligentItem(type, categoryId, index) {
 }
 
 // Exponer función globalmente
-window.removeIntelligentItem = removeIntelligentItem;
+window.removeClosetItem = removeClosetItem;
 
 function renderSavedRecommendations() {
   const tabContent = document.getElementById('recomendaciones');
   if (!tabContent) return;
   
-  const list = document.getElementById('savedRecommendationsList');
-  if (!list || savedRecommendations.length === 0) {
-    if (list) {
-      list.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aquí aparecerán tus combinaciones favoritas</p>';
-    }
+  if (savedRecommendations.length === 0) {
+    tabContent.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aquí aparecerán tus combinaciones favoritas</p>';
     return;
   }
   
@@ -972,14 +975,14 @@ function renderSavedRecommendations() {
   });
   
   html += '</div>';
-  list.innerHTML = html;
+  tabContent.innerHTML = html;
 }
 
 function updateClosetUI() {
   const total = getTotalClosetItems();
   const closetHeader = document.querySelector('.closet-header h2');
   if (closetHeader) {
-    closetHeader.innerHTML = `Mi Closet Inteligente <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/15 prendas)</span>`;
+    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas)</span>`;
   }
   
   const stats = ['closetVisits', 'closetRecommendations', 'closetOutfits'];
@@ -992,29 +995,17 @@ function updateClosetUI() {
 }
 
 function getTotalClosetItems() {
-  let total = 0;
-  
-  total += Object.values(closetItems).reduce((sum, items) => sum + items.length, 0);
-  
-  Object.values(intelligentClosetItems).forEach(typeItems => {
-    Object.values(typeItems).forEach(categoryItems => {
-      if (Array.isArray(categoryItems)) {
-        total += categoryItems.length;
-      }
-    });
-  });
-  
-  return total;
+  return Object.values(closetItems).reduce((sum, items) => sum + items.length, 0);
 }
 
 // ===================================================================
-// SISTEMA DE UPLOAD DIRECTO SINCRONIZADO
+// SISTEMA DE UPLOAD DIRECTO
 // ===================================================================
 function setupDirectUpload() {
   console.log('🔧 CONFIGURANDO UPLOAD DIRECTO...');
   
   ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const input = document.getElementById(`${type}-upload`); // IDs reales HTML
+    const input = document.getElementById(`${type}-upload`);
     if (input) {
       input.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
@@ -1022,7 +1013,6 @@ function setupDirectUpload() {
           handleFileUpload(type, files);
         }
       });
-      console.log(`✅ Upload directo configurado: ${type}`);
     }
   });
 }
@@ -1112,9 +1102,8 @@ function removeImage(type, index) {
   showNotification('Imagen eliminada', 'success');
 }
 
-// CRÍTICO: Botón generar usando ID real del HTML
 function updateGenerateButton() {
-  const generateBtn = document.getElementById('generateBtn'); // ID real HTML
+  const generateBtn = document.getElementById('generateBtn');
   if (!generateBtn) return;
   
   const hasTops = uploadedFiles.tops.length > 0;
@@ -1128,7 +1117,6 @@ function updateGenerateButton() {
     generateBtn.style.opacity = '1';
     generateBtn.style.cursor = 'pointer';
     generateBtn.onclick = getRecommendation;
-    console.log('✅ Botón "Generar" HABILITADO');
   } else {
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="fas fa-upload"></i> Completa todos los campos';
@@ -1445,25 +1433,25 @@ function initializeGoogleLogin() {
     cancel_on_tap_outside: true
   });
   
-  // Activar botón header
-  const headerBtn = document.getElementById('headerLoginBtn');
-  if (headerBtn) {
-    headerBtn.disabled = false;
-    headerBtn.style.opacity = '1';
-    headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
-    headerBtn.onclick = handleMainLogin;
+  // Activar botón principal
+  const mainBtn = document.getElementById('mainLoginBtn');
+  if (mainBtn) {
+    mainBtn.disabled = false;
+    mainBtn.style.opacity = '1';
+    mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    mainBtn.onclick = handleMainLogin;
   }
 }
 
 // ===================================================================
-// CONFIGURACIÓN DE EVENTOS SINCRONIZADA CON HTML
+// CONFIGURACIÓN DE EVENTOS
 // ===================================================================
 function setupEventListeners() {
-  console.log('🔧 CONFIGURANDO EVENT LISTENERS CON IDs HTML...');
+  console.log('🔧 CONFIGURANDO EVENT LISTENERS...');
   
-  // Botones de planes (IDs reales HTML)
-  const startFreePlanBtn = document.getElementById('startFreePlan');
-  const upgradeToPremiumBtn = document.getElementById('upgradeToPremium');
+  // Botones de planes
+  const startFreePlanBtn = document.querySelector('.pricing-btn.free');
+  const upgradeToPremiumBtn = document.querySelector('.pricing-btn.premium');
   
   if (startFreePlanBtn) startFreePlanBtn.onclick = startFreePlan;
   if (upgradeToPremiumBtn) upgradeToPremiumBtn.onclick = upgradeToPremium;
@@ -1493,17 +1481,34 @@ function setupEventListeners() {
     observer.observe(fill);
   });
   
-  console.log('✅ Event listeners configurados con IDs HTML');
+  console.log('✅ Event listeners configurados');
+}
+
+// ===================================================================
+// FUNCIONES DE NAVEGACIÓN
+// ===================================================================
+function scrollToSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function toggleMobileMenu() {
+  const mobileNav = document.getElementById('mobileNav');
+  if (mobileNav) {
+    mobileNav.classList.toggle('active');
+  }
 }
 
 function initializeApp() {
-  console.log('🔧 INICIALIZANDO NoShopiA v2.3 SINCRONIZADO...');
+  console.log('🔧 INICIALIZANDO NoShopiA v2.3 CORREGIDO...');
   
   setTimeout(initializeGoogleLogin, 500);
   setupEventListeners();
   setTimeout(checkExistingSession, 1000);
   
-  console.log('✅ NoShopiA v2.3 inicializada SINCRONIZADA con HTML');
+  console.log('✅ NoShopiA v2.3 inicializada CORREGIDA');
 }
 
 // ===================================================================
@@ -1521,6 +1526,11 @@ window.getRecommendation = getRecommendation;
 window.removeImage = removeImage;
 window.saveRecommendation = saveRecommendation;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
+window.scrollToSection = scrollToSection;
+window.toggleMobileMenu = toggleMobileMenu;
+
+// Funciones de IA que podrían necesitar acceso global
+window.handleIntelligentUpload = handleIntelligentUpload;
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
@@ -1539,4 +1549,4 @@ window.addEventListener('load', () => {
 
 window.APP_INITIALIZED = true;
 
-console.log('✅ app.js v2.3 - COMPLETAMENTE SINCRONIZADO CON HTML');
+console.log('✅ app.js v2.3 - CÓDIGO COMPLETAMENTE CORREGIDO');
