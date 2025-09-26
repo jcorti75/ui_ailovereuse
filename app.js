@@ -1538,22 +1538,81 @@ function initializeGoogleLogin() {
 }
 
 // NUEVA FUNCION: Activar botón de login del header
-function activateHeaderLoginButton() {
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  if (headerLoginBtn) {
-    headerLoginBtn.disabled = false;
-    headerLoginBtn.style.opacity = '1';
-    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar Sesión';
-    
-    // Event listener para el botón del header
-    headerLoginBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🔐 Click en botón de header detectado');
-      handleMainLogin();
+function initializeGoogleLogin() {
+  console.log('🔄 Configurando Google Sign-In real...');
+  
+  // Esperar a que Google esté disponible
+  if (typeof google === 'undefined') {
+    console.log('⏳ Esperando Google SDK...');
+    setTimeout(initializeGoogleLogin, 1000);
+    return;
+  }
+  
+  try {
+    // Configurar Google Identity
+    google.accounts.id.initialize({
+      client_id: CONFIG.GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
     });
     
-    console.log('✅ Botón de login del header activado');
+    console.log('✅ Google configurado');
+    
+    // Activar botón real
+    activateRealGoogleLogin();
+    
+  } catch (error) {
+    console.error('❌ Error configurando Google:', error);
   }
+}
+
+function activateRealGoogleLogin() {
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn) {
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+    headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
+    
+    headerBtn.onclick = function() {
+      console.log('🔐 Iniciando Google Login...');
+      
+      // Trigger Google Sign-In
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed()) {
+          // Si no se muestra el prompt, renderizar botón
+          showGoogleButton();
+        }
+      });
+    };
+    
+    console.log('✅ Google Login real activado');
+  }
+}
+
+function showGoogleButton() {
+  const modal = document.createElement('div');
+  modal.innerHTML = `
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                background: white; padding: 2rem; border-radius: 15px; 
+                box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 10000;">
+      <h3>Iniciar Sesión con Google</h3>
+      <div id="googleButtonContainer" style="margin: 1rem 0;"></div>
+      <button onclick="this.parentElement.parentElement.remove()" 
+              style="background: #ccc; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
+        Cerrar
+      </button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Renderizar botón oficial de Google
+  google.accounts.id.renderButton(document.getElementById('googleButtonContainer'), {
+    theme: 'filled_blue',
+    size: 'large',
+    text: 'signin_with'
+  });
 }
 
 function setupEventListeners() {
@@ -1641,24 +1700,5 @@ window.addEventListener('load', () => {
 
 window.APP_INITIALIZED = true;
 
-setTimeout(() => {
-  const headerBtn = document.getElementById('headerLoginBtn');
-  if (headerBtn && headerBtn.disabled) {
-    headerBtn.disabled = false;
-    headerBtn.style.opacity = '1';
-    headerBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
-    
-    headerBtn.onclick = function() {
-      const userData = {
-        name: 'Usuario Demo',
-        email: 'info@noshopia.com',
-        picture: 'https://via.placeholder.com/40x40/3b82f6/ffffff?text=D'
-      };
-      processLogin(userData);
-    };
-    
-    console.log('✅ Login activado');
-  }
-}, 2000);
 
 console.log('✅ app.js cargado - NoShopiA v2.0 lista');
