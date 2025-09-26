@@ -1518,56 +1518,23 @@ function upgradeToPremium() {
 }
 
 function initializeGoogleLogin() {
-  try {
-    if (typeof google !== 'undefined' && google.accounts) {
-      google.accounts.id.initialize({
-        client_id: CONFIG.GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: false,
-        use_fedcm_for_prompt: true
-      });
-      
-      console.log('✅ Google Sign-In configurado para login directo');
-    } else {
-      console.log('⚠️ Google Sign-In no disponible, usando modo demo');
-    }
-  } catch (error) {
-    console.error('Error configurando Google Login:', error);
-  }
-}
-
-// NUEVA FUNCION: Activar botón de login del header
-function initializeGoogleLogin() {
-  console.log('🔄 Configurando Google Sign-In real...');
-  
-  // Esperar a que Google esté disponible
   if (typeof google === 'undefined') {
-    console.log('⏳ Esperando Google SDK...');
     setTimeout(initializeGoogleLogin, 1000);
     return;
   }
   
-  try {
-    // Configurar Google Identity
-    google.accounts.id.initialize({
-      client_id: CONFIG.GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredentialResponse,
-      auto_select: false,
-      cancel_on_tap_outside: true
-    });
-    
-    console.log('✅ Google configurado');
-    
-    // Activar botón real
-    activateRealGoogleLogin();
-    
-  } catch (error) {
-    console.error('❌ Error configurando Google:', error);
-  }
+  google.accounts.id.initialize({
+    client_id: CONFIG.GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredentialResponse,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+    use_fedcm_for_prompt: true
+  });
+  
+  activateAccountSelector();
 }
 
-function activateRealGoogleLogin() {
+function activateAccountSelector() {
   const headerBtn = document.getElementById('headerLoginBtn');
   if (headerBtn) {
     headerBtn.disabled = false;
@@ -1575,46 +1542,36 @@ function activateRealGoogleLogin() {
     headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
     
     headerBtn.onclick = function() {
-      console.log('🔐 Iniciando Google Login...');
-      
-      // Trigger Google Sign-In
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
-          // Si no se muestra el prompt, renderizar botón
-          showGoogleButton();
+          showGoogleAccountPicker();
         }
       });
     };
-    
-    console.log('✅ Google Login real activado');
   }
 }
 
-function showGoogleButton() {
+function showGoogleAccountPicker() {
   const modal = document.createElement('div');
   modal.innerHTML = `
     <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                 background: white; padding: 2rem; border-radius: 15px; 
                 box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 10000;">
-      <h3>Iniciar Sesión con Google</h3>
-      <div id="googleButtonContainer" style="margin: 1rem 0;"></div>
-      <button onclick="this.parentElement.parentElement.remove()" 
-              style="background: #ccc; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">
-        Cerrar
-      </button>
+      <h3>Seleccionar Cuenta Google</h3>
+      <div id="googleAccountButton"></div>
+      <button onclick="this.parentElement.parentElement.remove()">Cerrar</button>
     </div>
   `;
   
   document.body.appendChild(modal);
   
-  // Renderizar botón oficial de Google
-  google.accounts.id.renderButton(document.getElementById('googleButtonContainer'), {
-    theme: 'filled_blue',
+  google.accounts.id.renderButton(document.getElementById('googleAccountButton'), {
+    theme: 'outline',
     size: 'large',
-    text: 'signin_with'
+    text: 'select_account',
+    width: '280'
   });
 }
-
 function setupEventListeners() {
   setupOccasionButtons();
   setupClosetTabs();
