@@ -99,38 +99,68 @@ async function syncWithBackend(email) {
 // ===================================================================
 // DETECCIÓN IA AUTOMÁTICA
 // ===================================================================
+
+// ===================================================================
+// DETECCIÓN IA REAL - Usando endpoint correcto /api/recommend
+// ===================================================================
 async function detectItemWithAI(file) {
-  console.log('🤖 IA analizando:', file.name);
+  console.log('🤖 IA REAL analizando imagen:', file.name);
   
-  showNotification('🤖 IA detectando automáticamente...', 'info');
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const fileName = file.name.toLowerCase();
-  let detectedType = 'tops';
-  let detectedCategory = 'tshirt';
-  let detectedItem = 'Polera';
-  let confidence = 0.75;
-  
-  // Algoritmo de detección
-  if (fileName.includes('zapatilla') || fileName.includes('sneaker')) {
-    detectedType = 'shoes'; detectedCategory = 'sneakers'; detectedItem = 'Zapatillas'; confidence = 0.95;
-  } else if (fileName.includes('zapato') || fileName.includes('shoe')) {
-    detectedType = 'shoes'; detectedCategory = 'dress_shoes'; detectedItem = 'Zapatos'; confidence = 0.91;
-  } else if (fileName.includes('bota') || fileName.includes('boot')) {
-    detectedType = 'shoes'; detectedCategory = 'boots'; detectedItem = 'Botas'; confidence = 0.89;
-  } else if (fileName.includes('jean')) {
-    detectedType = 'bottoms'; detectedCategory = 'jeans'; detectedItem = 'Jeans'; confidence = 0.95;
-  } else if (fileName.includes('pantalon')) {
-    detectedType = 'bottoms'; detectedCategory = 'pants'; detectedItem = 'Pantalones'; confidence = 0.92;
-  } else if (fileName.includes('falda')) {
-    detectedType = 'bottoms'; detectedCategory = 'skirt'; detectedItem = 'Falda'; confidence = 0.90;
-  } else if (fileName.includes('camisa')) {
-    detectedCategory = 'shirt'; detectedItem = 'Camisa'; confidence = 0.93;
+  try {
+    showNotification('🤖 IA analizando imagen...', 'info');
+    
+    // Crear FormData para enviar al endpoint real
+    const formData = new FormData();
+    formData.append('user_email', currentUser?.email || 'temp@demo.com');
+    formData.append('occasion', 'casual'); // Ocasión temporal para análisis
+    formData.append('tops', file); // Enviar archivo para análisis
+    
+    // Llamada al endpoint REAL que existe
+    const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Respuesta backend real:', data);
+    
+    // Extraer detected_item del resultado real
+    const detectedItem = data.results?.[0]?.top?.detected_item;
+    const confidence = data.results?.[0]?.top?.confidence;
+    
+    if (!detectedItem) {
+      throw new Error('Backend no devolvió detected_item');
+    }
+    
+    // Usar traductor para: "shirt" → "Camisa" 
+    const translation = translateBackendItem(detectedItem);
+    
+    console.log(`🎯 IA REAL: "${detectedItem}" → "${translation.name}" (${Math.round(confidence * 100)}%)`);
+    
+    return {
+      type: translation.type,
+      category: translation.category,
+      item: translation.name,
+      confidence: confidence,
+      originalBackendItem: detectedItem
+    };
+    
+  } catch (error) {
+    console.error('❌ Error en detección IA real:', error);
+    
+    return {
+      type: 'tops',
+      category: 'unknown',
+      item: 'Prenda Desconocida',
+      confidence: 0,
+      originalBackendItem: 'unknown',
+      error: error.message
+    };
   }
-  
-  console.log(`🎯 IA: ${detectedItem} → ${detectedType}/${detectedCategory} (${Math.round(confidence * 100)}%)`);
-  
-  return { type: detectedType, category: detectedCategory, item: detectedItem, confidence };
 }
 
 async function handleIntelligentUpload(files) {
