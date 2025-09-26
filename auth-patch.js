@@ -1,31 +1,40 @@
+
 // ===================================================================
-// SOLUCIÓN DEFINITIVA - AUTENTICACIÓN CORREGIDA PARA TODOS LOS NAVEGADORES
+// SISTEMA DE AUTENTICACIÓN PROFESIONAL - SOLO GOOGLE REAL
+// NoShopiA - Producción con CONFIG real
 // ===================================================================
 
 (function() {
   'use strict';
   
-  console.log('🔧 INICIALIZANDO SISTEMA DE AUTENTICACIÓN CORREGIDO...');
+  console.log('🔧 INICIALIZANDO AUTENTICACIÓN PROFESIONAL NoShopiA...');
   
   // VARIABLES GLOBALES DE ESTADO
   let googleInitialized = false;
   let authSystemReady = false;
   
   // ===================================================================
-  // 1. INICIALIZACIÓN CORRECTA DE GOOGLE SIGN-IN
+  // 1. INICIALIZACIÓN GOOGLE SIGN-IN CON CONFIG REAL
   // ===================================================================
   function initializeGoogleAuth() {
-    console.log('📡 Inicializando Google Sign-In...');
+    console.log('📡 Inicializando Google Sign-In con CLIENT_ID real...');
     
     // Verificar que Google API esté disponible
     if (typeof google === 'undefined' || !google.accounts) {
-      console.warn('⚠️ Google API no disponible, configurando botón manual...');
-      setupManualLoginButton();
+      console.warn('⚠️ Google API no disponible');
+      showGoogleUnavailableError();
+      return;
+    }
+    
+    // Verificar que CONFIG esté disponible
+    if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_CLIENT_ID) {
+      console.error('❌ CONFIG no disponible');
+      showConfigError();
       return;
     }
     
     try {
-      // Inicializar con el Client ID correcto
+      // Inicializar con el Client ID REAL de producción
       google.accounts.id.initialize({
         client_id: CONFIG.GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
@@ -34,32 +43,35 @@
       });
       
       googleInitialized = true;
-      console.log('✅ Google Sign-In inicializado correctamente');
+      console.log('✅ Google Sign-In inicializado con CLIENT_ID:', CONFIG.GOOGLE_CLIENT_ID.substring(0, 10) + '...');
       setupGoogleLoginButton();
       
     } catch (error) {
       console.error('❌ Error inicializando Google Sign-In:', error);
-      setupManualLoginButton();
+      showGoogleInitError();
     }
   }
   
   // ===================================================================
-  // 2. CONFIGURACIÓN DE BOTÓN DE LOGIN REAL (NO DEMO)
+  // 2. CONFIGURACIÓN BOTÓN LOGIN - SOLO GOOGLE
   // ===================================================================
   function setupGoogleLoginButton() {
     const loginBtn = document.getElementById('headerLoginBtn');
-    if (!loginBtn) return;
+    if (!loginBtn) {
+      console.error('❌ Botón headerLoginBtn no encontrado');
+      return;
+    }
     
-    // Habilitar botón con texto correcto
+    // Habilitar botón con estado listo
     loginBtn.disabled = false;
     loginBtn.style.opacity = '1';
-    loginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar Sesión con Google';
+    loginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google';
     
-    // REMOVER TODOS los event listeners anteriores
+    // Limpiar listeners anteriores
     const newBtn = loginBtn.cloneNode(true);
     loginBtn.parentNode.replaceChild(newBtn, loginBtn);
     
-    // Agregar nuevo event listener para Google Sign-In
+    // Solo evento Google Sign-In
     newBtn.addEventListener('click', function(e) {
       e.preventDefault();
       console.log('🔐 Iniciando Google Sign-In...');
@@ -68,57 +80,29 @@
         try {
           google.accounts.id.prompt((notification) => {
             if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              console.log('📱 Prompt no mostrado, abriendo selector manual...');
-              // Fallback a selector manual de Google
-              showGoogleAccountSelector();
+              console.log('📱 Prompt no mostrado');
+              showGooglePromptHelper();
             }
           });
         } catch (error) {
           console.error('❌ Error con Google prompt:', error);
-          showGoogleAccountSelector();
+          showGooglePromptHelper();
         }
       } else {
-        console.warn('⚠️ Google no inicializado, mostrando selector manual...');
-        showGoogleAccountSelector();
+        console.warn('⚠️ Google no inicializado');
+        showGoogleInitError();
       }
     });
     
-    console.log('✅ Botón de Google Sign-In configurado');
+    console.log('✅ Botón Google configurado');
   }
   
   // ===================================================================
-  // 3. CONFIGURACIÓN DE BOTÓN MANUAL (SIN SALTO A DEMO)
+  // 3. HELPER GOOGLE SIGN-IN (SIN OPCIONES ALTERNAS)
   // ===================================================================
-  function setupManualLoginButton() {
-    const loginBtn = document.getElementById('headerLoginBtn');
-    if (!loginBtn) return;
+  function showGooglePromptHelper() {
+    console.log('📱 Mostrando helper Google Sign-In...');
     
-    // Habilitar botón con texto de login manual
-    loginBtn.disabled = false;
-    loginBtn.style.opacity = '1';
-    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
-    
-    // REMOVER TODOS los event listeners anteriores
-    const newBtn = loginBtn.cloneNode(true);
-    loginBtn.parentNode.replaceChild(newBtn, loginBtn);
-    
-    // Agregar event listener para login manual
-    newBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🔐 Iniciando proceso de login manual...');
-      showManualLoginDialog();
-    });
-    
-    console.log('✅ Botón de login manual configurado');
-  }
-  
-  // ===================================================================
-  // 4. SELECTOR DE CUENTA DE GOOGLE
-  // ===================================================================
-  function showGoogleAccountSelector() {
-    console.log('📱 Mostrando selector de cuenta de Google...');
-    
-    // Crear overlay
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -133,23 +117,31 @@
       justify-content: center;
     `;
     
-    // Crear modal
     const modal = document.createElement('div');
     modal.style.cssText = `
       background: white;
       border-radius: 20px;
       padding: 3rem 2rem;
-      max-width: 400px;
+      max-width: 450px;
       width: 90%;
       text-align: center;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     `;
     
     modal.innerHTML = `
-      <h3 style="color: #000; margin-bottom: 1rem;">🔐 Iniciar Sesión</h3>
-      <p style="color: #666; margin-bottom: 2rem;">Elige una opción para continuar:</p>
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+      <h3 style="color: #000; margin-bottom: 1rem;">Acceso con Google</h3>
+      <p style="color: #666; margin-bottom: 2rem;">
+        NoShopiA requiere una cuenta de Google válida para funcionar.
+      </p>
       
-      <button id="tryGoogleAgain" style="
+      <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 10px; margin-bottom: 2rem;">
+        <p style="color: #3b82f6; font-size: 0.9rem; margin: 0;">
+          💡 Si no aparece el popup, verifica que no esté bloqueado por tu navegador
+        </p>
+      </div>
+      
+      <button id="retryGoogleSignIn" style="
         width: 100%;
         padding: 1rem;
         background: #4285f4;
@@ -159,25 +151,16 @@
         font-weight: 600;
         margin-bottom: 1rem;
         cursor: pointer;
+        font-size: 1rem;
       ">
-        <i class="fab fa-google"></i> Intentar Google Sign-In
+        <i class="fab fa-google"></i> Reintentar Google Sign-In
       </button>
       
-      <button id="useDemoMode" style="
-        width: 100%;
-        padding: 1rem;
-        background: #f59e0b;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        cursor: pointer;
-      ">
-        🧪 Modo Demo (Solo prueba)
-      </button>
+      <div style="margin: 1rem 0; font-size: 0.9rem; color: #666;">
+        <p>¿Problemas? <a href="mailto:info@noshopia.com" style="color: #3b82f6;">Contacta soporte</a></p>
+      </div>
       
-      <button id="closeModal" style="
+      <button id="closeHelperModal" style="
         width: 100%;
         padding: 0.8rem;
         background: transparent;
@@ -186,26 +169,20 @@
         border-radius: 10px;
         cursor: pointer;
       ">
-        Cancelar
+        Cerrar
       </button>
     `;
     
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     
-    // Event listeners del modal
-    document.getElementById('tryGoogleAgain').onclick = () => {
+    // Event listeners
+    document.getElementById('retryGoogleSignIn').onclick = () => {
       document.body.removeChild(overlay);
       retryGoogleSignIn();
     };
     
-    document.getElementById('useDemoMode').onclick = () => {
-      document.body.removeChild(overlay);
-      console.log('🧪 Usuario eligió modo demo');
-      activateDemoUser();
-    };
-    
-    document.getElementById('closeModal').onclick = () => {
+    document.getElementById('closeHelperModal').onclick = () => {
       document.body.removeChild(overlay);
     };
     
@@ -217,351 +194,147 @@
   }
   
   // ===================================================================
-  // 5. DIALOG DE LOGIN MANUAL
+  // 4. MENSAJES DE ERROR PROFESIONALES
   // ===================================================================
-  function showManualLoginDialog() {
-    console.log('📱 Mostrando dialog de login manual...');
+  function showGoogleUnavailableError() {
+    console.log('❌ Google API no disponible');
     
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 10001;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
+    showNotification('Google Sign-In no disponible. Recarga la página.', 'error');
     
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-      background: white;
-      border-radius: 20px;
-      padding: 3rem 2rem;
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    `;
-    
-    modal.innerHTML = `
-      <h3 style="color: #000; margin-bottom: 1rem;">🔐 Opciones de Acceso</h3>
-      <p style="color: #666; margin-bottom: 2rem;">Selecciona cómo quieres acceder a NoShopiA:</p>
-      
-      <div style="margin-bottom: 1rem;">
-        <input type="email" id="userEmail" placeholder="tu@email.com" style="
-          width: 100%;
-          padding: 1rem;
-          border: 2px solid #ddd;
-          border-radius: 10px;
-          font-size: 1rem;
-          margin-bottom: 1rem;
-        ">
-        <input type="text" id="userName" placeholder="Tu nombre" style="
-          width: 100%;
-          padding: 1rem;
-          border: 2px solid #ddd;
-          border-radius: 10px;
-          font-size: 1rem;
-          margin-bottom: 1rem;
-        ">
-      </div>
-      
-      <button id="loginManual" style="
-        width: 100%;
-        padding: 1rem;
-        background: #10b981;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        cursor: pointer;
-      ">
-        ✅ Crear Cuenta Manual
-      </button>
-      
-      <button id="loginDemo" style="
-        width: 100%;
-        padding: 1rem;
-        background: #f59e0b;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        cursor: pointer;
-      ">
-        🧪 Usar Modo Demo
-      </button>
-      
-      <button id="closeManualModal" style="
-        width: 100%;
-        padding: 0.8rem;
-        background: transparent;
-        color: #666;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        cursor: pointer;
-      ">
-        Cancelar
-      </button>
-    `;
-    
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    // Event listeners
-    document.getElementById('loginManual').onclick = () => {
-      const email = document.getElementById('userEmail').value.trim();
-      const name = document.getElementById('userName').value.trim();
-      
-      if (email && name) {
-        document.body.removeChild(overlay);
-        activateManualUser(email, name);
-      } else {
-        alert('Por favor completa todos los campos');
-      }
-    };
-    
-    document.getElementById('loginDemo').onclick = () => {
-      document.body.removeChild(overlay);
-      activateDemoUser();
-    };
-    
-    document.getElementById('closeManualModal').onclick = () => {
-      document.body.removeChild(overlay);
-    };
+    // Deshabilitar botón
+    const loginBtn = document.getElementById('headerLoginBtn');
+    if (loginBtn) {
+      loginBtn.disabled = true;
+      loginBtn.style.opacity = '0.6';
+      loginBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Servicio no disponible';
+    }
+  }
+  
+  function showConfigError() {
+    console.error('❌ Error de configuración');
+    showNotification('Error de configuración. Contacta soporte.', 'error');
+  }
+  
+  function showGoogleInitError() {
+    console.log('❌ Error inicialización Google');
+    showNotification('Error de autenticación. Recarga la página.', 'error');
   }
   
   // ===================================================================
-  // 6. FUNCIONES DE ACTIVACIÓN DE USUARIO
+  // 5. REINTENTO GOOGLE
   // ===================================================================
   function retryGoogleSignIn() {
     console.log('🔄 Reintentando Google Sign-In...');
+    
     if (googleInitialized && google.accounts) {
-      google.accounts.id.prompt();
+      try {
+        google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            showNotification('Google Sign-In no disponible. Verifica tu navegador.', 'error');
+          }
+        });
+      } catch (error) {
+        console.error('❌ Error en reintento:', error);
+        showNotification('Error de autenticación. Recarga la página.', 'error');
+      }
     } else {
+      console.log('🔄 Reinicializando Google Auth...');
       initializeGoogleAuth();
     }
   }
   
-  function activateManualUser(email, name) {
-    console.log('👤 Activando usuario manual:', email);
-    
-    // Simular usuario manual
-    const user = {
-      email: email,
-      name: name,
-      picture: 'https://via.placeholder.com/40/3b82f6/ffffff?text=' + name.charAt(0).toUpperCase(),
-      manual: true
-    };
-    
-    // Activar sesión
-    activateUserSession(user);
-  }
-  
-  function activateDemoUser() {
-    console.log('🧪 Activando modo demo...');
-    
-    const demoUser = {
-      email: 'demo@noshopia.com',
-      name: 'Usuario Demo',
-      picture: 'https://via.placeholder.com/40/f59e0b/ffffff?text=D',
-      demo: true
-    };
-    
-    activateUserSession(demoUser);
-  }
-  
+  // ===================================================================
+  // 6. ACTIVACIÓN USUARIO GOOGLE REAL
+  // ===================================================================
   function activateUserSession(user) {
-    console.log('✅ Activando sesión de usuario:', user.name);
+    console.log('✅ Activando sesión Google:', user.name);
+    
+    // Verificar que sea usuario Google válido
+    if (!user.google || !user.email || !user.name) {
+      console.error('❌ Usuario Google inválido');
+      showNotification('Error en datos de usuario de Google', 'error');
+      return;
+    }
     
     // Actualizar variables globales
     window.isLoggedIn = true;
     window.currentUser = user;
     
+    // Guardar en localStorage
+    localStorage.setItem('noshopia_auth', JSON.stringify(user));
+    localStorage.setItem('noshopia_logged_in', 'true');
+    
     // Actualizar UI
     updateAuthUI(user);
     
-    // Mostrar secciones apropiadas
+    // Mostrar secciones de usuario
     showUserSections();
     
-    // Configurar event listeners de la aplicación
-    setupAppEventListeners();
+    // Cargar datos del usuario
+    if (typeof window.loadUserData === 'function') {
+      window.loadUserData();
+    }
     
-    console.log('🎉 Usuario activado correctamente');
+    // Verificar perfil
+    setTimeout(() => {
+      if (typeof window.checkProfileAndRedirect === 'function') {
+        window.checkProfileAndRedirect();
+      }
+    }, 1000);
+    
+    showNotification(`Bienvenido ${user.name}!`, 'success');
+    console.log('🎉 Usuario Google activado correctamente');
   }
   
   // ===================================================================
-  // 7. ACTUALIZACIÓN DE UI
+  // 7. ACTUALIZACIÓN UI
   // ===================================================================
   function updateAuthUI(user) {
-    // Ocultar botón de login
+    // Ocultar botón login
     const loginBtn = document.getElementById('headerLoginBtn');
     if (loginBtn) {
       loginBtn.style.display = 'none';
     }
     
-    // Mostrar info de usuario
+    // Mostrar info usuario
     const userInfo = document.getElementById('userInfo');
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
     
-    if (userInfo && userAvatar && userName) {
-      userInfo.style.display = 'flex';
+    if (userInfo) userInfo.style.display = 'flex';
+    if (userAvatar) {
       userAvatar.src = user.picture;
-      userName.textContent = user.name;
-      
-      // Configurar botón de logout
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.onclick = logout;
-      }
+      userAvatar.alt = user.name;
     }
+    if (userName) userName.textContent = user.name;
+    
+    // Configurar logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.onclick = logout;
+    }
+    
+    console.log('✅ UI actualizada para:', user.name);
   }
   
   function showUserSections() {
-    // Mostrar sección de bienvenida
+    // Mostrar sección welcome
     const welcomeSection = document.getElementById('welcomeSection');
     if (welcomeSection) {
       welcomeSection.style.display = 'block';
       
-      // Actualizar nombre en bienvenida
+      // Actualizar nombre en welcome
       const welcomeUserName = document.getElementById('welcomeUserName');
       if (welcomeUserName && window.currentUser) {
         welcomeUserName.textContent = window.currentUser.name;
       }
     }
     
-    // Mostrar formulario de perfil si es necesario
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-      profileForm.style.display = 'block';
-    }
+    console.log('✅ Secciones de usuario mostradas');
   }
   
   // ===================================================================
-  // 8. CONFIGURACIÓN DE EVENT LISTENERS DE LA APP
-  // ===================================================================
-  function setupAppEventListeners() {
-    console.log('🔧 Configurando event listeners de la aplicación...');
-    
-    // Configurar botones del closet
-    setupClosetButtons();
-    
-    // Configurar botones de ocasiones
-    setupOccasionButtons();
-    
-    // Configurar formulario de perfil
-    setupProfileForm();
-  }
-  
-  function setupClosetButtons() {
-    const enableClosetBtn = document.getElementById('enableClosetBtn');
-    const useDirectModeBtn = document.getElementById('useDirectModeBtn');
-    
-    if (enableClosetBtn) {
-      enableClosetBtn.onclick = () => {
-        console.log('✨ Activando modo closet...');
-        // Aquí iría la lógica del closet
-        if (typeof enableCloset === 'function') {
-          enableCloset();
-        }
-      };
-    }
-    
-    if (useDirectModeBtn) {
-      useDirectModeBtn.onclick = () => {
-        console.log('⚡ Activando modo directo...');
-        // Aquí iría la lógica del modo directo
-        if (typeof useDirectMode === 'function') {
-          useDirectMode();
-        }
-      };
-    }
-  }
-  
-  function setupOccasionButtons() {
-    const occasionBtns = document.querySelectorAll('.occasion-btn');
-    occasionBtns.forEach(btn => {
-      btn.onclick = (e) => {
-        const occasion = btn.dataset.occasion;
-        console.log('📅 Ocasión seleccionada:', occasion);
-        
-        // Actualizar UI
-        occasionBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        
-        // Actualizar variable global
-        window.selectedOccasion = occasion;
-      };
-    });
-  }
-  
-  function setupProfileForm() {
-    const profileOptions = document.querySelectorAll('.profile-option');
-    const createProfileBtn = document.getElementById('createProfileBtn');
-    let selectedOptions = {};
-    
-    profileOptions.forEach(option => {
-      option.onclick = () => {
-        const field = option.dataset.field;
-        const value = option.dataset.value;
-        
-        // Deseleccionar otros de la misma categoría
-        profileOptions.forEach(opt => {
-          if (opt.dataset.field === field) {
-            opt.classList.remove('selected');
-          }
-        });
-        
-        // Seleccionar actual
-        option.classList.add('selected');
-        selectedOptions[field] = value;
-        
-        // Verificar si todos están seleccionados
-        const requiredFields = ['skin_color', 'age_range', 'gender'];
-        const allSelected = requiredFields.every(field => selectedOptions[field]);
-        
-        if (createProfileBtn) {
-          if (allSelected) {
-            createProfileBtn.disabled = false;
-            createProfileBtn.style.opacity = '1';
-            createProfileBtn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Perfil';
-          } else {
-            createProfileBtn.disabled = true;
-            createProfileBtn.style.opacity = '0.6';
-            createProfileBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
-          }
-        }
-      };
-    });
-    
-    if (createProfileBtn) {
-      createProfileBtn.onclick = () => {
-        console.log('👤 Creando perfil:', selectedOptions);
-        
-        // Guardar perfil
-        if (window.currentUser) {
-          window.currentUser.profile = selectedOptions;
-        }
-        
-        // Continuar con el flujo
-        const profileForm = document.getElementById('profileForm');
-        const closetQuestion = document.getElementById('closetQuestion');
-        
-        if (profileForm) profileForm.style.display = 'none';
-        if (closetQuestion) closetQuestion.style.display = 'block';
-      };
-    }
-  }
-  
-  // ===================================================================
-  // 9. FUNCIÓN DE LOGOUT
+  // 8. LOGOUT LIMPIO
   // ===================================================================
   function logout() {
     console.log('🚪 Cerrando sesión...');
@@ -570,82 +343,198 @@
     window.isLoggedIn = false;
     window.currentUser = null;
     
-    // Limpiar Google Sign-In si está disponible
+    // Limpiar localStorage
+    localStorage.removeItem('noshopia_auth');
+    localStorage.removeItem('noshopia_logged_in');
+    
+    // Limpiar Google Sign-In
     if (googleInitialized && google.accounts) {
-      google.accounts.id.disableAutoSelect();
+      try {
+        google.accounts.id.disableAutoSelect();
+      } catch (error) {
+        console.log('⚠️ Error limpiando Google Sign-In:', error);
+      }
     }
     
+    showNotification('Sesión cerrada', 'success');
+    
     // Recargar página para resetear estado
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   }
   
   // ===================================================================
-  // 10. MANEJO DE RESPUESTA DE GOOGLE
+  // 9. MANEJO RESPUESTA GOOGLE
   // ===================================================================
   function handleGoogleCredentialResponse(response) {
-    console.log('📨 Respuesta de Google recibida');
+    console.log('📨 Respuesta Google recibida');
     
     try {
       // Decodificar token JWT
       const payload = JSON.parse(atob(response.credential.split('.')[1]));
       
+      // Validar datos requeridos
+      if (!payload.email || !payload.name) {
+        throw new Error('Datos de Google incompletos');
+      }
+      
       const user = {
         email: payload.email,
         name: payload.name,
-        picture: payload.picture,
-        google: true
+        picture: payload.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name)}&background=3b82f6&color=fff`,
+        google: true,
+        verified: payload.email_verified || false,
+        loginTime: new Date().toISOString()
       };
       
-      console.log('✅ Usuario de Google autenticado:', user.name);
+      console.log('✅ Usuario Google autenticado:', user.name, user.email);
       activateUserSession(user);
       
     } catch (error) {
-      console.error('❌ Error procesando respuesta de Google:', error);
-      showGoogleAccountSelector();
+      console.error('❌ Error procesando respuesta Google:', error);
+      showNotification('Error en autenticación de Google', 'error');
     }
   }
   
   // ===================================================================
-  // 11. INICIALIZACIÓN AUTOMÁTICA
+  // 10. VERIFICACIÓN SESIÓN EXISTENTE
+  // ===================================================================
+  function checkExistingSession() {
+    try {
+      const savedAuth = localStorage.getItem('noshopia_auth');
+      const loggedIn = localStorage.getItem('noshopia_logged_in') === 'true';
+      
+      if (savedAuth && loggedIn) {
+        const userData = JSON.parse(savedAuth);
+        
+        // SOLO restaurar si es usuario Google válido
+        if (userData.google && userData.email && userData.name) {
+          console.log('🔄 Restaurando sesión Google:', userData.name);
+          
+          window.isLoggedIn = true;
+          window.currentUser = userData;
+          
+          updateAuthUI(userData);
+          showUserSections();
+          
+          if (typeof window.loadUserData === 'function') {
+            window.loadUserData();
+          }
+          
+          setTimeout(() => {
+            if (typeof window.checkProfileAndRedirect === 'function') {
+              window.checkProfileAndRedirect();
+            }
+          }, 1500);
+          
+          showNotification(`Sesión restaurada: ${userData.name}`, 'success');
+          return true;
+        } else {
+          // Limpiar sesión inválida
+          localStorage.removeItem('noshopia_auth');
+          localStorage.removeItem('noshopia_logged_in');
+          console.log('🧹 Sesión inválida limpiada');
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando sesión:', error);
+      // Limpiar datos corruptos
+      localStorage.removeItem('noshopia_auth');
+      localStorage.removeItem('noshopia_logged_in');
+    }
+    
+    return false;
+  }
+  
+  // ===================================================================
+  // 11. UTILIDADES
+  // ===================================================================
+  function showNotification(message, type = 'info') {
+    console.log(`📢 ${type.toUpperCase()}: ${message}`);
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 2rem;
+      border-radius: 15px;
+      color: white;
+      font-weight: 600;
+      z-index: 10000;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: slideInRight 0.3s ease;
+    `;
+    
+    if (type === 'success') {
+      notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (type === 'error') {
+      notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    } else {
+      notification.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 4000);
+  }
+  
+  // ===================================================================
+  // 12. INICIALIZACIÓN AUTOMÁTICA
   // ===================================================================
   function initialize() {
-    console.log('🚀 Iniciando sistema de autenticación...');
+    console.log('🚀 Inicializando autenticación profesional NoShopiA...');
     
-    // Esperar a que la página esté lista
+    // Esperar DOM ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
       return;
     }
     
-    // Esperar a que Google API esté disponible
+    // Verificar sesión existente primero
+    if (checkExistingSession()) {
+      console.log('✅ Sesión existente restaurada');
+      return;
+    }
+    
+    // Esperar Google API con timeout
+    let attempts = 0;
+    const maxAttempts = 10; // 5 segundos
+    
     const checkGoogleAPI = () => {
-      if (typeof google !== 'undefined' && google.accounts) {
+      attempts++;
+      
+      if (typeof google !== 'undefined' && google.accounts && typeof CONFIG !== 'undefined') {
+        console.log('✅ Google API y CONFIG listos');
         initializeGoogleAuth();
-      } else if (authSystemReady) {
-        // Si ya pasó suficiente tiempo, configurar login manual
-        setupManualLoginButton();
+      } else if (attempts >= maxAttempts) {
+        console.warn('⚠️ Timeout: Google API no disponible');
+        showGoogleUnavailableError();
       } else {
         setTimeout(checkGoogleAPI, 500);
       }
     };
     
-    // Dar tiempo para que Google API se cargue
-    setTimeout(() => {
-      authSystemReady = true;
-      checkGoogleAPI();
-    }, 2000);
-    
-    // Empezar a verificar inmediatamente también
-    checkGoogleAPI();
+    // Empezar verificación después de delay
+    setTimeout(checkGoogleAPI, 1000);
   }
   
-  // Exponer funciones globales necesarias
+  // ===================================================================
+  // 13. EXPOSICIÓN GLOBAL
+  // ===================================================================
   window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
   window.logout = logout;
   
-  // Inicializar automáticamente
+  // Auto-inicializar
   initialize();
   
-  console.log('✅ Sistema de autenticación configurado');
+  console.log('✅ Sistema autenticación profesional configurado - SOLO GOOGLE');
   
 })();
