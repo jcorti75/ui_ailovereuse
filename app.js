@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.2 - CORRECCIONES CRÍTICAS APLICADAS
-console.log('🚀 NoShopiA v2.2 - Correcciones críticas aplicadas');
+// app.js - NoShopiA v2.3 - SINCRONIZADO CON HTML
+console.log('🚀 NoShopiA v2.3 - SINCRONIZADO CON HTML');
 
 // ===================================================================
 // VARIABLES GLOBALES
@@ -15,11 +15,10 @@ let closetMode = false;
 let processingStartTime = null;
 let currentResults = [];
 let savedRecommendations = [];
-let closetSelectionMode = false;
-let closetSelectedItems = { tops: [], bottoms: [], shoes: [] };
+let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
 
 // ===================================================================
-// SISTEMA DE DETECCIÓN IA AUTOMÁTICA
+// SISTEMA DE DETECCIÓN IA
 // ===================================================================
 const INTELLIGENT_CATEGORIES = {
   tops: {
@@ -28,42 +27,31 @@ const INTELLIGENT_CATEGORIES = {
     "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy", "blusa"], color: "#ec4899" },
     "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan", "sueter"], color: "#f59e0b" },
     "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded", "capucha"], color: "#ef4444" },
-    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" },
-    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench", "abrigo"], color: "#1f2937" },
-    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" },
-    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat", "chaleco"], color: "#84cc16" }
+    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" }
   },
   bottoms: {
     "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af" },
     "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks", "pantalon"], color: "#3b82f6" },
     "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt", "falda"], color: "#ec4899" },
-    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" },
-    "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants", "calza"], color: "#6b7280" }
+    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" }
   },
   shoes: {
     "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers", "zapatilla"], color: "#3b82f6" },
     "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords", "zapato"], color: "#1f2937" },
-    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" },
-    "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels", "tacos", "tacon"], color: "#ec4899" },
-    "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops", "sandalia"], color: "#f59e0b" },
-    "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers", "ballerina"], color: "#6b7280" }
+    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" }
   }
 };
 
-let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
-
 // ===================================================================
-// FUNCIONES API PARA BACKEND
+// FUNCIONES API BACKEND
 // ===================================================================
-
-// CRÍTICO: Verificación real de perfil desde BD
 async function checkUserExists(email) {
   try {
     const response = await fetch(`${CONFIG.API_BASE}/api/users/check/${encodeURIComponent(email)}`);
     if (response.ok) {
       const data = await response.json();
       console.log('🔍 Verificación backend:', data);
-      return data; // { exists: true/false, has_profile: true/false, user_data: {...} }
+      return data;
     }
     return { exists: false, has_profile: false };
   } catch (error) {
@@ -72,36 +60,17 @@ async function checkUserExists(email) {
   }
 }
 
-async function getUserProfile(email) {
-  try {
-    const response = await fetch(`${CONFIG.API_BASE}/api/users/profile/${encodeURIComponent(email)}`);
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error obteniendo perfil:', error);
-    return null;
-  }
-}
-
 async function createUserProfile(userData, profileData) {
   try {
     const response = await fetch(`${CONFIG.API_BASE}/api/users/profile`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user: userData,
-        profile: profileData
-      })
+      body: JSON.stringify({ user: userData, profile: profileData })
     });
     
     if (response.ok) {
-      const data = await response.json();
-      return data;
+      return await response.json();
     }
-    
     throw new Error(`Error ${response.status}: ${await response.text()}`);
   } catch (error) {
     console.error('Error creando perfil:', error);
@@ -109,30 +78,31 @@ async function createUserProfile(userData, profileData) {
   }
 }
 
-// CRÍTICO: Sincronización real con backend
 async function syncWithBackend(email) {
   try {
-    console.log('🔄 Sincronización crítica con backend para:', email);
+    console.log('🔄 Sincronización crítica con backend:', email);
     const backendData = await checkUserExists(email);
     
     if (backendData.exists && backendData.has_profile) {
-      console.log('✅ Perfil verificado desde BD - NO más formularios');
+      console.log('✅ PERFIL VERIFICADO EN BD - NO más formularios');
       return backendData;
     }
     
-    console.log('⚠️ Perfil incompleto en BD - Mostrar formulario UNA vez');
+    console.log('⚠️ Perfil incompleto en BD');
     return null;
   } catch (error) {
-    console.error('❌ Error crítico en sincronización:', error);
+    console.error('❌ Error crítico sincronización:', error);
     return null;
   }
 }
 
-// IA DETECCIÓN AUTOMÁTICA PARA CLOSET INTELIGENTE
+// ===================================================================
+// DETECCIÓN IA AUTOMÁTICA
+// ===================================================================
 async function detectItemWithAI(file) {
-  console.log('🤖 IA analizando prenda para categorización automática:', file.name);
+  console.log('🤖 IA analizando:', file.name);
   
-  showNotification('🤖 IA detectando y categorizando automáticamente...', 'info');
+  showNotification('🤖 IA detectando automáticamente...', 'info');
   await new Promise(resolve => setTimeout(resolve, 800));
   
   const fileName = file.name.toLowerCase();
@@ -141,65 +111,47 @@ async function detectItemWithAI(file) {
   let detectedItem = 'Polera';
   let confidence = 0.75;
   
-  // ALGORITMO DE DETECCIÓN IA
-  if (fileName.includes('zapatilla') || fileName.includes('sneaker') || fileName.includes('running')) {
+  // Algoritmo de detección
+  if (fileName.includes('zapatilla') || fileName.includes('sneaker')) {
     detectedType = 'shoes'; detectedCategory = 'sneakers'; detectedItem = 'Zapatillas'; confidence = 0.95;
-  } else if (fileName.includes('zapato') || (fileName.includes('dress') && fileName.includes('shoe'))) {
-    detectedType = 'shoes'; detectedCategory = 'dress_shoes'; detectedItem = 'Zapatos Formales'; confidence = 0.91;
+  } else if (fileName.includes('zapato') || fileName.includes('shoe')) {
+    detectedType = 'shoes'; detectedCategory = 'dress_shoes'; detectedItem = 'Zapatos'; confidence = 0.91;
   } else if (fileName.includes('bota') || fileName.includes('boot')) {
     detectedType = 'shoes'; detectedCategory = 'boots'; detectedItem = 'Botas'; confidence = 0.89;
   } else if (fileName.includes('jean')) {
     detectedType = 'bottoms'; detectedCategory = 'jeans'; detectedItem = 'Jeans'; confidence = 0.95;
-  } else if (fileName.includes('pantalon') || fileName.includes('pants')) {
+  } else if (fileName.includes('pantalon')) {
     detectedType = 'bottoms'; detectedCategory = 'pants'; detectedItem = 'Pantalones'; confidence = 0.92;
-  } else if (fileName.includes('falda') || fileName.includes('skirt')) {
+  } else if (fileName.includes('falda')) {
     detectedType = 'bottoms'; detectedCategory = 'skirt'; detectedItem = 'Falda'; confidence = 0.90;
-  } else if (fileName.includes('camisa') || (fileName.includes('shirt') && !fileName.includes('tshirt'))) {
+  } else if (fileName.includes('camisa')) {
     detectedCategory = 'shirt'; detectedItem = 'Camisa'; confidence = 0.93;
-  } else if (fileName.includes('vestido') || fileName.includes('dress')) {
-    detectedCategory = 'dress'; detectedItem = 'Vestido'; confidence = 0.92;
   }
   
-  console.log(`🎯 IA categorización automática: ${detectedItem} → ${detectedType}/${detectedCategory} (${Math.round(confidence * 100)}%)`);
+  console.log(`🎯 IA: ${detectedItem} → ${detectedType}/${detectedCategory} (${Math.round(confidence * 100)}%)`);
   
-  return {
-    type: detectedType,
-    category: detectedCategory,
-    item: detectedItem,
-    confidence,
-    categoryInfo: INTELLIGENT_CATEGORIES[detectedType][detectedCategory]
-  };
+  return { type: detectedType, category: detectedCategory, item: detectedItem, confidence };
 }
 
-// UPLOAD INTELIGENTE - CLOSET DETECTA AUTOMÁTICAMENTE
 async function handleIntelligentUpload(files) {
-  console.log('🚀 CLOSET INTELIGENTE: Upload universal con detección automática');
+  console.log('🚀 CLOSET INTELIGENTE: Upload automático');
   
   if (!files || files.length === 0) return;
   
-  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
-  if (files.length > remaining) {
-    showNotification(`⚠️ Solo puedes subir ${remaining} prendas más`, 'error');
-    return;
-  }
-  
-  showNotification('🤖 IA analizando y categorizando automáticamente...', 'info');
+  showNotification('🤖 IA categorizando automáticamente...', 'info');
   
   let successCount = 0;
-  let detectedTypes = new Set();
   
   for (const file of files) {
     try {
-      // IA DETECTA AUTOMÁTICAMENTE
-      const detectionResult = await detectItemWithAI(file);
-      detectedTypes.add(detectionResult.type);
-      
+      const detection = await detectItemWithAI(file);
       const imageUrl = await fileToDataUrl(file);
-      categorizeIntelligentItem(detectionResult, imageUrl, file);
+      
+      categorizeIntelligentItem(detection, imageUrl, file);
       successCount++;
       
     } catch (error) {
-      console.error('❌ Error en categorización automática:', error);
+      console.error('❌ Error:', error);
       showNotification(`❌ Error procesando ${file.name}`, 'error');
     }
   }
@@ -207,22 +159,12 @@ async function handleIntelligentUpload(files) {
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
-    
-    // Mostrar resultado de categorización automática
-    if (detectedTypes.size > 0) {
-      const mostCommonType = Array.from(detectedTypes)[0];
-      setTimeout(() => {
-        navigateToDetectedType(mostCommonType);
-      }, 1000);
-    }
-    
-    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
-    showNotification(`✅ IA categorizó ${successCount} prenda${successCount !== 1 ? 's' : ''} automáticamente! ${newRemaining} espacios restantes.`, 'success');
+    showNotification(`✅ ${successCount} prenda${successCount !== 1 ? 's' : ''} categorizadas automáticamente`, 'success');
   }
 }
 
-function categorizeIntelligentItem(detectionResult, imageUrl, file) {
-  const { type, category, item, confidence } = detectionResult;
+function categorizeIntelligentItem(detection, imageUrl, file) {
+  const { type, category, item, confidence } = detection;
   
   if (!intelligentClosetItems[type][category]) {
     intelligentClosetItems[type][category] = [];
@@ -230,23 +172,18 @@ function categorizeIntelligentItem(detectionResult, imageUrl, file) {
   
   const intelligentItem = {
     id: Date.now() + Math.random(),
-    imageUrl,
-    file,
-    detectedItem: item,
-    category,
-    aiDetected: true,
-    confidence,
-    addedAt: new Date().toISOString()
+    imageUrl, file, detectedItem: item, category,
+    aiDetected: true, confidence, addedAt: new Date().toISOString()
   };
   
   intelligentClosetItems[type][category].push(intelligentItem);
   
-  // TAMBIÉN agregar a arrays principales para compatibilidad
+  // Agregar a arrays principales
   uploadedFiles[type].push(file);
   uploadedImages[type].push(imageUrl);
   closetItems[type].push(imageUrl);
   
-  console.log(`🧠 Categorización automática completa: ${item} → ${type}/${category}`);
+  console.log(`🧠 Categorizado: ${item} → ${type}/${category}`);
 }
 
 // ===================================================================
@@ -256,170 +193,51 @@ function showNotification(message, type = 'info') {
   console.log(`📢 ${type.toUpperCase()}: ${message}`);
   
   const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed; top: 20px; right: 20px; z-index: 10000;
-    background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
-    color: white; padding: 1rem 2rem; border-radius: 10px;
-    font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    transform: translateX(100%); opacity: 0;
-    transition: all 0.3s ease; max-width: 350px;
-  `;
+  notification.className = `notification ${type}`;
   notification.textContent = message;
   
   document.body.appendChild(notification);
   
-  requestAnimationFrame(() => {
-    notification.style.transform = 'translateX(0)';
-    notification.style.opacity = '1';
+  setTimeout(() => notification.remove(), 4000);
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-  
-  setTimeout(() => {
-    notification.style.transform = 'translateX(100%)';
-    notification.style.opacity = '0';
-    setTimeout(() => notification.remove(), 300);
-  }, 4000);
-}
-
-function scrollToSection(sectionId) {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    document.querySelectorAll('.nav-pill').forEach(pill => pill.classList.remove('active'));
-    const activePill = document.querySelector(`[href="#${sectionId}"]`);
-    if (activePill) activePill.classList.add('active');
-  }
-}
-
-function toggleMobileMenu() {
-  const mobileNav = document.getElementById('mobileNav');
-  const toggle = document.querySelector('.mobile-menu-toggle i');
-  
-  if (mobileNav && toggle) {
-    if (mobileNav.classList.contains('active')) {
-      mobileNav.classList.remove('active');
-      toggle.className = 'fas fa-bars';
-    } else {
-      mobileNav.classList.add('active');
-      toggle.className = 'fas fa-times';
-    }
-  }
 }
 
 // ===================================================================
-// SISTEMA DE LOGIN CORREGIDO - ESTADO UNIFICADO
+// SISTEMA DE LOGIN SINCRONIZADO CON HTML
 // ===================================================================
 function handleMainLogin() {
-  console.log('🔐 Login unificado iniciado...');
+  console.log('🔐 Login iniciado...');
   
   if (isLoggedIn) {
     showNotification('Ya estás logueado', 'info');
-    scrollToSection('upload');
     return;
   }
   
+  // Usar Google o demo
   if (typeof google !== 'undefined' && google.accounts) {
     try {
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          showGoogleLoginButton();
+          simulateLogin();
         }
       });
     } catch (error) {
-      console.error('Error con Google prompt:', error);
-      showGoogleLoginButton();
-    }
-  } else {
-    console.log('Google no disponible, usando login demo');
-    simulateLogin();
-  }
-}
-
-function showGoogleLoginButton() {
-  let googleBtn = document.getElementById('tempGoogleBtn');
-  
-  if (!googleBtn) {
-    googleBtn = document.createElement('div');
-    googleBtn.id = 'tempGoogleBtn';
-    googleBtn.style.cssText = `
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: white; padding: 2rem; border-radius: 15px; 
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 10000;
-      text-align: center; border: 2px solid #4285f4;
-    `;
-    
-    googleBtn.innerHTML = `
-      <h3 style="color: #000; margin-bottom: 1rem;">Iniciar Sesión</h3>
-      <p style="color: #666; margin-bottom: 2rem;">Elige una opción para continuar:</p>
-      <button onclick="tryGoogleLogin()" style="
-        background: #4285f4; color: white; border: none; padding: 1rem 2rem;
-        border-radius: 25px; font-weight: 600; cursor: pointer; margin-right: 1rem;
-        display: inline-flex; align-items: center; gap: 0.5rem;
-      ">
-        <i class="fab fa-google"></i> Login con Google
-      </button>
-      <button onclick="simulateLogin()" style="
-        background: #10b981; color: white; border: none; padding: 1rem 2rem;
-        border-radius: 25px; font-weight: 600; cursor: pointer;
-        display: inline-flex; align-items: center; gap: 0.5rem;
-      ">
-        <i class="fas fa-user"></i> Demo Login
-      </button>
-      <button onclick="closeGoogleLoginButton()" style="
-        position: absolute; top: 10px; right: 10px; background: #ef4444;
-        color: white; border: none; border-radius: 50%; width: 30px; height: 30px;
-        cursor: pointer; font-size: 1rem;
-      ">×</button>
-    `;
-    
-    document.body.appendChild(googleBtn);
-  }
-}
-
-function closeGoogleLoginButton() {
-  const googleBtn = document.getElementById('tempGoogleBtn');
-  if (googleBtn) googleBtn.remove();
-}
-
-function tryGoogleLogin() {
-  try {
-    if (typeof google !== 'undefined' && google.accounts) {
-      const container = document.createElement('div');
-      container.id = 'googleButtonContainer';
-      container.style.display = 'none';
-      document.body.appendChild(container);
-      
-      google.accounts.id.renderButton(container, {
-        theme: 'filled_blue',
-        size: 'large',
-        type: 'standard',
-        text: 'continue_with'
-      });
-      
-      setTimeout(() => {
-        const googleBtn = container.querySelector('div[role="button"]');
-        if (googleBtn) {
-          googleBtn.click();
-        } else {
-          closeGoogleLoginButton();
-          simulateLogin();
-        }
-      }, 500);
-      
-    } else {
-      closeGoogleLoginButton();
       simulateLogin();
     }
-  } catch (error) {
-    console.error('Error en tryGoogleLogin:', error);
-    closeGoogleLoginButton();
+  } else {
     simulateLogin();
   }
 }
 
 function simulateLogin() {
-  console.log('🧪 Login simulado para desarrollo');
-  
   const userData = {
     name: 'Usuario Demo',
     email: 'demo@noshopia.com',
@@ -432,59 +250,46 @@ function simulateLogin() {
 function handleGoogleCredentialResponse(response) {
   try {
     const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    const userData = {
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture
-    };
-    
+    const userData = { name: payload.name, email: payload.email, picture: payload.picture };
     processLogin(userData);
   } catch (error) {
-    console.error('Error procesando Google login:', error);
-    showNotification('Error en el login', 'error');
+    console.error('Error Google login:', error);
+    showNotification('Error en login', 'error');
   }
 }
 
-// CRÍTICO: Login con verificación real desde BD
+// CRÍTICO: Login sincronizado con elementos HTML reales
 async function processLogin(userData) {
-  console.log('🔄 PROCESANDO LOGIN CON VERIFICACIÓN CRÍTICA DESDE BD...');
-  
-  // Limpiar estado previo COMPLETAMENTE
-  cleanAuthenticationState();
+  console.log('🔄 PROCESANDO LOGIN SINCRONIZADO CON HTML...');
   
   isLoggedIn = true;
   currentUser = userData;
   
-  // Guardar en localStorage como respaldo
   localStorage.setItem('noshopia_auth', JSON.stringify(userData));
   localStorage.setItem('noshopia_logged_in', 'true');
   
   // CRÍTICO: Verificar perfil desde BD
   try {
-    showNotification('Verificando perfil desde servidor...', 'info');
+    showNotification('Verificando perfil...', 'info');
     const backendData = await syncWithBackend(userData.email);
     
     if (backendData && backendData.has_profile) {
-      console.log('✅ PERFIL COMPLETO EN BD - SALTAR FORMULARIO');
-      
-      userProfile = backendData.profile || { completed: true };
+      console.log('✅ PERFIL COMPLETO - SALTAR FORMULARIO');
       
       updateUserUI();
       loadUserData();
       
-      // Ir directo a opciones
       setTimeout(() => {
         showClosetQuestion();
       }, 1000);
       
-      showNotification(`Bienvenido de vuelta, ${userData.name}! Perfil cargado desde BD.`, 'success');
+      showNotification(`Bienvenido ${userData.name}! Perfil cargado.`, 'success');
       return;
     }
   } catch (error) {
-    console.error('Error verificando BD, usando modo local:', error);
+    console.error('Error BD:', error);
   }
   
-  // Solo si NO tiene perfil en BD, mostrar formulario
   updateUserUI();
   loadUserData();
   
@@ -495,39 +300,20 @@ async function processLogin(userData) {
   showNotification(`¡Bienvenido ${userData.name}!`, 'success');
 }
 
-// CRÍTICO: Limpiar estado completamente
-function cleanAuthenticationState() {
-  // Limpiar botones duplicados
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
-  const userInfo = document.getElementById('userInfo');
-  
-  // Ocultar botones de login
-  if (headerLoginBtn) headerLoginBtn.style.display = 'none';
-  if (mainLoginBtn) mainLoginBtn.style.display = 'none';
-  
-  // Limpiar UI previa
-  if (userInfo) userInfo.style.display = 'none';
-  
-  console.log('🧹 Estado de autenticación limpiado');
-}
-
-// CRÍTICO: UI unificada sin estados contradictorios
+// CRÍTICO: UI sincronizada con elementos HTML existentes
 function updateUserUI() {
-  console.log('🔄 Actualizando UI de forma unificada...');
+  console.log('🔄 ACTUALIZANDO UI SINCRONIZADA...');
   
-  // OCULTAR todos los botones de login
+  // OCULTAR botón header login (ID real del HTML)
   const headerLoginBtn = document.getElementById('headerLoginBtn');
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.style.display = 'none';
+  }
   
-  if (headerLoginBtn) headerLoginBtn.style.display = 'none';
-  if (mainLoginBtn) mainLoginBtn.style.display = 'none';
-  
-  // MOSTRAR info de usuario
+  // MOSTRAR info usuario (ID real del HTML)
   const userInfo = document.getElementById('userInfo');
   const userName = document.getElementById('userName');
   const userAvatar = document.getElementById('userAvatar');
-  const userEmail = document.getElementById('userEmail');
   
   if (userInfo) userInfo.style.display = 'flex';
   if (userName) userName.textContent = currentUser.name;
@@ -535,74 +321,43 @@ function updateUserUI() {
     userAvatar.src = currentUser.picture;
     userAvatar.alt = currentUser.name;
   }
-  if (userEmail) userEmail.textContent = `Bienvenido ${currentUser.name}`;
   
-  // SOLO un botón: "Cerrar Sesión"
-  updateLogoutButton();
+  // CONFIGURAR botón logout (ID real del HTML)
+  setupLogoutButton();
   
+  // MOSTRAR sección welcome
   const welcomeSection = document.getElementById('welcomeSection');
-  if (welcomeSection) welcomeSection.style.display = 'block';
-  
-  console.log('✅ UI unificada actualizada sin contradicciones');
-}
-
-// CRÍTICO: Solo "Cerrar Sesión" - eliminar "Salir"
-function updateLogoutButton() {
-  let logoutBtn = document.getElementById('professionalLogoutBtn');
-  
-  if (!logoutBtn) {
-    logoutBtn = document.createElement('button');
-    logoutBtn.id = 'professionalLogoutBtn';
-    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Cerrar Sesión';
+  if (welcomeSection) {
+    welcomeSection.style.display = 'block';
     
-    logoutBtn.style.cssText = `
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 25px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-left: 1rem;
-    `;
-    
-    logoutBtn.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-2px)';
-      this.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.4)';
-    });
-    
-    logoutBtn.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0)';
-      this.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-    });
-    
-    logoutBtn.addEventListener('click', logout);
-    
-    const userInfo = document.getElementById('userInfo');
-    if (userInfo) {
-      userInfo.appendChild(logoutBtn);
+    // Actualizar nombre en welcome
+    const welcomeUserName = document.getElementById('welcomeUserName');
+    if (welcomeUserName) {
+      welcomeUserName.textContent = currentUser.name;
     }
   }
   
-  logoutBtn.style.display = 'flex';
-  console.log('✅ Solo botón "Cerrar Sesión" configurado');
+  console.log('✅ UI actualizada con elementos HTML reales');
+}
+
+// CRÍTICO: Usar botón logout real del HTML
+function setupLogoutButton() {
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    // Cambiar texto a "Cerrar Sesión" (no "Salir")
+    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Cerrar Sesión';
+    logoutBtn.onclick = logout;
+    console.log('✅ Botón logout HTML configurado: "Cerrar Sesión"');
+  }
 }
 
 // CRÍTICO: Logout limpio sin F5
 function logout() {
-  console.log('👋 LOGOUT LIMPIO - Sin necesidad de F5...');
+  console.log('👋 LOGOUT LIMPIO...');
   
-  if (!confirm('¿Deseas cerrar tu sesión en NoShopiA?')) {
-    return;
-  }
+  if (!confirm('¿Deseas cerrar sesión?')) return;
   
-  // Limpiar estado global
+  // Limpiar estado
   isLoggedIn = false;
   currentUser = null;
   selectedOccasion = null;
@@ -611,60 +366,33 @@ function logout() {
   closetItems = { tops: [], bottoms: [], shoes: [] };
   intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
   closetMode = false;
-  closetSelectionMode = false;
-  userProfile = { skin_color: null, age_range: null, gender: null };
   
-  // Limpiar localStorage
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
   
-  // Limpiar Google session si existe
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    try {
-      google.accounts.id.disableAutoSelect();
-    } catch (error) {
-      console.log('No se pudo limpiar sesión de Google:', error);
-    }
-  }
-  
-  // RESTAURAR botones de login
+  // RESTAURAR botón header login
   const headerLoginBtn = document.getElementById('headerLoginBtn');
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
-  
   if (headerLoginBtn) {
-    headerLoginBtn.style.display = 'block';
+    headerLoginBtn.style.display = 'inline-flex';
     headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
+    headerLoginBtn.disabled = false;
+    headerLoginBtn.onclick = handleMainLogin;
   }
   
-  if (mainLoginBtn) {
-    mainLoginBtn.style.display = 'flex';
-    mainLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-  }
-  
-  // OCULTAR info de usuario
+  // OCULTAR info usuario
   const userInfo = document.getElementById('userInfo');
   if (userInfo) userInfo.style.display = 'none';
   
-  // Ocultar todas las secciones
+  // OCULTAR secciones
   ['welcomeSection', 'profileForm', 'closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
   
-  // Limpiar resultados
-  const result = document.getElementById('result');
-  if (result) {
-    result.innerHTML = '';
-    result.style.display = 'none';
-  }
+  showNotification('Sesión cerrada - SIN F5', 'success');
+  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 500);
   
-  showNotification('Sesión cerrada correctamente - SIN necesidad de F5', 'success');
-  
-  setTimeout(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, 500);
-  
-  console.log('✅ LOGOUT COMPLETO - Estado limpiado sin F5');
+  console.log('✅ LOGOUT COMPLETO sin F5');
 }
 
 async function checkExistingSession() {
@@ -680,87 +408,81 @@ async function checkExistingSession() {
         isLoggedIn = true;
         currentUser = userData;
         
-        // CRÍTICO: Verificar perfil desde BD
+        // Verificar BD
         try {
           const backendData = await syncWithBackend(userData.email);
           if (backendData && backendData.has_profile) {
-            console.log('✅ Perfil confirmado desde BD');
+            console.log('✅ Perfil confirmado BD');
             userProfile = backendData.profile || { completed: true };
           }
         } catch (error) {
-          console.log('⚠️ Backend no disponible, usando datos locales');
+          console.log('⚠️ BD no disponible');
         }
         
         updateUserUI();
         loadUserData();
         
-        setTimeout(() => {
-          checkProfileAndRedirect();
-        }, 1500);
-        
-        showNotification(`Bienvenido de vuelta, ${userData.name}`, 'success');
+        setTimeout(checkProfileAndRedirect, 1500);
+        showNotification(`Bienvenido ${userData.name}`, 'success');
         return true;
       }
     }
   } catch (error) {
-    console.error('Error verificando sesión existente:', error);
+    console.error('Error verificando sesión:', error);
   }
   return false;
 }
 
 // ===================================================================
-// FLUJO DE PERFIL CON BACKEND REAL
+// FLUJO DE PERFIL
 // ===================================================================
 let userProfile = { skin_color: null, age_range: null, gender: null };
 
-// CRÍTICO: Verificación real desde BD
 async function checkProfileAndRedirect() {
-  console.log('🔄 VERIFICACIÓN CRÍTICA DE PERFIL DESDE BD...');
+  console.log('🔄 VERIFICACIÓN PERFIL BD...');
   
   if (!currentUser?.email) return;
   
   try {
-    // CRÍTICO: Verificar SIEMPRE desde BD primero
     const backendData = await syncWithBackend(currentUser.email);
     
     if (backendData && backendData.has_profile) {
-      console.log('✅ PERFIL COMPLETO EN BD → DIRECTO A OPCIONES');
+      console.log('✅ PERFIL BD → OPCIONES');
       userProfile = backendData.profile || { completed: true };
       
       const profileForm = document.getElementById('profileForm');
       if (profileForm) profileForm.style.display = 'none';
       
       showClosetQuestion();
-      showNotification('Perfil verificado desde BD - No más formularios', 'success');
+      showNotification('Perfil desde BD', 'success');
       return;
     }
     
-    // Solo si no está en BD, verificar localStorage como último recurso
+    // Fallback localStorage
     const savedProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
     
     if (savedProfile) {
-      console.log('⚠️ Perfil solo en localStorage → Sincronizar con BD...');
+      console.log('⚠️ Solo localStorage → Sincronizar BD');
       const profileData = JSON.parse(savedProfile);
       userProfile = profileData;
       
-      // Intentar sincronizar con BD
       try {
         await createUserProfile(currentUser, profileData);
-        console.log('✅ Perfil sincronizado con BD exitosamente');
+        console.log('✅ Sincronizado BD');
         
         const profileForm = document.getElementById('profileForm');
         if (profileForm) profileForm.style.display = 'none';
         
         showClosetQuestion();
-        showNotification('Perfil sincronizado con servidor', 'success');
+        showNotification('Perfil sincronizado', 'success');
         return;
       } catch (error) {
-        console.log('⚠️ Error sincronizando con BD');
+        console.log('⚠️ Error sincronizando');
       }
     }
     
-    // Solo si NO hay perfil en ningún lado, mostrar formulario
-    console.log('📋 PERFIL INCOMPLETO → MOSTRAR FORMULARIO UNA VEZ');
+    // Mostrar formulario solo si no hay perfil
+    console.log('📋 MOSTRAR FORMULARIO UNA VEZ');
     
     const welcomeSection = document.getElementById('welcomeSection');
     if (welcomeSection) welcomeSection.style.display = 'none';
@@ -768,38 +490,22 @@ async function checkProfileAndRedirect() {
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
       profileForm.style.display = 'block';
-      
       setTimeout(() => {
-        profileForm.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-        showNotification('Completa tu perfil UNA vez para personalizar recomendaciones', 'info');
+        profileForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showNotification('Completa tu perfil UNA vez', 'info');
       }, 800);
     }
     
   } catch (error) {
-    console.error('Error crítico verificando perfil:', error);
-    // Fallback a formulario si hay error
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-      profileForm.style.display = 'block';
-      setTimeout(() => {
-        profileForm.scrollIntoView({ behavior: 'smooth' });
-      }, 500);
-    }
+    console.error('Error verificación:', error);
   }
 }
 
 function showClosetQuestion() {
-  const loginRequired = document.querySelector('.login-required');
-  if (loginRequired) loginRequired.style.display = 'none';
-  
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) {
     closetQuestion.style.display = 'block';
     
-    // CRÍTICO: Habilitar opciones clickeables
     setTimeout(() => {
       enableClosetOptions();
       closetQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -807,33 +513,34 @@ function showClosetQuestion() {
   }
 }
 
-// CRÍTICO: Opciones de closet habilitadas
+// CRÍTICO: Habilitar opciones usando IDs reales del HTML
 function enableClosetOptions() {
-  console.log('✅ HABILITANDO OPCIONES DE CLOSET...');
+  console.log('✅ HABILITANDO OPCIONES - IDs HTML reales...');
   
-  // Buscar por onclick en el HTML
-  const closetOptions = document.querySelectorAll('.closet-option');
+  // Botón "Mi Closet Inteligente" (ID real del HTML)
+  const enableClosetBtn = document.getElementById('enableClosetBtn');
+  if (enableClosetBtn) {
+    enableClosetBtn.style.pointerEvents = 'auto';
+    enableClosetBtn.style.opacity = '1';
+    enableClosetBtn.style.cursor = 'pointer';
+    enableClosetBtn.onclick = enableCloset;
+    console.log('✅ "Mi Closet Inteligente" habilitado');
+  }
   
-  closetOptions.forEach(option => {
-    option.style.pointerEvents = 'auto';
-    option.style.opacity = '1';
-    option.style.cursor = 'pointer';
-    
-    // Verificar si es para closet o directo
-    const optionText = option.textContent.toLowerCase();
-    
-    if (optionText.includes('closet')) {
-      option.addEventListener('click', enableCloset);
-      console.log('✅ Opción "Mi Closet" habilitada');
-    } else if (optionText.includes('directo')) {
-      option.addEventListener('click', useDirectMode);
-      console.log('✅ Opción "Directo" habilitada');
-    }
-  });
+  // Botón "Recomendaciones Rápidas" (ID real del HTML)
+  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+  if (useDirectModeBtn) {
+    useDirectModeBtn.style.pointerEvents = 'auto';
+    useDirectModeBtn.style.opacity = '1';
+    useDirectModeBtn.style.cursor = 'pointer';
+    useDirectModeBtn.onclick = useDirectMode;
+    console.log('✅ "Recomendaciones Rápidas" habilitado');
+  }
   
-  console.log('✅ TODAS las opciones de closet habilitadas');
+  console.log('✅ AMBAS opciones habilitadas con IDs HTML');
 }
 
+// CRÍTICO: Configurar formulario de perfil con ID real
 function setupProfileForm() {
   document.querySelectorAll('.profile-option').forEach(option => {
     option.addEventListener('click', function() {
@@ -848,13 +555,14 @@ function setupProfileForm() {
       userProfile[field] = value;
       
       const isComplete = userProfile.skin_color && userProfile.age_range && userProfile.gender;
-      const createBtn = document.getElementById('createProfileBtn');
+      const createBtn = document.getElementById('createProfileBtn'); // ID real HTML
       
       if (createBtn) {
         if (isComplete) {
           createBtn.disabled = false;
           createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Mi Perfil';
           createBtn.style.opacity = '1';
+          createBtn.onclick = submitUserProfile;
         } else {
           createBtn.disabled = true;
           createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Selecciona todas las opciones';
@@ -865,36 +573,31 @@ function setupProfileForm() {
   });
 }
 
-// CRÍTICO: Enviar perfil a BD
 async function submitUserProfile() {
   if (!userProfile.skin_color || !userProfile.age_range || !userProfile.gender) {
     showNotification('Completa todos los campos', 'error');
     return;
   }
   
-  console.log('👤 ENVIANDO PERFIL A BD...', userProfile);
+  console.log('👤 ENVIANDO PERFIL BD...', userProfile);
   
   try {
-    showNotification('Guardando perfil en servidor...', 'info');
+    showNotification('Guardando en servidor...', 'info');
+    await createUserProfile(currentUser, userProfile);
+    console.log('✅ PERFIL CREADO BD');
     
-    // CRÍTICO: Crear en BD
-    const result = await createUserProfile(currentUser, userProfile);
-    console.log('✅ PERFIL CREADO EN BD:', result);
-    
-    // También en localStorage como respaldo
     if (currentUser?.email) {
       localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
     }
     
-    showNotification('Perfil guardado en servidor - No más formularios', 'success');
+    showNotification('Perfil guardado - No más formularios', 'success');
     
   } catch (error) {
-    console.error('Error creando perfil en BD:', error);
+    console.error('Error BD:', error);
     
-    // Fallback: solo localStorage
     if (currentUser?.email) {
       localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
-      showNotification('Perfil guardado localmente (sin conexión a BD)', 'info');
+      showNotification('Guardado localmente', 'info');
     }
   }
   
@@ -903,26 +606,22 @@ async function submitUserProfile() {
   
   setTimeout(() => {
     showClosetQuestion();
-    
     setTimeout(() => {
       const closetQuestion = document.getElementById('closetQuestion');
       if (closetQuestion) {
-        closetQuestion.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
+        closetQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 500);
   }, 1000);
   
-  showNotification('¡Perfil completo! Elige cómo usar NoShopiA', 'success');
+  showNotification('¡Perfil completo!', 'success');
 }
 
 // ===================================================================
 // SISTEMA DE OCASIONES
 // ===================================================================
 function selectOccasion(occasion) {
-  console.log('📅 Ocasión seleccionada:', occasion);
+  console.log('📅 Ocasión:', occasion);
   selectedOccasion = occasion;
   
   document.querySelectorAll('.occasion-btn').forEach(btn => btn.classList.remove('selected'));
@@ -931,15 +630,12 @@ function selectOccasion(occasion) {
   
   updateGenerateButton();
   
-  const occasionNames = {
-    'oficina': 'Oficina/Trabajo',
-    'deportivo': 'Deportes/Gym',
-    'casual': 'Casual',
-    'formal': 'Formal',
-    'matrimonio': 'Matrimonio'
+  const names = {
+    'oficina': 'Oficina/Trabajo', 'deportivo': 'Deportes/Gym',
+    'casual': 'Casual', 'formal': 'Formal', 'matrimonio': 'Matrimonio'
   };
   
-  showNotification(`Ocasión: ${occasionNames[occasion] || occasion}`, 'success');
+  showNotification(`Ocasión: ${names[occasion] || occasion}`, 'success');
 }
 
 function setupOccasionButtons() {
@@ -952,15 +648,13 @@ function setupOccasionButtons() {
 }
 
 // ===================================================================
-// SISTEMA DE CLOSET CON IA
+// SISTEMA DE CLOSET
 // ===================================================================
-
-// CRÍTICO: Habilitar closet con upload funcional
 function enableCloset() {
-  console.log('✨ ACTIVANDO CLOSET INTELIGENTE...');
+  console.log('✨ CLOSET INTELIGENTE ACTIVADO...');
   
   if (!isLoggedIn) {
-    showNotification('Debes iniciar sesión primero', 'error');
+    showNotification('Debes iniciar sesión', 'error');
     return;
   }
   
@@ -975,22 +669,29 @@ function enableCloset() {
     setTimeout(() => {
       closetContainer.scrollIntoView({ behavior: 'smooth' });
       
-      // CRÍTICO: Configurar upload funcional
-      setupClosetFolderUploads();
+      // CRÍTICO: Configurar zona de upload automático
+      setupAutomaticUploadZone();
       
-      // CRÍTICO: Mostrar fotos existentes
+      // Mostrar tab actual
       showClosetTab('superiores');
+      
+      // CRÍTICO: Configurar tabs
+      setupClosetTabs();
       
     }, 500);
   }
   
-  showNotification('Closet Inteligente activado - IA detectará automáticamente', 'success');
+  const userEmail = document.getElementById('userEmail');
+  if (userEmail && currentUser) {
+    userEmail.textContent = `Bienvenido ${currentUser.name}`;
+  }
+  
+  showNotification('Closet Inteligente - IA detecta automáticamente', 'success');
   updateClosetUI();
 }
 
-// CRÍTICO: Habilitar modo directo con upload funcional
 function useDirectMode() {
-  console.log('⚡ ACTIVANDO RECOMENDACIONES RÁPIDAS...');
+  console.log('⚡ RECOMENDACIONES RÁPIDAS ACTIVADAS...');
   
   closetMode = false;
   
@@ -1003,41 +704,103 @@ function useDirectMode() {
   if (occasionSelector) occasionSelector.style.display = 'block';
   if (uploadArea) uploadArea.style.display = 'block';
   
-  // CRÍTICO: Configurar upload directo funcional
+  // CRÍTICO: Configurar upload directo
   setupDirectUpload();
   
-  showNotification('Recomendaciones Rápidas activado - Upload directo habilitado', 'success');
+  showNotification('Recomendaciones Rápidas - Upload habilitado', 'success');
+}
+
+// CRÍTICO: Configurar zona de upload automático (ID real del HTML)
+function setupAutomaticUploadZone() {
+  console.log('🔧 CONFIGURANDO ZONA UPLOAD AUTOMÁTICO...');
+  
+  const automaticUploadZone = document.getElementById('automaticUploadZone'); // ID real HTML
+  if (automaticUploadZone) {
+    automaticUploadZone.style.cursor = 'pointer';
+    
+    automaticUploadZone.onclick = function(e) {
+      e.preventDefault();
+      
+      if (!isLoggedIn) {
+        showNotification('Debes iniciar sesión', 'error');
+        return;
+      }
+      
+      console.log('🤖 CLOSET INTELIGENTE: Upload universal iniciado');
+      
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      fileInput.style.display = 'none';
+      
+      fileInput.onchange = function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        console.log(`🤖 ${files.length} archivos para detección automática`);
+        handleIntelligentUpload(files);
+      };
+      
+      document.body.appendChild(fileInput);
+      fileInput.click();
+      
+      setTimeout(() => {
+        if (document.body.contains(fileInput)) {
+          document.body.removeChild(fileInput);
+        }
+      }, 30000);
+    };
+    
+    console.log('✅ Zona upload automático configurada');
+  } else {
+    console.error('❌ No se encontró automaticUploadZone');
+  }
+}
+
+// CRÍTICO: Configurar tabs usando IDs reales del HTML
+function setupClosetTabs() {
+  document.querySelectorAll('.closet-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const tabId = this.dataset.tab;
+      if (tabId) showClosetTab(tabId);
+    });
+  });
+  console.log('✅ Tabs configurados');
 }
 
 function showClosetTab(tabId) {
-  console.log('📂 Mostrando pestaña:', tabId);
+  console.log('📂 Mostrando tab:', tabId);
   
+  // Ocultar todos los contenidos
   document.querySelectorAll('.closet-tab-content').forEach(content => {
-    content.style.display = 'none';
+    content.classList.remove('active');
   });
   
+  // Remover clase active de tabs
   document.querySelectorAll('.closet-tab').forEach(tab => {
     tab.classList.remove('active');
   });
   
+  // Mostrar contenido seleccionado
   const selectedContent = document.getElementById(tabId);
-  if (selectedContent) selectedContent.style.display = 'block';
+  if (selectedContent) selectedContent.classList.add('active');
   
+  // Activar tab seleccionado
   const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
   if (selectedTab) selectedTab.classList.add('active');
   
+  // Renderizar contenido según tipo
   const typeMap = { 'superiores': 'tops', 'inferiores': 'bottoms', 'calzado': 'shoes' };
   const type = typeMap[tabId];
   
   if (type && tabId !== 'recomendaciones') {
     renderIntelligentClosetTab(tabId, type);
-    setupClosetFolderUploads(); // Reconfigurar cada vez
   } else if (tabId === 'recomendaciones') {
     renderSavedRecommendations();
   }
 }
 
-// CRÍTICO: Mostrar fotos persistentes categorizadas por IA
 function renderIntelligentClosetTab(tabId, type) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -1046,14 +809,14 @@ function renderIntelligentClosetTab(tabId, type) {
   const hasItems = Object.keys(typeItems).some(cat => typeItems[cat]?.length > 0);
   
   if (!hasItems) {
+    const typeNames = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
+    const icons = { tops: 'tshirt', bottoms: 'user-tie', shoes: 'shoe-prints' };
+    
     tabContent.innerHTML = `
       <div style="text-align: center; padding: 3rem; color: #666;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
-        <h3>Closet Inteligente con IA</h3>
-        <p>Sube fotos haciendo click abajo y la IA las categorizará automáticamente</p>
-        <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 1rem;">
-          <strong>Propuesta de valor:</strong> No eliges carpetas - IA detecta automáticamente el tipo de prenda
-        </p>
+        <i class="fas fa-${icons[type]}" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p>No hay ${typeNames[type]} aún</p>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Las prendas aparecerán aquí cuando subas fotos y la IA las detecte como ${typeNames[type]}</p>
       </div>
     `;
     return;
@@ -1074,7 +837,7 @@ function renderIntelligentClosetTab(tabId, type) {
           <span style="font-size: 1.8rem;">${categoryInfo.icon}</span>
           <span style="color: ${categoryInfo.color}; font-weight: 700;">${categoryInfo.name}</span>
           <span style="background: ${categoryInfo.color}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin-left: auto;">
-            🤖 IA detectó ${categoryItems.length}
+            🤖 ${categoryItems.length} detectada${categoryItems.length !== 1 ? 's' : ''}
           </span>
         </h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
@@ -1084,9 +847,7 @@ function renderIntelligentClosetTab(tabId, type) {
       const confidencePercent = Math.round((item.confidence || 0.75) * 100);
       
       html += `
-        <div class="closet-photo-item" style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;" 
-             onmouseover="this.style.transform='translateY(-5px)'" 
-             onmouseout="this.style.transform='translateY(0)'">
+        <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
           
           <img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover;" alt="${item.detectedItem}">
           
@@ -1098,7 +859,7 @@ function renderIntelligentClosetTab(tabId, type) {
           
           <div style="padding: 1rem;">
             <div style="font-weight: 600; color: #000; margin-bottom: 0.5rem;">${item.detectedItem}</div>
-            <div style="font-size: 0.8rem; color: #10b981; font-weight: 500;">✨ Detectado automáticamente por IA</div>
+            <div style="font-size: 0.8rem; color: #10b981; font-weight: 500;">✨ Detectado por IA</div>
           </div>
         </div>
       `;
@@ -1109,12 +870,10 @@ function renderIntelligentClosetTab(tabId, type) {
   
   html += '</div>';
   tabContent.innerHTML = html;
-  
-  console.log(`✅ Renderizadas fotos persistentes en ${tabId}`);
 }
 
 function removeIntelligentItem(type, categoryId, index) {
-  if (!confirm('¿Eliminar esta prenda detectada por IA?')) return;
+  if (!confirm('¿Eliminar esta prenda?')) return;
   
   console.log(`🗑️ Eliminando ${type}/${categoryId}[${index}]`);
   
@@ -1122,7 +881,6 @@ function removeIntelligentItem(type, categoryId, index) {
     intelligentClosetItems[type][categoryId].splice(index, 1);
   }
   
-  // También eliminar de arrays principales
   if (uploadedFiles[type].length > 0) uploadedFiles[type].pop();
   if (uploadedImages[type].length > 0) uploadedImages[type].pop();
   if (closetItems[type].length > 0) closetItems[type].pop();
@@ -1130,7 +888,7 @@ function removeIntelligentItem(type, categoryId, index) {
   saveUserData();
   updateClosetUI();
   
-  // Re-renderizar pestaña actual
+  // Re-renderizar
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
     const tabId = activeTab.dataset.tab;
@@ -1141,33 +899,27 @@ function removeIntelligentItem(type, categoryId, index) {
     }
   }
   
-  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
-  showNotification(`Prenda eliminada. ${remaining} espacios disponibles`, 'success');
+  showNotification('Prenda eliminada', 'success');
 }
 
+// Exponer función globalmente
 window.removeIntelligentItem = removeIntelligentItem;
 
 function renderSavedRecommendations() {
   const tabContent = document.getElementById('recomendaciones');
   if (!tabContent) return;
   
-  if (savedRecommendations.length === 0) {
-    tabContent.innerHTML = `
-      <div style="text-align: center; padding: 3rem; color: #666;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div>
-        <h3>Recomendaciones Guardadas</h3>
-        <p>Aquí aparecerán tus combinaciones favoritas guardadas</p>
-      </div>
-    `;
+  const list = document.getElementById('savedRecommendationsList');
+  if (!list || savedRecommendations.length === 0) {
+    if (list) {
+      list.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aquí aparecerán tus combinaciones favoritas</p>';
+    }
     return;
   }
   
   const occasionNames = {
-    'oficina': 'Oficina/Trabajo',
-    'deportivo': 'Deportes/Gym',
-    'casual': 'Casual',
-    'formal': 'Formal', 
-    'matrimonio': 'Matrimonio'
+    'oficina': 'Oficina/Trabajo', 'deportivo': 'Deportes/Gym',
+    'casual': 'Casual', 'formal': 'Formal', 'matrimonio': 'Matrimonio'
   };
   
   let html = '<div style="display: grid; gap: 1rem;">';
@@ -1190,25 +942,14 @@ function renderSavedRecommendations() {
   });
   
   html += '</div>';
-  tabContent.innerHTML = html;
-}
-
-function setupClosetTabs() {
-  document.querySelectorAll('.closet-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      const tabId = this.dataset.tab;
-      if (tabId) showClosetTab(tabId);
-    });
-  });
+  list.innerHTML = html;
 }
 
 function updateClosetUI() {
   const total = getTotalClosetItems();
-  const remaining = Math.max(0, CONFIG.TOTAL_CLOSET_LIMIT - total);
-  
   const closetHeader = document.querySelector('.closet-header h2');
   if (closetHeader) {
-    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas)</span>`;
+    closetHeader.innerHTML = `Mi Closet Inteligente <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/15 prendas)</span>`;
   }
   
   const stats = ['closetVisits', 'closetRecommendations', 'closetOutfits'];
@@ -1237,87 +978,13 @@ function getTotalClosetItems() {
 }
 
 // ===================================================================
-// SISTEMA DE UPLOAD CORREGIDO
+// SISTEMA DE UPLOAD DIRECTO SINCRONIZADO
 // ===================================================================
-
-// CRÍTICO: Upload funcional en closet con IA
-function setupClosetFolderUploads() {
-  console.log('🔧 CONFIGURANDO UPLOAD FUNCIONAL EN CLOSET...');
-  
-  document.querySelectorAll('.folder-item').forEach((folder, index) => {
-    const newFolder = folder.cloneNode(true);
-    folder.parentNode.replaceChild(newFolder, folder);
-    
-    newFolder.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      if (!isLoggedIn) {
-        showNotification('Debes iniciar sesión primero', 'error');
-        return;
-      }
-      
-      const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
-      if (remaining <= 0) {
-        showNotification(`Armario lleno (${getTotalClosetItems()}/${CONFIG.TOTAL_CLOSET_LIMIT})`, 'error');
-        return;
-      }
-      
-      console.log('🤖 CLOSET INTELIGENTE: Upload universal - IA detectará automáticamente');
-      
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = 'image/*';
-      fileInput.multiple = true;
-      fileInput.style.display = 'none';
-      
-      fileInput.onchange = function(e) {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-        
-        console.log(`🤖 ${files.length} archivos para DETECCIÓN AUTOMÁTICA con IA`);
-        
-        if (files.length > remaining) {
-          showNotification(`Solo puedes subir ${remaining} fotos más`, 'error');
-          return;
-        }
-        
-        // CLOSET INTELIGENTE: IA detecta automáticamente
-        handleIntelligentUpload(files);
-      };
-      
-      document.body.appendChild(fileInput);
-      fileInput.click();
-      
-      setTimeout(() => {
-        if (document.body.contains(fileInput)) {
-          document.body.removeChild(fileInput);
-        }
-      }, 30000);
-    });
-    
-    newFolder.style.cursor = 'pointer';
-    newFolder.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-5px) scale(1.02)';
-      this.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.3)';
-      this.style.borderColor = '#10b981';
-    });
-    
-    newFolder.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0) scale(1)';
-      this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
-      this.style.borderColor = 'var(--border)';
-    });
-  });
-  
-  console.log('✅ Upload funcional configurado en closet');
-}
-
-// CRÍTICO: Upload funcional en modo directo
 function setupDirectUpload() {
-  console.log('🔧 CONFIGURANDO UPLOAD FUNCIONAL DIRECTO...');
+  console.log('🔧 CONFIGURANDO UPLOAD DIRECTO...');
   
   ['tops', 'bottoms', 'shoes'].forEach(type => {
-    const input = document.getElementById(`${type}-upload`);
+    const input = document.getElementById(`${type}-upload`); // IDs reales HTML
     if (input) {
       input.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
@@ -1325,15 +992,15 @@ function setupDirectUpload() {
           handleFileUpload(type, files);
         }
       });
-      console.log(`✅ Upload directo configurado para ${type}`);
+      console.log(`✅ Upload directo configurado: ${type}`);
     }
   });
 }
 
 async function handleFileUpload(type, files) {
-  console.log(`📤 Upload directo: ${files.length} archivos para ${type}`);
+  console.log(`📤 Upload directo: ${files.length} → ${type}`);
   
-  const maxFiles = CONFIG.FILE_LIMITS[type];
+  const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
   const currentFiles = uploadedFiles[type].length;
   
   if (currentFiles + files.length > maxFiles) {
@@ -1345,7 +1012,7 @@ async function handleFileUpload(type, files) {
   const invalidFiles = files.filter(file => !validTypes.includes(file.type));
   
   if (invalidFiles.length > 0) {
-    showNotification('Solo JPG, PNG o WebP permitidos', 'error');
+    showNotification('Solo JPG, PNG o WebP', 'error');
     return;
   }
   
@@ -1361,7 +1028,7 @@ async function handleFileUpload(type, files) {
       
       console.log(`✅ Procesado: ${file.name}`);
     } catch (error) {
-      console.error('Error procesando archivo:', error);
+      console.error('Error:', error);
       showNotification(`Error procesando ${file.name}`, 'error');
     }
   }
@@ -1370,21 +1037,7 @@ async function handleFileUpload(type, files) {
   updateGenerateButton();
   saveUserData();
   
-  if (closetMode) {
-    updateClosetUI();
-    showNotification(`${files.length} imagen(es) agregadas al closet`, 'success');
-  } else {
-    showNotification(`${files.length} imagen(es) procesadas`, 'success');
-  }
-}
-
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  showNotification(`${files.length} imagen(es) procesadas`, 'success');
 }
 
 function updateUploadUI(type) {
@@ -1394,7 +1047,7 @@ function updateUploadUI(type) {
   
   if (label) {
     const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-    const maxFiles = CONFIG.FILE_LIMITS[type];
+    const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
     
     if (files.length === 0) {
       label.textContent = `📤 Subir ${typeNames[type]} (máx ${maxFiles})`;
@@ -1409,8 +1062,8 @@ function updateUploadUI(type) {
       const div = document.createElement('div');
       div.style.position = 'relative';
       div.innerHTML = `
-        <img src="${imageUrl}" class="preview-image" style="width: 120px; height: 120px; object-fit: cover; border-radius: 15px; border: 2px solid var(--primary);">
-        <button onclick="removeImage('${type}', ${index})" class="remove-image" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 12px;">×</button>
+        <img src="${imageUrl}" class="preview-image">
+        <button onclick="removeImage('${type}', ${index})" class="remove-image">×</button>
       `;
       preview.appendChild(div);
     });
@@ -1426,14 +1079,12 @@ function removeImage(type, index) {
   updateGenerateButton();
   saveUserData();
   
-  if (closetMode) updateClosetUI();
-  
   showNotification('Imagen eliminada', 'success');
 }
 
-// CRÍTICO: Botón generar habilitado correctamente
+// CRÍTICO: Botón generar usando ID real del HTML
 function updateGenerateButton() {
-  const generateBtn = document.getElementById('generateBtn');
+  const generateBtn = document.getElementById('generateBtn'); // ID real HTML
   if (!generateBtn) return;
   
   const hasTops = uploadedFiles.tops.length > 0;
@@ -1446,7 +1097,8 @@ function updateGenerateButton() {
     generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
     generateBtn.style.opacity = '1';
     generateBtn.style.cursor = 'pointer';
-    console.log('✅ Botón "Generar Recomendaciones" HABILITADO');
+    generateBtn.onclick = getRecommendation;
+    console.log('✅ Botón "Generar" HABILITADO');
   } else {
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="fas fa-upload"></i> Completa todos los campos';
@@ -1455,26 +1107,12 @@ function updateGenerateButton() {
   }
 }
 
-function navigateToDetectedType(type) {
-  console.log(`📍 IA navegando automáticamente a: ${type}`);
-  
-  const tabMap = { 'tops': 'superiores', 'bottoms': 'inferiores', 'shoes': 'calzado' };
-  const targetTabId = tabMap[type];
-  
-  if (targetTabId) {
-    showClosetTab(targetTabId);
-    
-    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-    showNotification(`🎯 IA detectó ${typeNames[type]}. Navegando automáticamente...`, 'success');
-  }
-}
-
 // ===================================================================
 // API Y RECOMENDACIONES
 // ===================================================================
 async function getRecommendation() {
   if (!selectedOccasion) {
-    showNotification('Selecciona una ocasión primero', 'error');
+    showNotification('Selecciona ocasión', 'error');
     return;
   }
   
@@ -1510,7 +1148,7 @@ async function getRecommendation() {
   }
   
   try {
-    console.log('🚀 Enviando solicitud de recomendación...');
+    console.log('🚀 Enviando solicitud...');
     
     const formData = new FormData();
     formData.append('user_email', currentUser.email);
@@ -1549,12 +1187,12 @@ async function getRecommendation() {
       renderRecommendations(data);
       showNotification(`✅ Procesado en ${finalTime.toFixed(1)}s`, 'success');
     } else {
-      throw new Error(data.message || 'Error generando recomendaciones');
+      throw new Error(data.message || 'Error');
     }
     
   } catch (error) {
     clearInterval(timerInterval);
-    console.error('Error completo:', error);
+    console.error('Error:', error);
     showNotification(`Error: ${error.message}`, 'error');
     
   } finally {
@@ -1590,11 +1228,8 @@ function renderRecommendations(data) {
   });
   
   const occasionText = {
-    'oficina': 'Oficina/Trabajo',
-    'deportivo': 'Deportes/Gym', 
-    'casual': 'Casual',
-    'formal': 'Formal',
-    'matrimonio': 'Matrimonio'
+    'oficina': 'Oficina/Trabajo', 'deportivo': 'Deportes/Gym', 
+    'casual': 'Casual', 'formal': 'Formal', 'matrimonio': 'Matrimonio'
   };
   
   let html = `
@@ -1651,7 +1286,7 @@ function renderRecommendations(data) {
         <div style="background: rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 1rem; text-align: center;">
           <strong>${item.harmony_type || 'Combinación Equilibrada'}</strong>
           <br>
-          <span style="font-size: 0.9rem; opacity: 0.8;">${item.harmony_description || 'Combinación balanceada y armónica'}</span>
+          <span style="font-size: 0.9rem; opacity: 0.8;">${item.harmony_description || 'Combinación armónica'}</span>
         </div>
         
         ${closetMode ? `<button onclick="saveRecommendation(${idx})" style="width: 100%; margin-top: 1rem; padding: 0.8rem; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">💾 Guardar en Closet</button>` : ''}
@@ -1719,32 +1354,20 @@ function saveUserData() {
   if (!currentUser?.email) return;
   
   const userData = {
-    email: currentUser.email,
-    name: currentUser.name,
-    uploadedFiles: uploadedFiles,
-    uploadedImages: uploadedImages,
-    closetItems: closetItems,
-    intelligentClosetItems: intelligentClosetItems,
-    userStats: userStats,
-    savedRecommendations: savedRecommendations,
-    lastUpdated: new Date().toISOString()
+    email: currentUser.email, name: currentUser.name,
+    uploadedFiles, uploadedImages, closetItems, intelligentClosetItems,
+    userStats, savedRecommendations, lastUpdated: new Date().toISOString()
   };
   
   localStorage.setItem(`noshopia_user_data_${currentUser.email}`, JSON.stringify(userData));
-  sessionStorage.setItem(`noshopia_session_${currentUser.email}`, JSON.stringify(userData));
-  
-  console.log('💾 Datos guardados localmente');
+  console.log('💾 Datos guardados');
 }
 
 function loadUserData() {
   if (!currentUser?.email) return;
   
   try {
-    let userData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
-    
-    if (!userData) {
-      userData = sessionStorage.getItem(`noshopia_session_${currentUser.email}`);
-    }
+    const userData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
     
     if (userData) {
       const data = JSON.parse(userData);
@@ -1755,7 +1378,7 @@ function loadUserData() {
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
-      console.log('✅ Datos locales cargados:', getTotalClosetItems(), 'prendas');
+      console.log('✅ Datos cargados:', getTotalClosetItems(), 'prendas');
     }
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -1763,19 +1386,17 @@ function loadUserData() {
 }
 
 // ===================================================================
-// FUNCIONES DE PLANES
+// PLANES
 // ===================================================================
 function startFreePlan() {
   console.log('🎁 Plan gratuito activado');
-  showNotification('¡Plan gratuito activado! Inicia sesión para comenzar.', 'success');
-  
-  setTimeout(() => handleMainLogin(), 1500);
+  showNotification('Plan gratuito activado', 'success');
+  setTimeout(handleMainLogin, 1500);
 }
 
 function upgradeToPremium() {
-  console.log('⭐ Upgrade a premium solicitado');
-  showNotification('Funcionalidad premium próximamente disponible', 'info');
-  setTimeout(() => scrollToSection('equipo'), 1000);
+  console.log('⭐ Upgrade premium');
+  showNotification('Funcionalidad premium próximamente', 'info');
 }
 
 // ===================================================================
@@ -1791,42 +1412,39 @@ function initializeGoogleLogin() {
     client_id: CONFIG.GOOGLE_CLIENT_ID,
     callback: handleGoogleCredentialResponse,
     auto_select: false,
-    cancel_on_tap_outside: true,
-    use_fedcm_for_prompt: true
+    cancel_on_tap_outside: true
   });
+  
+  // Activar botón header
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn) {
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+    headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
+    headerBtn.onclick = handleMainLogin;
+  }
 }
 
 // ===================================================================
-// CONFIGURACIÓN DE EVENTOS
+// CONFIGURACIÓN DE EVENTOS SINCRONIZADA CON HTML
 // ===================================================================
 function setupEventListeners() {
+  console.log('🔧 CONFIGURANDO EVENT LISTENERS CON IDs HTML...');
+  
+  // Botones de planes (IDs reales HTML)
+  const startFreePlanBtn = document.getElementById('startFreePlan');
+  const upgradeToPremiumBtn = document.getElementById('upgradeToPremium');
+  
+  if (startFreePlanBtn) startFreePlanBtn.onclick = startFreePlan;
+  if (upgradeToPremiumBtn) upgradeToPremiumBtn.onclick = upgradeToPremium;
+  
+  // Ocasiones
   setupOccasionButtons();
-  setupClosetTabs();
-  setupDirectUpload();
+  
+  // Formulario de perfil
   setupProfileForm();
   
-  // Event listeners dinámicos para opciones
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('closet-option')) {
-      const optionText = e.target.textContent.toLowerCase();
-      
-      if (optionText.includes('closet')) {
-        enableCloset();
-      } else if (optionText.includes('directo')) {
-        useDirectMode();
-      }
-    }
-  });
-  
-  document.querySelectorAll('.mobile-nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const mobileNav = document.getElementById('mobileNav');
-      if (mobileNav?.classList.contains('active')) {
-        toggleMobileMenu();
-      }
-    });
-  });
-  
+  // Observer para barras de impacto
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -1845,24 +1463,22 @@ function setupEventListeners() {
     observer.observe(fill);
   });
   
-  console.log('✅ Event listeners configurados');
+  console.log('✅ Event listeners configurados con IDs HTML');
 }
 
 function initializeApp() {
-  console.log('🔧 INICIALIZANDO NoShopiA v2.2 - CORRECCIONES APLICADAS...');
+  console.log('🔧 INICIALIZANDO NoShopiA v2.3 SINCRONIZADO...');
   
   setTimeout(initializeGoogleLogin, 500);
   setupEventListeners();
   setTimeout(checkExistingSession, 1000);
   
-  console.log('✅ NoShopiA v2.2 inicializada con correcciones críticas');
+  console.log('✅ NoShopiA v2.3 inicializada SINCRONIZADA con HTML');
 }
 
 // ===================================================================
-// EXPOSICIÓN GLOBAL DE FUNCIONES
+// EXPOSICIÓN GLOBAL
 // ===================================================================
-window.scrollToSection = scrollToSection;
-window.toggleMobileMenu = toggleMobileMenu;
 window.handleMainLogin = handleMainLogin;
 window.logout = logout;
 window.startFreePlan = startFreePlan;
@@ -1875,9 +1491,6 @@ window.getRecommendation = getRecommendation;
 window.removeImage = removeImage;
 window.saveRecommendation = saveRecommendation;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
-window.tryGoogleLogin = tryGoogleLogin;
-window.closeGoogleLoginButton = closeGoogleLoginButton;
-window.simulateLogin = simulateLogin;
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
@@ -1890,11 +1503,10 @@ if (document.readyState === 'loading') {
 
 window.addEventListener('load', () => {
   if (!window.APP_INITIALIZED) {
-    console.log('🔄 Inicialización de respaldo...');
     setTimeout(initializeApp, 500);
   }
 });
 
 window.APP_INITIALIZED = true;
 
-console.log('✅ NoShopiA v2.2 cargado - TODAS las correcciones críticas aplicadas');
+console.log('✅ app.js v2.3 - COMPLETAMENTE SINCRONIZADO CON HTML');
