@@ -44,45 +44,6 @@ const INTELLIGENT_CATEGORIES = {
 };
 
 // ===================================================================
-// TRADUCTOR DE DETECCIONES DEL BACKEND
-// ===================================================================
-function translateBackendItem(detectedItem) {
-  const itemLower = detectedItem.toLowerCase();
-  
-  // Buscar en todas las categorías
-  for (const [type, categories] of Object.entries(INTELLIGENT_CATEGORIES)) {
-    for (const [categoryId, categoryInfo] of Object.entries(categories)) {
-      // Buscar por keywords
-      const found = categoryInfo.keywords.some(keyword => 
-        itemLower.includes(keyword.toLowerCase())
-      );
-      
-      if (found) {
-        return {
-          type: type,
-          category: categoryId,
-          name: categoryInfo.name
-        };
-      }
-    }
-  }
-  
-  // Fallback - intentar determinar tipo básico
-  if (itemLower.includes('shirt') || itemLower.includes('top') || itemLower.includes('blouse')) {
-    return { type: 'tops', category: 'shirt', name: 'Camisa' };
-  }
-  if (itemLower.includes('pants') || itemLower.includes('jeans') || itemLower.includes('trouser')) {
-    return { type: 'bottoms', category: 'pants', name: 'Pantalón' };
-  }
-  if (itemLower.includes('shoe') || itemLower.includes('sneaker') || itemLower.includes('boot')) {
-    return { type: 'shoes', category: 'sneakers', name: 'Zapato' };
-  }
-  
-  // Fallback final
-  return { type: 'tops', category: 'unknown', name: 'Prenda Desconocida' };
-}
-
-// ===================================================================
 // DETECCIÓN IA REAL - Usando endpoint correcto /api/recommend
 // ===================================================================
 async function detectItemWithAI(file) {
@@ -118,8 +79,8 @@ async function detectItemWithAI(file) {
       throw new Error('Backend no devolvió detected_item');
     }
     
-    // Usar traductor para: "shirt" → "Camisa" 
-    const translation = translateBackendItem(detectedItem);
+    // USAR la función traductor del HTML (no redefinir)
+    const translation = window.translateBackendItem(detectedItem);
     
     console.log(`🎯 IA REAL: "${detectedItem}" → "${translation.name}" (${Math.round(confidence * 100)}%)`);
     
@@ -362,10 +323,10 @@ async function processLogin(userData) {
 function updateUserUI() {
   console.log('🔄 ACTUALIZANDO UI...');
   
-  // Ocultar botón login principal
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
-  if (mainLoginBtn) {
-    mainLoginBtn.style.display = 'none';
+  // Ocultar botón login principal (ID REAL del HTML)
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.style.display = 'none';
   }
   
   // Mostrar info usuario
@@ -406,12 +367,12 @@ function logout() {
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
   
-  // Restaurar botón login principal
-  const mainLoginBtn = document.getElementById('mainLoginBtn');
-  if (mainLoginBtn) {
-    mainLoginBtn.style.display = 'inline-flex';
-    mainLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-    mainLoginBtn.onclick = handleMainLogin;
+  // Restaurar botón login principal (ID REAL del HTML)
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.style.display = 'inline-flex';
+    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    headerLoginBtn.onclick = handleMainLogin;
   }
   
   // Ocultar info usuario
@@ -1433,13 +1394,13 @@ function initializeGoogleLogin() {
     cancel_on_tap_outside: true
   });
   
-  // Activar botón principal
-  const mainBtn = document.getElementById('mainLoginBtn');
-  if (mainBtn) {
-    mainBtn.disabled = false;
-    mainBtn.style.opacity = '1';
-    mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-    mainBtn.onclick = handleMainLogin;
+  // Activar botón principal (ID REAL del HTML)
+  const headerBtn = document.getElementById('headerLoginBtn');
+  if (headerBtn) {
+    headerBtn.disabled = false;
+    headerBtn.style.opacity = '1';
+    headerBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    headerBtn.onclick = handleMainLogin;
   }
 }
 
