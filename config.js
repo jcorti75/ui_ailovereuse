@@ -4,7 +4,7 @@ const CONFIG = {
   GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
   
   // API Backend
-  API_BASE: 'https://noshopia-production.up.railway.app/',
+  API_BASE: 'https://noshopia-production.up.railway.app',
   
   // Límites
   TOTAL_CLOSET_LIMIT: 15,
