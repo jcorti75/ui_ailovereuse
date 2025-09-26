@@ -625,7 +625,6 @@
       display: block;
     }
 
-    /* NUEVO: Zona de Upload Automático Central con IA */
     .automatic-upload-zone {
       background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
       border: 3px dashed var(--primary);
@@ -1036,7 +1035,7 @@
 
     .cta-features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmin(200px, 1fr));
       gap: 2rem;
       max-width: 600px;
       margin: 0 auto 3rem;
@@ -1297,6 +1296,7 @@
         </button>
         
         <div class="auth-container">
+          <!-- NO TOCAR: Sistema de autenticación existente -->
           <button id="headerLoginBtn" disabled style="opacity: 0.6;">
             <i class="fas fa-spinner fa-spin"></i>
             Cargando...
@@ -1866,11 +1866,97 @@
     </div>
   </footer>
 
-  <!-- SCRIPTS -->
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <!-- SCRIPTS: config.js debe cargarse ANTES que app.js -->
   <script>
-    // Configuración de navegación
+    // ===================================================================
+    // CONFIG.JS EMBEBIDO - CRÍTICO: Cargar ANTES que app.js
+    // ===================================================================
+    window.CONFIG = {
+      API_BASE: 'https://noshopia-production.up.railway.app',
+      GOOGLE_CLIENT_ID: '842693153645-k82v7n84eh1rr6j3g34ibl3cq6vuf8or.apps.googleusercontent.com',
+      TOTAL_CLOSET_LIMIT: 15,
+      FILE_LIMITS: {
+        tops: 3,
+        bottoms: 3,
+        shoes: 5
+      }
+    };
+    console.log('✅ CONFIG.js embebido cargado');
+
+    // ===================================================================
+    // TRADUCTOR BACKEND → FRONTEND - AÑADIDO AL HTML
+    // ===================================================================
+    window.BACKEND_TO_SPANISH_TRANSLATOR = {
+      // SUPERIORES
+      'shirt': { category: 'shirt', name: 'Camisa', icon: '👔', type: 'tops' },
+      'dress_shirt': { category: 'shirt', name: 'Camisa', icon: '👔', type: 'tops' },
+      't-shirt': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      'tshirt': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      'tee': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      'tank_top': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      'blouse': { category: 'blouse', name: 'Blusa', icon: '👚', type: 'tops' },
+      'sweater': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
+      'cardigan': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
+      'hoodie': { category: 'hoodie', name: 'Hoodie', icon: '👘', type: 'tops' },
+      'sweatshirt': { category: 'hoodie', name: 'Hoodie', icon: '👘', type: 'tops' },
+      'jacket': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
+      'blazer': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
+
+      // INFERIORES
+      'jeans': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
+      'denim': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
+      'pants': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      'trousers': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      'shorts': { category: 'shorts', name: 'Shorts', icon: '🩳', type: 'bottoms' },
+      'skirt': { category: 'skirt', name: 'Falda', icon: '👗', type: 'bottoms' },
+      'dress': { category: 'dress', name: 'Vestido', icon: '👗', type: 'bottoms' },
+
+      // CALZADO
+      'sneakers': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
+      'running_shoes': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
+      'athletic_shoes': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
+      'dress_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
+      'formal_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
+      'leather_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
+      'boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
+      'ankle_boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
+      
+      // FALLBACKS
+      'top': { category: 'tshirt', name: 'Superior', icon: '👕', type: 'tops' },
+      'bottom': { category: 'pants', name: 'Inferior', icon: '👖', type: 'bottoms' },
+      'shoe': { category: 'sneakers', name: 'Calzado', icon: '👟', type: 'shoes' }
+    };
+
+    // ===================================================================
+    // FUNCIÓN CRÍTICA: Traducir detected_item del backend
+    // ===================================================================
+    window.translateBackendItem = function(detected_item) {
+      const translation = window.BACKEND_TO_SPANISH_TRANSLATOR[detected_item?.toLowerCase()];
+      
+      if (translation) {
+        console.log(`✅ Traducido: "${detected_item}" → "${translation.name}"`);
+        return translation;
+      }
+      
+      console.warn(`⚠️ Sin traducción para: "${detected_item}"`);
+      return {
+        category: 'unknown',
+        name: detected_item || 'Desconocido',
+        icon: '❓',
+        type: 'tops'
+      };
+    };
+
+    console.log('✅ Traductor backend→frontend cargado');
+  </script>
+  
+  <!-- SCRIPT PRINCIPAL: app.js SE CARGA DESPUÉS de config.js -->
+  <script src="app.js"></script>
+  
+  <script>
+    // ===================================================================
+    // CONFIGURACIÓN DE NAVEGACIÓN SUAVE
+    // ===================================================================
     document.addEventListener('DOMContentLoaded', function() {
       console.log('🔧 Configurando navegación y funcionalidad...');
       
@@ -1915,6 +2001,8 @@
       
       console.log('✅ Navegación configurada');
     });
+
+    console.log('✅ HTML NoShopiA Producción - Sincronizado 100% con app.js y config.js');
   </script>
 </body>
 </html>
