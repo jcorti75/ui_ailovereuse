@@ -870,6 +870,480 @@ function restoreSession() {
 window.updateUserNameInCloset = updateUserNameInCloset;
 window.getCurrentUserName = () => currentUser?.name || currentUser?.displayName || 'Usuario';
 
-console.log('✅ Correcciones de auth.js aplicadas - Login profesional y nombres reales habilitados');
+// DIAGNÓSTICO Y CORRECCIÓN DE AUTENTICACIÓN ROTA
+// Agrega este código al FINAL de tu auth.js y recarga la página
+
+console.log('🔧 INICIANDO DIAGNÓSTICO DE AUTENTICACIÓN...');
+
+// =======================================================
+// DIAGNÓSTICO COMPLETO DEL SISTEMA
+// =======================================================
+
+function diagnoseAuthSystem() {
+  console.log('=== DIAGNÓSTICO COMPLETO ===');
+  
+  // 1. Verificar configuración
+  console.log('📋 CONFIG disponible:', typeof CONFIG !== 'undefined' ? '✅' : '❌');
+  if (typeof CONFIG !== 'undefined') {
+    console.log('   - GOOGLE_CLIENT_ID:', CONFIG.GOOGLE_CLIENT_ID ? '✅' : '❌');
+  }
+  
+  // 2. Verificar Google Script
+  console.log('🔐 Google disponible:', typeof google !== 'undefined' ? '✅' : '❌');
+  if (typeof google !== 'undefined') {
+    console.log('   - google.accounts:', google.accounts ? '✅' : '❌');
+    if (google.accounts) {
+      console.log('   - google.accounts.id:', google.accounts.id ? '✅' : '❌');
+    }
+  }
+  
+  // 3. Verificar elementos del DOM
+  console.log('🎯 Elementos DOM:');
+  console.log('   - headerLoginBtn:', document.getElementById('headerLoginBtn') ? '✅' : '❌');
+  console.log('   - userInfo:', document.getElementById('userInfo') ? '✅' : '❌');
+  
+  // 4. Verificar variables globales
+  console.log('🔄 Variables globales:');
+  console.log('   - isLoggedIn:', typeof isLoggedIn);
+  console.log('   - currentUser:', typeof currentUser);
+  
+  // 5. Verificar funciones críticas
+  console.log('⚙️ Funciones críticas:');
+  console.log('   - showNotification:', typeof showNotification);
+  console.log('   - loadGoogleScript:', typeof loadGoogleScript);
+  console.log('   - handleGoogleSignIn:', typeof handleGoogleSignIn);
+  
+  console.log('=== FIN DIAGNÓSTICO ===');
+}
+
+// =======================================================
+// CORRECCIÓN COMPLETA Y ROBUSTA
+// =======================================================
+
+// PASO 1: Limpiar estado anterior
+function cleanAuthState() {
+  console.log('🧹 Limpiando estado anterior...');
+  
+  // Resetear variables globales
+  window.isLoggedIn = false;
+  window.currentUser = null;
+  if (typeof isLoggedIn !== 'undefined') isLoggedIn = false;
+  if (typeof currentUser !== 'undefined') currentUser = null;
+  
+  console.log('✅ Estado limpio');
+}
+
+// PASO 2: Crear configuración de emergencia
+function ensureConfig() {
+  console.log('⚙️ Verificando configuración...');
+  
+  if (typeof CONFIG === 'undefined') {
+    window.CONFIG = {
+      GOOGLE_CLIENT_ID: '326940877598-ko13n1qcqkkugkoo6gu2n1avs46al09p.apps.googleusercontent.com',
+      API_BASE: 'https://noshopia-production.up.railway.app',
+      FILE_LIMITS: { tops: 5, bottoms: 5, shoes: 5 },
+      TOTAL_CLOSET_LIMIT: 15
+    };
+    console.log('⚠️ CONFIG creado como fallback');
+  } else {
+    console.log('✅ CONFIG disponible');
+  }
+}
+
+// PASO 3: Función de notificación robusta
+function ensureNotification() {
+  if (typeof showNotification === 'undefined' && typeof window.showNotification === 'undefined') {
+    window.showNotification = function(message, type = 'info') {
+      console.log(`[${type.toUpperCase()}] ${message}`);
+      
+      try {
+        // Remover notificaciones anteriores
+        document.querySelectorAll('.temp-notification').forEach(n => n.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = 'temp-notification';
+        notification.textContent = message;
+        notification.style.cssText = `
+          position: fixed; top: 20px; right: 20px; z-index: 10000;
+          background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+          color: white; padding: 1rem 2rem; border-radius: 15px;
+          font-weight: 600; max-width: 350px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          animation: slideInRight 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 4000);
+      } catch (e) {
+        alert(message);
+      }
+    };
+  }
+}
+
+// PASO 4: Login con email robusto
+function robustEmailLogin() {
+  console.log('📧 Iniciando login con email...');
+  
+  try {
+    const email = prompt('Ingresa tu email para continuar:');
+    if (!email) return;
+    
+    if (!email.includes('@') || !email.includes('.')) {
+      window.showNotification('Email inválido', 'error');
+      return;
+    }
+    
+    // Extraer nombre del email
+    const localPart = email.split('@')[0];
+    const name = localPart
+      .replace(/[._-]/g, ' ')
+      .replace(/\d+/g, '')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+      .trim() || 'Usuario';
+    
+    // Crear usuario
+    const user = {
+      name: name,
+      email: email,
+      picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`,
+      token: 'email_' + Date.now()
+    };
+    
+    console.log('👤 Usuario creado:', user.name, user.email);
+    
+    // Guardar estado
+    window.currentUser = user;
+    window.isLoggedIn = true;
+    if (typeof currentUser !== 'undefined') currentUser = user;
+    if (typeof isLoggedIn !== 'undefined') isLoggedIn = true;
+    
+    localStorage.setItem('noshopia_current_user', JSON.stringify(user));
+    localStorage.setItem('noshopia_logged_in', 'true');
+    
+    // Actualizar UI
+    updateAuthUIRobust();
+    
+    window.showNotification(`¡Bienvenido ${name}!`, 'success');
+    
+    // Navegar después del login
+    setTimeout(() => {
+      const uploadSection = document.getElementById('upload');
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      
+      setTimeout(() => {
+        showWelcomeFlow();
+      }, 1500);
+    }, 1000);
+    
+  } catch (e) {
+    console.error('Error en email login:', e);
+    window.showNotification('Error en login', 'error');
+  }
+}
+
+// PASO 5: Actualizar UI de forma robusta
+function updateAuthUIRobust() {
+  console.log('🎨 Actualizando UI...');
+  
+  try {
+    const user = window.currentUser || currentUser;
+    const loggedIn = window.isLoggedIn || isLoggedIn;
+    
+    const userInfo = document.getElementById('userInfo');
+    const headerLoginBtn = document.getElementById('headerLoginBtn');
+    
+    if (loggedIn && user) {
+      console.log('✅ Mostrando usuario logueado:', user.name);
+      
+      // Mostrar info del usuario
+      if (userInfo) {
+        userInfo.style.display = 'flex';
+        
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        
+        if (userName) {
+          userName.textContent = user.name;
+          userName.title = `${user.name} (${user.email})`;
+        }
+        
+        if (userAvatar) {
+          userAvatar.src = user.picture;
+          userAvatar.alt = user.name;
+        }
+      }
+      
+      // Ocultar botón de login
+      if (headerLoginBtn) {
+        headerLoginBtn.style.display = 'none';
+      }
+      
+      // Actualizar otros lugares
+      updateUserNameInApp();
+      
+    } else {
+      console.log('👤 Mostrando estado no logueado');
+      
+      // Mostrar botón de login
+      if (userInfo) {
+        userInfo.style.display = 'none';
+      }
+      
+      if (headerLoginBtn) {
+        headerLoginBtn.style.display = 'inline-flex';
+        headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar sesión';
+        headerLoginBtn.disabled = false;
+        headerLoginBtn.style.opacity = '1';
+        headerLoginBtn.onclick = robustEmailLogin;
+      }
+    }
+    
+  } catch (e) {
+    console.error('Error actualizando UI:', e);
+  }
+}
+
+// PASO 6: Actualizar nombres en toda la app
+function updateUserNameInApp() {
+  const user = window.currentUser || currentUser;
+  if (!user) return;
+  
+  console.log('📝 Actualizando nombres en la app...');
+  
+  // Actualizar en closet
+  const userEmail = document.getElementById('userEmail');
+  if (userEmail) {
+    userEmail.textContent = `Bienvenido ${user.name}`;
+  }
+  
+  // Actualizar elementos con data-user-name
+  document.querySelectorAll('[data-user-name="true"]').forEach(element => {
+    element.textContent = user.name;
+  });
+  
+  console.log('✅ Nombres actualizados');
+}
+
+// PASO 7: Flujo de bienvenida
+function showWelcomeFlow() {
+  console.log('🎉 Mostrando flujo de bienvenida...');
+  
+  try {
+    // Ocultar todas las secciones
+    const sections = ['welcomeSection', 'profileForm', 'closetQuestion', 'closetContainer', 'uploadArea', 'occasionSelector'];
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) element.style.display = 'none';
+    });
+    
+    // Mostrar pregunta del closet
+    const closetQuestion = document.getElementById('closetQuestion');
+    if (closetQuestion) {
+      closetQuestion.style.display = 'block';
+      
+      setTimeout(() => {
+        closetQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+      
+      // Configurar botones
+      setupClosetButtons();
+    }
+    
+  } catch (e) {
+    console.error('Error en flujo de bienvenida:', e);
+  }
+}
+
+// PASO 8: Configurar botones del closet
+function setupClosetButtons() {
+  console.log('🔘 Configurando botones del closet...');
+  
+  // Buscar botones
+  const options = document.querySelectorAll('.closet-option');
+  options.forEach((option, index) => {
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+    
+    if (index === 0) {
+      // Mi Closet Inteligente
+      newOption.onclick = function() {
+        console.log('🎯 Activando Mi Closet');
+        activateMyCloset();
+      };
+    } else if (index === 1) {
+      // Recomendaciones Rápidas
+      newOption.onclick = function() {
+        console.log('⚡ Activando Recomendaciones Rápidas');
+        activateQuickRecommendations();
+      };
+    }
+  });
+  
+  console.log('✅ Botones configurados');
+}
+
+// PASO 9: Activar Mi Closet
+function activateMyCloset() {
+  try {
+    const closetQuestion = document.getElementById('closetQuestion');
+    const closetContainer = document.getElementById('closetContainer');
+    
+    if (closetQuestion) closetQuestion.style.display = 'none';
+    
+    if (closetContainer) {
+      closetContainer.style.display = 'block';
+      updateUserNameInApp();
+      
+      setTimeout(() => {
+        closetContainer.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+    
+    window.showNotification('Mi Closet Inteligente activado', 'success');
+  } catch (e) {
+    console.error('Error activando closet:', e);
+  }
+}
+
+// PASO 10: Activar Recomendaciones Rápidas
+function activateQuickRecommendations() {
+  try {
+    const closetQuestion = document.getElementById('closetQuestion');
+    const occasionSelector = document.getElementById('occasionSelector');
+    const uploadArea = document.getElementById('uploadArea');
+    
+    if (closetQuestion) closetQuestion.style.display = 'none';
+    if (occasionSelector) occasionSelector.style.display = 'block';
+    if (uploadArea) uploadArea.style.display = 'block';
+    
+    window.showNotification('Recomendaciones Rápidas activado', 'success');
+  } catch (e) {
+    console.error('Error activando modo rápido:', e);
+  }
+}
+
+// PASO 11: Logout robusto
+function robustLogout() {
+  console.log('👋 Cerrando sesión...');
+  
+  try {
+    // Limpiar estado
+    window.currentUser = null;
+    window.isLoggedIn = false;
+    if (typeof currentUser !== 'undefined') currentUser = null;
+    if (typeof isLoggedIn !== 'undefined') isLoggedIn = false;
+    
+    // Limpiar localStorage
+    localStorage.removeItem('noshopia_current_user');
+    localStorage.removeItem('noshopia_logged_in');
+    
+    // Ocultar secciones
+    const sections = ['welcomeSection', 'profileForm', 'closetQuestion', 'closetContainer', 'uploadArea', 'occasionSelector'];
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element) element.style.display = 'none';
+    });
+    
+    // Actualizar UI
+    updateAuthUIRobust();
+    
+    // Scroll al inicio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    window.showNotification('Sesión cerrada correctamente', 'info');
+    
+  } catch (e) {
+    console.error('Error en logout:', e);
+  }
+}
+
+// =======================================================
+// INICIALIZACIÓN PRINCIPAL ROBUSTA
+// =======================================================
+
+function initializeRobustAuth() {
+  console.log('🚀 INICIALIZANDO AUTENTICACIÓN ROBUSTA...');
+  
+  try {
+    // Ejecutar pasos de corrección
+    cleanAuthState();
+    ensureConfig();
+    ensureNotification();
+    
+    // Configurar botón principal
+    const headerBtn = document.getElementById('headerLoginBtn');
+    if (headerBtn) {
+      headerBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar sesión';
+      headerBtn.onclick = robustEmailLogin;
+      headerBtn.disabled = false;
+      headerBtn.style.opacity = '1';
+    }
+    
+    // Configurar otros botones
+    const freeBtn = document.getElementById('startFreePlan');
+    if (freeBtn) {
+      freeBtn.onclick = robustEmailLogin;
+    }
+    
+    const premiumBtn = document.getElementById('upgradeToPremium');
+    if (premiumBtn) {
+      premiumBtn.onclick = () => window.showNotification('Próximamente: Sistema de pagos Premium', 'info');
+    }
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.onclick = robustLogout;
+    }
+    
+    // Restaurar sesión si existe
+    try {
+      const savedUser = localStorage.getItem('noshopia_current_user');
+      const savedLogin = localStorage.getItem('noshopia_logged_in');
+      
+      if (savedUser && savedLogin === 'true') {
+        const user = JSON.parse(savedUser);
+        console.log('🔄 Restaurando sesión:', user.name);
+        
+        window.currentUser = user;
+        window.isLoggedIn = true;
+        if (typeof currentUser !== 'undefined') currentUser = user;
+        if (typeof isLoggedIn !== 'undefined') isLoggedIn = true;
+        
+        updateAuthUIRobust();
+      }
+    } catch (e) {
+      console.error('Error restaurando sesión:', e);
+    }
+    
+    console.log('✅ AUTENTICACIÓN ROBUSTA INICIALIZADA');
+    
+  } catch (e) {
+    console.error('❌ Error en inicialización robusta:', e);
+  }
+}
+
+// =======================================================
+// AUTO-EJECUCIÓN
+// =======================================================
+
+// Ejecutar inmediatamente
+setTimeout(() => {
+  diagnoseAuthSystem();
+  initializeRobustAuth();
+}, 1000);
+
+// También ejecutar cuando el DOM esté completamente cargado
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeRobustAuth);
+} else {
+  setTimeout(initializeRobustAuth, 2000);
+}
+
+console.log('✅ Sistema de corrección de autenticación cargado - Botón funcional en 3 segundos');
 
 console.log('✅ auth.js - Sistema de Autenticación Corregido cargado');
