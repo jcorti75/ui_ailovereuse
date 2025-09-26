@@ -623,5 +623,253 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
   }
 });
+// CORRECCIONES ESPECÍFICAS PARA auth.js
+// Agrega estas funciones y modificaciones a tu archivo auth.js actual
+
+// CORRECCIÓN 1: Función mejorada para procesar login exitoso con nombre real
+function processSuccessfulLogin(user) {
+  console.log('🎉 Login exitoso para:', user.name, `(${user.email})`);
+  
+  // CORREGIDO: Extraer nombre real de Google, no usar email
+  const realName = user.name || user.given_name || extractNameFromEmail(user.email);
+  
+  // Actualizar estado global con nombre real
+  currentUser = {
+    ...user,
+    name: realName, // CRÍTICO: Usar nombre real siempre
+    displayName: realName
+  };
+  isLoggedIn = true;
+  
+  // Persistir sesión con nombre real
+  localStorage.setItem('noshopia_current_user', JSON.stringify(currentUser));
+  localStorage.setItem('noshopia_logged_in', 'true');
+  
+  // Actualizar UI inmediatamente
+  updateAuthUI();
+  
+  showNotification(`¡Bienvenido ${realName}!`, 'success'); // Usar nombre real
+  
+  // NAVEGACIÓN INTELIGENTE BASADA EN PERFIL
+  setTimeout(() => {
+    navigateAfterLogin(user.email);
+  }, 1000);
+}
+
+// FUNCIÓN AUXILIAR: Extraer nombre legible del email
+function extractNameFromEmail(email) {
+  if (!email) return 'Usuario';
+  
+  const localPart = email.split('@')[0];
+  
+  // Convertir patrones comunes a nombres legibles
+  return localPart
+    .replace(/[._-]/g, ' ') // Reemplazar puntos, guiones por espacios
+    .replace(/\d+/g, '') // Remover números
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalizar
+    .join(' ')
+    .trim() || 'Usuario';
+}
+
+// CORRECCIÓN 2: Función mejorada de Google Sign-In para extraer nombre real
+async function handleGoogleSignIn(response) {
+  if (!response.credential) return;
+  
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    
+    // CORREGIDO: Priorizar nombre real de Google
+    const realName = payload.name || payload.given_name || 
+                     (payload.given_name && payload.family_name ? 
+                      `${payload.given_name} ${payload.family_name}` : null) ||
+                     extractNameFromEmail(payload.email);
+    
+    const user = {
+      name: realName, // CRÍTICO: Nombre real, no email
+      email: payload.email,
+      picture: payload.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(realName)}&background=3b82f6&color=fff`,
+      token: response.credential,
+      given_name: payload.given_name,
+      family_name: payload.family_name
+    };
+    
+    console.log('✅ Usuario extraído de Google:', {
+      name: user.name,
+      email: user.email,
+      hasRealName: !!payload.name
+    });
+    
+    processSuccessfulLogin(user);
+    
+  } catch (e) {
+    console.error('Error procesando Google login:', e);
+    showNotification('Error al iniciar sesión', 'error');
+  }
+}
+
+// CORRECCIÓN 3: Actualización de UI corregida para mostrar nombre real
+function updateAuthUI() {
+  try {
+    const userInfo = document.getElementById('userInfo');
+    const headerLoginBtn = document.getElementById('headerLoginBtn');
+    
+    if (isLoggedIn && currentUser) {
+      // MOSTRAR INFO DEL USUARIO CON NOMBRE REAL
+      if (userInfo) {
+        userInfo.style.display = 'flex';
+        
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+        
+        if (userName) {
+          // CRÍTICO: Mostrar nombre real, nunca el email
+          userName.textContent = currentUser.name || currentUser.displayName || 'Usuario';
+          userName.title = `${currentUser.name} (${currentUser.email})`; // Tooltip con info completa
+        }
+        
+        if (userAvatar) {
+          userAvatar.src = currentUser.picture;
+          userAvatar.alt = currentUser.name;
+        }
+      }
+      
+      // ACTUALIZAR TAMBIÉN OTROS LUGARES DONDE APARECE EL NOMBRE
+      updateUserNameInCloset();
+      
+      // OCULTAR BOTÓN DE LOGIN
+      if (headerLoginBtn) {
+        headerLoginBtn.style.display = 'none';
+      }
+      
+    } else {
+      // MOSTRAR BOTÓN DE LOGIN
+      if (userInfo) {
+        userInfo.style.display = 'none';
+      }
+      
+      if (headerLoginBtn) {
+        headerLoginBtn.style.display = 'inline-flex';
+      }
+    }
+  } catch (e) {
+    console.error('Error actualizando UI de auth:', e);
+  }
+}
+
+// FUNCIÓN NUEVA: Actualizar nombre en el closet y otras secciones
+function updateUserNameInCloset() {
+  if (!currentUser) return;
+  
+  const realName = currentUser.name || currentUser.displayName || 'Usuario';
+  
+  // Actualizar en closet header
+  const userEmail = document.getElementById('userEmail');
+  if (userEmail) {
+    userEmail.textContent = `Bienvenido ${realName}`; // CORREGIDO: Nombre real
+  }
+  
+  // Actualizar en sección de bienvenida
+  const welcomeUserName = document.getElementById('welcomeUserName');
+  if (welcomeUserName) {
+    welcomeUserName.textContent = realName;
+  }
+  
+  // Actualizar cualquier elemento con data-user-name
+  document.querySelectorAll('[data-user-name="true"]').forEach(element => {
+    element.textContent = realName;
+  });
+  
+  console.log('✅ Nombre actualizado en UI:', realName);
+}
+
+// CORRECCIÓN 4: Configuración mejorada de Google Auth sin pop-ups beta
+function initializeGoogleAuth() {
+  try {
+    // CONFIGURACIÓN PROFESIONAL SIN REFERENCIAS BETA
+    google.accounts.id.initialize({
+      client_id: CONFIG.GOOGLE_CLIENT_ID,
+      callback: handleGoogleSignIn,
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: 'signin', // Contexto profesional
+      // SIN ux_mode para evitar pop-ups beta
+    });
+    
+    updateLoginButton();
+    console.log('✅ Google Auth inicializado profesionalmente');
+    
+  } catch (e) {
+    console.warn('Google Auth no disponible, usando fallback');
+    showAlternativeLogin();
+  }
+}
+
+// CORRECCIÓN 5: Función de login mejorada para ir directo a Google
+function handleGoogleLogin() {
+  console.log('🔄 Iniciando login profesional con Google...');
+  
+  try {
+    if (typeof google !== 'undefined' && google.accounts?.id) {
+      // CORREGIDO: Usar prompt directo sin configuraciones beta
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed()) {
+          console.log('⚠️ Google login no mostrado, usando fallback');
+          showEmailLogin();
+        } else if (notification.isSkippedMoment()) {
+          console.log('👤 Usuario omitió login con Google');
+        }
+      });
+    } else {
+      console.log('Google no disponible, usando login con email');
+      showEmailLogin();
+    }
+  } catch (e) {
+    console.warn('Error en Google login, usando fallback:', e);
+    showEmailLogin();
+  }
+}
+
+// CORRECCIÓN 6: Mejorar restauración de sesión
+function restoreSession() {
+  try {
+    const savedUser = localStorage.getItem('noshopia_current_user');
+    const savedLoginStatus = localStorage.getItem('noshopia_logged_in');
+    
+    if (savedUser && savedLoginStatus === 'true') {
+      const user = JSON.parse(savedUser);
+      
+      console.log('🔄 Restaurando sesión para:', user.name);
+      
+      // ASEGURAR QUE TENEMOS NOMBRE REAL
+      if (!user.name || user.name === user.email) {
+        user.name = user.displayName || extractNameFromEmail(user.email);
+      }
+      
+      currentUser = user;
+      isLoggedIn = true;
+      
+      updateAuthUI();
+      
+      console.log('✅ Sesión restaurada exitosamente para:', user.name);
+      return true;
+    }
+    
+    return false;
+    
+  } catch (e) {
+    console.error('Error restaurando sesión:', e);
+    // Limpiar datos corruptos
+    localStorage.removeItem('noshopia_current_user');
+    localStorage.removeItem('noshopia_logged_in');
+    return false;
+  }
+}
+
+// CORRECCIÓN 7: Exponer función para actualizar nombres desde otros archivos
+window.updateUserNameInCloset = updateUserNameInCloset;
+window.getCurrentUserName = () => currentUser?.name || currentUser?.displayName || 'Usuario';
+
+console.log('✅ Correcciones de auth.js aplicadas - Login profesional y nombres reales habilitados');
 
 console.log('✅ auth.js - Sistema de Autenticación Corregido cargado');
