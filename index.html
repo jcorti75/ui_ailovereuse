@@ -1035,7 +1035,7 @@
 
     .cta-features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmin(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 2rem;
       max-width: 600px;
       margin: 0 auto 3rem;
@@ -1296,7 +1296,6 @@
         </button>
         
         <div class="auth-container">
-          <!-- NO TOCAR: Sistema de autenticación existente -->
           <button id="headerLoginBtn" disabled style="opacity: 0.6;">
             <i class="fas fa-spinner fa-spin"></i>
             Cargando...
@@ -1866,58 +1865,140 @@
     </div>
   </footer>
 
-  <!-- SCRIPTS: config.js debe cargarse ANTES que app.js -->
+  <!-- SCRIPTS: ORDEN CORRECTO -->
   <script>
-
     // ===================================================================
-    // TRADUCTOR BACKEND → FRONTEND - AÑADIDO AL HTML
+    // TRADUCTOR BACKEND → FRONTEND SINCRONIZADO - INDENTACIÓN CORREGIDA
     // ===================================================================
     window.BACKEND_TO_SPANISH_TRANSLATOR = {
-      // SUPERIORES
+      // ===== SUPERIORES =====
+      // Camisas
       'shirt': { category: 'shirt', name: 'Camisa', icon: '👔', type: 'tops' },
       'dress_shirt': { category: 'shirt', name: 'Camisa', icon: '👔', type: 'tops' },
+      'button_shirt': { category: 'shirt', name: 'Camisa', icon: '👔', type: 'tops' },
+      
+      // Poleras
       't-shirt': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
       'tshirt': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
       'tee': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
       'tank_top': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      'graphic_tee': { category: 'tshirt', name: 'Polera', icon: '👕', type: 'tops' },
+      
+      // Blusas
       'blouse': { category: 'blouse', name: 'Blusa', icon: '👚', type: 'tops' },
+      'silk_blouse': { category: 'blouse', name: 'Blusa', icon: '👚', type: 'tops' },
+      
+      // Suéteres
       'sweater': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
       'cardigan': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
+      'pullover': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
+      'knitted': { category: 'sweater', name: 'Suéter', icon: '🧥', type: 'tops' },
+      
+      // Hoodies
       'hoodie': { category: 'hoodie', name: 'Hoodie', icon: '👘', type: 'tops' },
       'sweatshirt': { category: 'hoodie', name: 'Hoodie', icon: '👘', type: 'tops' },
+      'zip_hoodie': { category: 'hoodie', name: 'Hoodie', icon: '👘', type: 'tops' },
+      
+      // Chaquetas
       'jacket': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
       'blazer': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
-
-      // INFERIORES
+      'leather_jacket': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
+      'denim_jacket': { category: 'jacket', name: 'Chaqueta', icon: '🧥', type: 'tops' },
+      
+      // Abrigos
+      'coat': { category: 'coat', name: 'Abrigo', icon: '🧥', type: 'tops' },
+      'winter_coat': { category: 'coat', name: 'Abrigo', icon: '🧥', type: 'tops' },
+      'trench_coat': { category: 'coat', name: 'Abrigo', icon: '🧥', type: 'tops' },
+      'overcoat': { category: 'coat', name: 'Abrigo', icon: '🧥', type: 'tops' },
+      
+      // Chalecos
+      'vest': { category: 'vest', name: 'Chaleco', icon: '🦺', type: 'tops' },
+      'waistcoat': { category: 'vest', name: 'Chaleco', icon: '🦺', type: 'tops' },
+      
+      // Vestidos (pueden ser tops o bottoms)
+      'dress': { category: 'dress', name: 'Vestido', icon: '👗', type: 'bottoms' },
+      'summer_dress': { category: 'dress', name: 'Vestido', icon: '👗', type: 'bottoms' },
+      'evening_dress': { category: 'dress', name: 'Vestido', icon: '👗', type: 'bottoms' },
+      
+      // ===== INFERIORES =====
+      // Jeans
       'jeans': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
       'denim': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
+      'blue_jeans': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
+      'ripped_jeans': { category: 'jeans', name: 'Jeans', icon: '👖', type: 'bottoms' },
+      
+      // Pantalones
       'pants': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
       'trousers': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      'formal_pants': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      'chinos': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      'slacks': { category: 'pants', name: 'Pantalones', icon: '👖', type: 'bottoms' },
+      
+      // Shorts
       'shorts': { category: 'shorts', name: 'Shorts', icon: '🩳', type: 'bottoms' },
+      'athletic_shorts': { category: 'shorts', name: 'Shorts', icon: '🩳', type: 'bottoms' },
+      'bermuda': { category: 'shorts', name: 'Shorts', icon: '🩳', type: 'bottoms' },
+      
+      // Faldas
       'skirt': { category: 'skirt', name: 'Falda', icon: '👗', type: 'bottoms' },
-      'dress': { category: 'dress', name: 'Vestido', icon: '👗', type: 'bottoms' },
-
-      // CALZADO
+      'midi_skirt': { category: 'skirt', name: 'Falda', icon: '👗', type: 'bottoms' },
+      'mini_skirt': { category: 'skirt', name: 'Falda', icon: '👗', type: 'bottoms' },
+      'pencil_skirt': { category: 'skirt', name: 'Falda', icon: '👗', type: 'bottoms' },
+      
+      // Calzas
+      'leggings': { category: 'leggings', name: 'Calzas', icon: '🩱', type: 'bottoms' },
+      'sweatpants': { category: 'leggings', name: 'Calzas', icon: '🩱', type: 'bottoms' },
+      'athletic_pants': { category: 'leggings', name: 'Calzas', icon: '🩱', type: 'bottoms' },
+      'yoga_pants': { category: 'leggings', name: 'Calzas', icon: '🩱', type: 'bottoms' },
+      
+      // ===== CALZADO =====
+      // Zapatillas
       'sneakers': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
       'running_shoes': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
       'athletic_shoes': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
+      'trainers': { category: 'sneakers', name: 'Zapatillas', icon: '👟', type: 'shoes' },
+      
+      // Zapatos Formales
       'dress_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
       'formal_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
       'leather_shoes': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
+      'oxfords': { category: 'dress_shoes', name: 'Zapatos Formales', icon: '👞', type: 'shoes' },
+      
+      // Botas
       'boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
       'ankle_boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
+      'hiking_boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
+      'combat_boots': { category: 'boots', name: 'Botas', icon: '🥾', type: 'shoes' },
       
-      // FALLBACKS
+      // Tacones
+      'heels': { category: 'heels', name: 'Tacones', icon: '👠', type: 'shoes' },
+      'stiletto_heels': { category: 'heels', name: 'Tacones', icon: '👠', type: 'shoes' },
+      'high_heels': { category: 'heels', name: 'Tacones', icon: '👠', type: 'shoes' },
+      'pumps': { category: 'heels', name: 'Tacones', icon: '👠', type: 'shoes' },
+      
+      // Sandalias
+      'sandals': { category: 'sandals', name: 'Sandalias', icon: '👡', type: 'shoes' },
+      'leather_sandals': { category: 'sandals', name: 'Sandalias', icon: '👡', type: 'shoes' },
+      'flip_flops': { category: 'sandals', name: 'Sandalias', icon: '👡', type: 'shoes' },
+      
+      // Ballerinas
+      'flats': { category: 'flats', name: 'Ballerinas', icon: '🥿', type: 'shoes' },
+      'ballet_flats': { category: 'flats', name: 'Ballerinas', icon: '🥿', type: 'shoes' },
+      'loafers': { category: 'flats', name: 'Ballerinas', icon: '🥿', type: 'shoes' },
+      
+      // ===== FALLBACKS =====
       'top': { category: 'tshirt', name: 'Superior', icon: '👕', type: 'tops' },
       'bottom': { category: 'pants', name: 'Inferior', icon: '👖', type: 'bottoms' },
       'shoe': { category: 'sneakers', name: 'Calzado', icon: '👟', type: 'shoes' }
     };
 
-    // ===================================================================
-    // FUNCIÓN CRÍTICA: Traducir detected_item del backend
-    // ===================================================================
+    // FUNCIÓN DE TRADUCCIÓN MEJORADA
     window.translateBackendItem = function(detected_item) {
-      const translation = window.BACKEND_TO_SPANISH_TRANSLATOR[detected_item?.toLowerCase()];
+      if (!detected_item) {
+        return { category: 'unknown', name: 'Sin clasificar', icon: '❓', type: 'tops' };
+      }
+      
+      const translation = window.BACKEND_TO_SPANISH_TRANSLATOR[detected_item.toLowerCase()];
       
       if (translation) {
         console.log(`✅ Traducido: "${detected_item}" → "${translation.name}"`);
@@ -1933,16 +2014,12 @@
       };
     };
 
-    console.log('✅ Traductor backend→frontend cargado');
+    console.log("✅ Sistema de categorías UNIFICADO cargado");
+    console.log("🔄 Traducciones disponibles:", Object.keys(window.BACKEND_TO_SPANISH_TRANSLATOR).length);
   </script>
   
-  <!-- SCRIPT PRINCIPAL: app.js SE CARGA DESPUÉS de config.js -->
-  <script src="app.js"></script>
-  
+  <!-- CONFIGURACIÓN DE NAVEGACIÓN -->
   <script>
-    // ===================================================================
-    // CONFIGURACIÓN DE NAVEGACIÓN SUAVE
-    // ===================================================================
     document.addEventListener('DOMContentLoaded', function() {
       console.log('🔧 Configurando navegación y funcionalidad...');
       
@@ -1988,7 +2065,11 @@
       console.log('✅ Navegación configurada');
     });
 
-    console.log('✅ HTML NoShopiA Producción - Sincronizado 100% con app.js y config.js');
+    console.log('✅ HTML NoShopiA - Versión Corregida y Sincronizada');
   </script>
+  
+  <!-- CARGAR CONFIG.JS Y APP.JS EN ORDEN CORRECTO -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
