@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.3 - CÓDIGO COMPLETO Y CORREGIDO
-console.log('🚀 NoShopiA v2.3 - VERSIÓN COMPLETA Y CORREGIDA');
+// app.js - NoShopiA v2.3 - VERSIÓN SOLO INGLÉS (SIN TRADUCCIONES)
+console.log('🚀 NoShopiA v2.3 - VERSIÓN SOLO INGLÉS');
 
 // ===================================================================
 // VARIABLES GLOBALES
@@ -19,136 +19,89 @@ let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
 let userProfile = { skin_color: null, age_range: null, gender: null };
 
 // ===================================================================
-// SISTEMA DE DETECCIÓN IA
-// ===================================================================
-const INTELLIGENT_CATEGORIES = {
-  tops: {
-    "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "polera"], color: "#10b981" },
-    "shirt": { name: "Camisas", icon: "👔", keywords: ["shirt", "dress shirt", "button", "collar", "camisa"], color: "#3b82f6" },
-    "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy", "blusa"], color: "#ec4899" },
-    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan", "sueter"], color: "#f59e0b" },
-    "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded", "capucha"], color: "#ef4444" },
-    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" },
-    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench", "abrigo"], color: "#1f2937" },
-    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" },
-    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat", "chaleco"], color: "#84cc16" }
-  },
-  bottoms: {
-    "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af" },
-    "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks", "pantalon"], color: "#3b82f6" },
-    "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt", "falda"], color: "#ec4899" },
-    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" },
-    "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants", "calza"], color: "#6b7280" },
-    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" }
-  },
-  shoes: {
-    "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers", "zapatilla"], color: "#3b82f6" },
-    "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords", "zapato"], color: "#1f2937" },
-    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" },
-    "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels", "tacos", "tacon"], color: "#ec4899" },
-    "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops", "sandalia"], color: "#f59e0b" },
-    "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers", "ballerina"], color: "#6b7280" }
-  }
-};
-
-// ===================================================================
-// DETECCIÓN IA REAL - Usando endpoint correcto /api/recommend
+// DETECCIÓN IA SIMPLIFICADA - SOLO INGLÉS
 // ===================================================================
 async function detectItemWithAI(file) {
-  console.log('🤖 Detectando tipo de prenda:', file.name);
+  console.log('🤖 Detectando categoría:', file.name);
   
   const fileName = file.name.toLowerCase();
   
-  // Patrones expandidos con términos en inglés y español
-  const detectionPatterns = {
-    // TOPS - términos en español e inglés
-    'camisa': { type: 'top', detected_item: 'shirt', confidence: 0.8 },
-    'shirt': { type: 'top', detected_item: 'shirt', confidence: 0.9 },
-    'blusa': { type: 'top', detected_item: 'blouse', confidence: 0.8 },
-    'blouse': { type: 'top', detected_item: 'blouse', confidence: 0.9 },
-    'polera': { type: 'top', detected_item: 't-shirt', confidence: 0.8 },
-    'tshirt': { type: 'top', detected_item: 't-shirt', confidence: 0.9 },
-    't-shirt': { type: 'top', detected_item: 't-shirt', confidence: 0.9 },
-    'polo': { type: 'top', detected_item: 'polo', confidence: 0.8 },
-    'sueter': { type: 'top', detected_item: 'sweater', confidence: 0.8 },
-    'sweater': { type: 'top', detected_item: 'sweater', confidence: 0.9 },
-    'cardigan': { type: 'top', detected_item: 'cardigan', confidence: 0.9 },
-    'hoodie': { type: 'top', detected_item: 'hoodie', confidence: 0.9 },
-    'chaqueta': { type: 'top', detected_item: 'jacket', confidence: 0.8 },
-    'jacket': { type: 'top', detected_item: 'jacket', confidence: 0.9 },
-    'blazer': { type: 'top', detected_item: 'blazer', confidence: 0.9 },
-    'tank': { type: 'top', detected_item: 'tank_top', confidence: 0.8 },
-    'vest': { type: 'top', detected_item: 'vest', confidence: 0.8 },
+  // CATEGORÍAS SOLO EN INGLÉS
+  const categoryPatterns = {
+    // TOPS - Solo inglés
+    tops: [
+      'shirt', 'dress shirt', 'button up', 'oxford', 'flannel',
+      'blouse', 'silk blouse', 'chiffon', 'peasant',
+      't-shirt', 'tshirt', 'tee', 'graphic', 'vintage tee', 'crop top',
+      'tank top', 'camisole', 'tube top', 'halter',
+      'sweater', 'pullover', 'knitted', 'wool', 'cashmere',
+      'cardigan', 'zip cardigan', 'oversized',
+      'hoodie', 'sweatshirt', 'fleece',
+      'jacket', 'leather jacket', 'denim jacket', 'bomber', 'varsity',
+      'blazer', 'sport coat', 'suit jacket', 'tuxedo',
+      'coat', 'winter coat', 'trench', 'pea coat', 'rain coat', 'parka',
+      'windbreaker', 'anorak', 'puffer', 'down jacket',
+      'dress', 'summer dress', 'evening dress', 'cocktail', 'maxi dress',
+      'mini dress', 'wrap dress', 'shift', 'bodycon',
+      'vest', 'waistcoat', 'poncho', 'shawl', 'cape', 'kimono',
+      'polo', 'henley', 'baseball', 'muscle', 'top', 'graphic-tshirt', 'graphic t-shirt'
+    ],
     
-    // BOTTOMS - términos en español e inglés
-    'pantalon': { type: 'bottom', detected_item: 'pants', confidence: 0.8 },
-    'pants': { type: 'bottom', detected_item: 'pants', confidence: 0.9 },
-    'trousers': { type: 'bottom', detected_item: 'pants', confidence: 0.9 },
-    'jean': { type: 'bottom', detected_item: 'jeans', confidence: 0.8 },
-    'jeans': { type: 'bottom', detected_item: 'jeans', confidence: 0.9 },
-    'denim': { type: 'bottom', detected_item: 'jeans', confidence: 0.8 },
-    'short': { type: 'bottom', detected_item: 'shorts', confidence: 0.8 },
-    'shorts': { type: 'bottom', detected_item: 'shorts', confidence: 0.9 },
-    'bermuda': { type: 'bottom', detected_item: 'shorts', confidence: 0.8 },
-    'falda': { type: 'bottom', detected_item: 'skirt', confidence: 0.8 },
-    'skirt': { type: 'bottom', detected_item: 'skirt', confidence: 0.9 },
-    'vestido': { type: 'bottom', detected_item: 'dress', confidence: 0.8 },
-    'dress': { type: 'bottom', detected_item: 'dress', confidence: 0.9 },
-    'calza': { type: 'bottom', detected_item: 'leggings', confidence: 0.8 },
-    'leggings': { type: 'bottom', detected_item: 'leggings', confidence: 0.9 },
-    'leggins': { type: 'bottom', detected_item: 'leggings', confidence: 0.8 },
-    'yoga': { type: 'bottom', detected_item: 'leggings', confidence: 0.7 },
+    // BOTTOMS - Solo inglés
+    bottoms: [
+      'pants', 'trousers', 'slacks', 'dress pants', 'formal pants', 'suit pants',
+      'chinos', 'khakis', 'cargo pants', 'wide leg', 'straight leg',
+      'jeans', 'jean', 'denim', 'blue denim', 'black jeans', 'white jeans',
+      'ripped', 'distressed', 'skinny', 'boyfriend', 'mom jeans',
+      'bootcut', 'flare', 'high waisted',
+      'skirt', 'mini skirt', 'midi skirt', 'maxi skirt', 'pencil skirt',
+      'pleated', 'a-line', 'wrap skirt', 'denim skirt', 'leather skirt',
+      'shorts', 'denim shorts', 'athletic shorts', 'board shorts', 'cargo shorts',
+      'bermuda', 'bike shorts', 'short',
+      'leggings', 'yoga pants', 'athletic leggings', 'sweatpants',
+      'joggers', 'track pants', 'gym shorts', 'compression',
+      'capris', 'culottes', 'palazzo', 'harem', 'overalls', 'jumper', 'bottom'
+    ],
     
-    // SHOES - términos en español e inglés
-    'zapato': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.8 },
-    'shoe': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.8 },
-    'dress_shoe': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.9 },
-    'zapatilla': { type: 'shoe', detected_item: 'sneakers', confidence: 0.8 },
-    'sneaker': { type: 'shoe', detected_item: 'sneakers', confidence: 0.9 },
-    'tennis': { type: 'shoe', detected_item: 'sneakers', confidence: 0.8 },
-    'running': { type: 'shoe', detected_item: 'running_shoes', confidence: 0.9 },
-    'bota': { type: 'shoe', detected_item: 'boots', confidence: 0.8 },
-    'boot': { type: 'shoe', detected_item: 'boots', confidence: 0.9 },
-    'ankle': { type: 'shoe', detected_item: 'boots', confidence: 0.7 },
-    'sandalia': { type: 'shoe', detected_item: 'sandals', confidence: 0.8 },
-    'sandal': { type: 'shoe', detected_item: 'sandals', confidence: 0.9 },
-    'flip': { type: 'shoe', detected_item: 'sandals', confidence: 0.7 },
-    'heel': { type: 'shoe', detected_item: 'heels', confidence: 0.9 },
-    'pump': { type: 'shoe', detected_item: 'heels', confidence: 0.8 },
-    'loafer': { type: 'shoe', detected_item: 'loafers', confidence: 0.9 },
-    'oxford': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.9 }
+    // SHOES - Solo inglés
+    shoes: [
+      'shoes', 'dress shoes', 'leather shoes', 'oxford shoes', 'derby',
+      'loafers', 'loafer', 'penny loafers', 'boat shoes', 'driving shoes', 'monk strap',
+      'sneakers', 'sneaker', 'running shoes', 'athletic shoes', 'basketball',
+      'tennis shoes', 'cross training', 'walking shoes', 'gym shoes',
+      'canvas', 'skate shoes',
+      'boots', 'boot', 'ankle boots', 'knee high', 'combat boots', 'chelsea',
+      'cowboy', 'work boots', 'hiking boots', 'rain boots', 'snow boots',
+      'riding', 'desert', 'doc martens',
+      'heels', 'heel', 'high heels', 'stiletto', 'block heels', 'wedge',
+      'kitten heels', 'platform', 'pumps', 'pump',
+      'sandals', 'sandal', 'strappy', 'gladiator', 'flip flops', 'flip',
+      'slides', 'espadrilles', 'wedge sandals',
+      'flats', 'ballet flats', 'pointed', 'slip on',
+      'moccasins', 'clogs', 'crocs', 'water shoes', 'climbing', 'shoe'
+    ]
   };
   
-  // Buscar coincidencia EXACTA primero
-  for (const [pattern, result] of Object.entries(detectionPatterns)) {
-    if (fileName.includes(pattern)) {
-      console.log(`🎯 Detectado: ${fileName} → ${result.detected_item} (${result.confidence})`);
-      
-      const translation = window.translateBackendItem(result.detected_item);
-      
-      return {
-        type: result.type,
-        category: translation.category,
-        item: translation.name,
-        confidence: result.confidence,
-        originalBackendItem: result.detected_item
-      };
+  // Buscar en qué categoría encaja
+  for (const [category, patterns] of Object.entries(categoryPatterns)) {
+    for (const pattern of patterns) {
+      if (fileName.includes(pattern)) {
+        console.log(`🎯 Detectado: ${fileName} → ${category} (patrón: ${pattern})`);
+        return {
+          category: category,
+          confidence: 0.8,
+          detectedPattern: pattern
+        };
+      }
     }
   }
   
-  // Si NO encuentra coincidencia, ser CONSERVADOR
-  console.log(`❓ Término "${fileName}" no reconocido - marcando como UNKNOWN para revisión manual`);
-  
-  // NO adivinar - mejor marcar como unknown para que el usuario categorice manualmente
-  const fallbackTranslation = window.translateBackendItem('unknown');
-  
+  // Si no detecta nada
+  console.log(`❓ No detectado: ${fileName} → unknown`);
   return {
-    type: 'unknown',
-    category: 'unknown', // Mantener como unknown para categorización manual
-    item: 'Prenda Desconocida - Categorizar Manualmente',
-    confidence: 0.0, // Confianza 0 indica que no se pudo detectar
-    originalBackendItem: 'unknown',
-    requiresManualReview: true // Flag para indicar que necesita revisión
+    category: 'unknown',
+    confidence: 0.0,
+    detectedPattern: null
   };
 }
 
@@ -164,8 +117,14 @@ async function handleIntelligentUpload(files) {
   for (const file of files) {
     try {
       const detection = await detectItemWithAI(file);
-      const imageUrl = await fileToDataUrl(file);
       
+      if (detection.category === 'unknown') {
+        console.log(`❓ No se pudo categorizar: ${file.name}`);
+        showNotification(`❓ No se pudo categorizar: ${file.name}`, 'info');
+        continue;
+      }
+      
+      const imageUrl = await fileToDataUrl(file);
       categorizeIntelligentItem(detection, imageUrl, file);
       successCount++;
       
@@ -183,26 +142,14 @@ async function handleIntelligentUpload(files) {
 }
 
 function categorizeIntelligentItem(detection, imageUrl, file) {
-  const { type, category, item, confidence } = detection;
+  const { category, confidence, detectedPattern } = detection;
   
-  if (!intelligentClosetItems[type][category]) {
-    intelligentClosetItems[type][category] = [];
-  }
+  // Agregar directamente a la categoría detectada
+  uploadedFiles[category].push(file);
+  uploadedImages[category].push(imageUrl);
+  closetItems[category].push(imageUrl);
   
-  const intelligentItem = {
-    id: Date.now() + Math.random(),
-    imageUrl, file, detectedItem: item, category,
-    aiDetected: true, confidence, addedAt: new Date().toISOString()
-  };
-  
-  intelligentClosetItems[type][category].push(intelligentItem);
-  
-  // Agregar a arrays principales
-  uploadedFiles[type].push(file);
-  uploadedImages[type].push(imageUrl);
-  closetItems[type].push(imageUrl);
-  
-  console.log(`🧠 Categorizado: ${item} → ${type}/${category}`);
+  console.log(`🧠 Categorizado: ${detectedPattern || 'Unknown'} → ${category}`);
 }
 
 // ===================================================================
@@ -294,7 +241,7 @@ function handleMainLogin() {
     return;
   }
   
-  // SOLO usar Google Sign-In real, NO simulateLogin()
+  // SOLO usar Google Sign-In real
   if (typeof google !== 'undefined' && google.accounts) {
     try {
       google.accounts.id.prompt((notification) => {
@@ -326,7 +273,7 @@ function handleGoogleCredentialResponse(response) {
   }
 }
 
-// PROCESAMIENTO DE LOGIN CORREGIDO
+// PROCESAMIENTO DE LOGIN
 async function processLogin(userData) {
   console.log('🔄 PROCESANDO LOGIN REAL:', userData.name);
   
@@ -365,14 +312,14 @@ async function processLogin(userData) {
   showNotification(`¡Bienvenido ${userData.name}!`, 'success');
 }
 
-// UI ACTUALIZADA CORREGIDA
+// UI ACTUALIZADA
 function updateUserUI() {
   console.log('🔄 ACTUALIZANDO UI...');
   
-  // Ocultar botón login principal (ID REAL del HTML)
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  if (headerLoginBtn) {
-    headerLoginBtn.style.display = 'none';
+  // Ocultar botón login principal
+  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (mainLoginBtn) {
+    mainLoginBtn.style.display = 'none';
   }
   
   // Mostrar info usuario
@@ -396,11 +343,11 @@ function updateUserUI() {
   console.log('✅ UI actualizada');
 }
 
-// LOGOUT CORREGIDO - SIN DOBLE CONFIRMACIÓN
+// LOGOUT
 function logout() {
   console.log('👋 LOGOUT LIMPIO...');
   
-  // Limpiar estado sin confirmación
+  // Limpiar estado
   isLoggedIn = false;
   currentUser = null;
   selectedOccasion = null;
@@ -413,12 +360,12 @@ function logout() {
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
   
-  // Restaurar botón login principal (ID REAL del HTML)
-  const headerLoginBtn = document.getElementById('headerLoginBtn');
-  if (headerLoginBtn) {
-    headerLoginBtn.style.display = 'inline-flex';
-    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-    headerLoginBtn.onclick = handleMainLogin;
+  // Restaurar botón login principal
+  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (mainLoginBtn) {
+    mainLoginBtn.style.display = 'inline-flex';
+    mainLoginBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    mainLoginBtn.onclick = handleMainLogin;
   }
   
   // Ocultar info usuario
@@ -450,7 +397,6 @@ async function checkExistingSession() {
         isLoggedIn = true;
         currentUser = userData;
         
-        // Verificar BD
         try {
           const backendData = await syncWithBackend(userData.email);
           if (backendData && backendData.has_profile) {
@@ -476,7 +422,7 @@ async function checkExistingSession() {
 }
 
 // ===================================================================
-// FLUJO DE PERFIL CORREGIDO
+// FLUJO DE PERFIL
 // ===================================================================
 async function checkProfileAndRedirect() {
   console.log('🔄 VERIFICACIÓN PERFIL...');
@@ -493,7 +439,7 @@ async function checkProfileAndRedirect() {
     const profileForm = document.getElementById('profileForm');
     if (profileForm) profileForm.style.display = 'none';
     
-    showClosetQuestion(); // IR DIRECTO a opciones
+    showClosetQuestion();
     showNotification('Perfil cargado desde memoria', 'success');
     return;
   }
@@ -544,7 +490,7 @@ function showClosetQuestion() {
   }
 }
 
-// CONFIGURAR FORMULARIO DE PERFIL CORREGIDO
+// CONFIGURAR FORMULARIO DE PERFIL
 function setupProfileForm() {
   document.querySelectorAll('.profile-option').forEach(option => {
     option.addEventListener('click', function() {
@@ -652,7 +598,7 @@ function setupOccasionButtons() {
 }
 
 // ===================================================================
-// SISTEMA DE CLOSET CORREGIDO
+// SISTEMA DE CLOSET
 // ===================================================================
 function enableCloset() {
   console.log('✨ CLOSET INTELIGENTE ACTIVADO...');
@@ -674,7 +620,7 @@ function enableCloset() {
       closetContainer.scrollIntoView({ behavior: 'smooth' });
       showClosetTab('superiores');
       setupClosetTabs();
-      setupClosetFolders(); // CORREGIDO
+      setupClosetFolders();
     }, 500);
   }
   
@@ -706,17 +652,17 @@ function useDirectMode() {
   showNotification('Recomendaciones Rápidas activadas', 'success');
 }
 
-// CONFIGURAR FOLDERS CORREGIDO - SIN LISTENERS DUPLICADOS
+// CONFIGURAR FOLDERS
 function setupClosetFolders() {
-  console.log('🔧 CONFIGURANDO FOLDERS - LIMPIEZA PREVIA...');
+  console.log('🔧 CONFIGURANDO FOLDERS...');
   
-  // LIMPIAR listeners anteriores PRIMERO
+  // LIMPIAR listeners anteriores
   document.querySelectorAll('.folder-item').forEach(folder => {
     const newFolder = folder.cloneNode(true);
     folder.parentNode.replaceChild(newFolder, folder);
   });
   
-  // LUEGO agregar nuevos listeners
+  // Agregar nuevos listeners
   document.querySelectorAll('.folder-item').forEach(folder => {
     folder.addEventListener('click', function(e) {
       e.preventDefault();
@@ -820,7 +766,7 @@ function setupClosetFolders() {
     });
   });
   
-  console.log('✅ Folders configurados sin duplicados');
+  console.log('✅ Folders configurados');
 }
 
 function setupClosetTabs() {
@@ -859,7 +805,6 @@ function showClosetTab(tabId) {
   
   if (type && tabId !== 'recomendaciones') {
     renderClosetTab(tabId, type);
-    // Reconfigurar folders después de cambiar tab
     setTimeout(() => {
       setupClosetFolders();
     }, 200);
@@ -989,7 +934,7 @@ function updateClosetUI() {
   const total = getTotalClosetItems();
   const closetHeader = document.querySelector('.closet-header h2');
   if (closetHeader) {
-    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas)</span>`;
+    closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/15 prendas)</span>`;
   }
   
   const stats = ['closetVisits', 'closetRecommendations', 'closetOutfits'];
@@ -1440,13 +1385,13 @@ function initializeGoogleLogin() {
     cancel_on_tap_outside: true
   });
   
-  // Activar botón principal (ID REAL del HTML)
-  const headerBtn = document.getElementById('headerLoginBtn');
-  if (headerBtn) {
-    headerBtn.disabled = false;
-    headerBtn.style.opacity = '1';
-    headerBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
-    headerBtn.onclick = handleMainLogin;
+  // Activar botón principal
+  const mainBtn = document.getElementById('mainLoginBtn');
+  if (mainBtn) {
+    mainBtn.disabled = false;
+    mainBtn.style.opacity = '1';
+    mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google - ¡Es Gratis!';
+    mainBtn.onclick = handleMainLogin;
   }
 }
 
@@ -1509,13 +1454,13 @@ function toggleMobileMenu() {
 }
 
 function initializeApp() {
-  console.log('🔧 INICIALIZANDO NoShopiA v2.3 CORREGIDO...');
+  console.log('🔧 INICIALIZANDO NoShopiA v2.3 - SOLO INGLÉS...');
   
   setTimeout(initializeGoogleLogin, 500);
   setupEventListeners();
   setTimeout(checkExistingSession, 1000);
   
-  console.log('✅ NoShopiA v2.3 inicializada CORREGIDA');
+  console.log('✅ NoShopiA v2.3 inicializada - SOLO INGLÉS');
 }
 
 // ===================================================================
@@ -1536,7 +1481,7 @@ window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 window.scrollToSection = scrollToSection;
 window.toggleMobileMenu = toggleMobileMenu;
 
-// Funciones de IA que podrían necesitar acceso global
+// Funciones de IA
 window.handleIntelligentUpload = handleIntelligentUpload;
 
 // ===================================================================
@@ -1556,4 +1501,4 @@ window.addEventListener('load', () => {
 
 window.APP_INITIALIZED = true;
 
-console.log('✅ app.js v2.3 - CÓDIGO COMPLETAMENTE CORREGIDO');
+console.log('✅ app.js v2.3 - VERSIÓN SOLO INGLÉS COMPLETA');
