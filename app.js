@@ -1242,7 +1242,6 @@ window.submitUserProfile = submitUserProfile;
 window.getRecommendation = getRecommendation;
 window.removeImage = removeImage;
 window.saveRecommendation = saveRecommendation;
-window.removeIntelligentItem = removeIntelligentItem; // NUEVO: Para eliminar items detectados por IA
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
