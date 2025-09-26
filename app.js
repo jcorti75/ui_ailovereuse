@@ -55,63 +55,101 @@ const INTELLIGENT_CATEGORIES = {
 // DETECCIÓN IA REAL - Usando endpoint correcto /api/recommend
 // ===================================================================
 async function detectItemWithAI(file) {
-  console.log('🤖 IA REAL analizando imagen:', file.name);
+  console.log('🤖 Detectando tipo de prenda:', file.name);
   
-  try {
-    showNotification('🤖 IA analizando imagen...', 'info');
+  const fileName = file.name.toLowerCase();
+  
+  // Patrones expandidos con términos en inglés y español
+  const detectionPatterns = {
+    // TOPS - términos en español e inglés
+    'camisa': { type: 'top', detected_item: 'shirt', confidence: 0.8 },
+    'shirt': { type: 'top', detected_item: 'shirt', confidence: 0.9 },
+    'blusa': { type: 'top', detected_item: 'blouse', confidence: 0.8 },
+    'blouse': { type: 'top', detected_item: 'blouse', confidence: 0.9 },
+    'polera': { type: 'top', detected_item: 't-shirt', confidence: 0.8 },
+    'tshirt': { type: 'top', detected_item: 't-shirt', confidence: 0.9 },
+    't-shirt': { type: 'top', detected_item: 't-shirt', confidence: 0.9 },
+    'polo': { type: 'top', detected_item: 'polo', confidence: 0.8 },
+    'sueter': { type: 'top', detected_item: 'sweater', confidence: 0.8 },
+    'sweater': { type: 'top', detected_item: 'sweater', confidence: 0.9 },
+    'cardigan': { type: 'top', detected_item: 'cardigan', confidence: 0.9 },
+    'hoodie': { type: 'top', detected_item: 'hoodie', confidence: 0.9 },
+    'chaqueta': { type: 'top', detected_item: 'jacket', confidence: 0.8 },
+    'jacket': { type: 'top', detected_item: 'jacket', confidence: 0.9 },
+    'blazer': { type: 'top', detected_item: 'blazer', confidence: 0.9 },
+    'tank': { type: 'top', detected_item: 'tank_top', confidence: 0.8 },
+    'vest': { type: 'top', detected_item: 'vest', confidence: 0.8 },
     
-    // Crear FormData para enviar al endpoint real
-    const formData = new FormData();
-    formData.append('user_email', currentUser?.email || 'temp@demo.com');
-    formData.append('occasion', 'casual'); // Ocasión temporal para análisis
-    formData.append('tops', file); // Enviar archivo para análisis
+    // BOTTOMS - términos en español e inglés
+    'pantalon': { type: 'bottom', detected_item: 'pants', confidence: 0.8 },
+    'pants': { type: 'bottom', detected_item: 'pants', confidence: 0.9 },
+    'trousers': { type: 'bottom', detected_item: 'pants', confidence: 0.9 },
+    'jean': { type: 'bottom', detected_item: 'jeans', confidence: 0.8 },
+    'jeans': { type: 'bottom', detected_item: 'jeans', confidence: 0.9 },
+    'denim': { type: 'bottom', detected_item: 'jeans', confidence: 0.8 },
+    'short': { type: 'bottom', detected_item: 'shorts', confidence: 0.8 },
+    'shorts': { type: 'bottom', detected_item: 'shorts', confidence: 0.9 },
+    'bermuda': { type: 'bottom', detected_item: 'shorts', confidence: 0.8 },
+    'falda': { type: 'bottom', detected_item: 'skirt', confidence: 0.8 },
+    'skirt': { type: 'bottom', detected_item: 'skirt', confidence: 0.9 },
+    'vestido': { type: 'bottom', detected_item: 'dress', confidence: 0.8 },
+    'dress': { type: 'bottom', detected_item: 'dress', confidence: 0.9 },
+    'calza': { type: 'bottom', detected_item: 'leggings', confidence: 0.8 },
+    'leggings': { type: 'bottom', detected_item: 'leggings', confidence: 0.9 },
+    'leggins': { type: 'bottom', detected_item: 'leggings', confidence: 0.8 },
+    'yoga': { type: 'bottom', detected_item: 'leggings', confidence: 0.7 },
     
-    // Llamada al endpoint REAL que existe
-    const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    // SHOES - términos en español e inglés
+    'zapato': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.8 },
+    'shoe': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.8 },
+    'dress_shoe': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.9 },
+    'zapatilla': { type: 'shoe', detected_item: 'sneakers', confidence: 0.8 },
+    'sneaker': { type: 'shoe', detected_item: 'sneakers', confidence: 0.9 },
+    'tennis': { type: 'shoe', detected_item: 'sneakers', confidence: 0.8 },
+    'running': { type: 'shoe', detected_item: 'running_shoes', confidence: 0.9 },
+    'bota': { type: 'shoe', detected_item: 'boots', confidence: 0.8 },
+    'boot': { type: 'shoe', detected_item: 'boots', confidence: 0.9 },
+    'ankle': { type: 'shoe', detected_item: 'boots', confidence: 0.7 },
+    'sandalia': { type: 'shoe', detected_item: 'sandals', confidence: 0.8 },
+    'sandal': { type: 'shoe', detected_item: 'sandals', confidence: 0.9 },
+    'flip': { type: 'shoe', detected_item: 'sandals', confidence: 0.7 },
+    'heel': { type: 'shoe', detected_item: 'heels', confidence: 0.9 },
+    'pump': { type: 'shoe', detected_item: 'heels', confidence: 0.8 },
+    'loafer': { type: 'shoe', detected_item: 'loafers', confidence: 0.9 },
+    'oxford': { type: 'shoe', detected_item: 'dress_shoes', confidence: 0.9 }
+  };
+  
+  // Buscar coincidencia EXACTA primero
+  for (const [pattern, result] of Object.entries(detectionPatterns)) {
+    if (fileName.includes(pattern)) {
+      console.log(`🎯 Detectado: ${fileName} → ${result.detected_item} (${result.confidence})`);
+      
+      const translation = window.translateBackendItem(result.detected_item);
+      
+      return {
+        type: result.type,
+        category: translation.category,
+        item: translation.name,
+        confidence: result.confidence,
+        originalBackendItem: result.detected_item
+      };
     }
-    
-    const data = await response.json();
-    console.log('✅ Respuesta backend real:', data);
-    
-    // Extraer detected_item del resultado real
-    const detectedItem = data.results?.[0]?.top?.detected_item;
-    const confidence = data.results?.[0]?.top?.confidence;
-    
-    if (!detectedItem) {
-      throw new Error('Backend no devolvió detected_item');
-    }
-    
-    // USAR la función traductor del HTML (no redefinir)
-    const translation = window.translateBackendItem(detectedItem);
-    
-    console.log(`🎯 IA REAL: "${detectedItem}" → "${translation.name}" (${Math.round(confidence * 100)}%)`);
-    
-    return {
-      type: translation.type,
-      category: translation.category,
-      item: translation.name,
-      confidence: confidence,
-      originalBackendItem: detectedItem
-    };
-    
-  } catch (error) {
-    console.error('❌ Error en detección IA real:', error);
-    
-    return {
-      type: 'tops',
-      category: 'unknown',
-      item: 'Prenda Desconocida',
-      confidence: 0,
-      originalBackendItem: 'unknown',
-      error: error.message
-    };
   }
+  
+  // Si NO encuentra coincidencia, ser CONSERVADOR
+  console.log(`❓ Término "${fileName}" no reconocido - marcando como UNKNOWN para revisión manual`);
+  
+  // NO adivinar - mejor marcar como unknown para que el usuario categorice manualmente
+  const fallbackTranslation = window.translateBackendItem('unknown');
+  
+  return {
+    type: 'unknown',
+    category: 'unknown', // Mantener como unknown para categorización manual
+    item: 'Prenda Desconocida - Categorizar Manualmente',
+    confidence: 0.0, // Confianza 0 indica que no se pudo detectar
+    originalBackendItem: 'unknown',
+    requiresManualReview: true // Flag para indicar que necesita revisión
+  };
 }
 
 async function handleIntelligentUpload(files) {
