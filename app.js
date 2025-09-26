@@ -1,5 +1,5 @@
-// app.js - NoShopiA Aplicación Completa Simplificada
-console.log('🚀 NoShopiA v2.0 - Versión Simplificada');
+// app.js - NoShopiA Aplicación Completa - VERSIÓN CORREGIDA CON BACKEND
+console.log('🚀 NoShopiA v2.1 - Con Sincronización Backend');
 
 // ===================================================================
 // VARIABLES GLOBALES
@@ -51,7 +51,84 @@ const INTELLIGENT_CATEGORIES = {
 
 let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
 
-// DETECCIÓN AUTOMÁTICA CON IA
+// ===================================================================
+// NUEVAS FUNCIONES API PARA BACKEND
+// ===================================================================
+
+// Verificar si usuario existe y tiene perfil
+async function checkUserExists(email) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/users/check/${encodeURIComponent(email)}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data; // { exists: true/false, has_profile: true/false, user_data: {...} }
+    }
+    return { exists: false, has_profile: false };
+  } catch (error) {
+    console.error('Error verificando usuario:', error);
+    return { exists: false, has_profile: false };
+  }
+}
+
+// Obtener perfil de usuario desde backend
+async function getUserProfile(email) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/users/profile/${encodeURIComponent(email)}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error obteniendo perfil:', error);
+    return null;
+  }
+}
+
+// Crear/actualizar usuario y perfil en backend
+async function createUserProfile(userData, profileData) {
+  try {
+    const response = await fetch(`${CONFIG.API_BASE}/api/users/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: userData,
+        profile: profileData
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  } catch (error) {
+    console.error('Error creando perfil:', error);
+    throw error;
+  }
+}
+
+// Sincronizar datos con backend
+async function syncWithBackend(email) {
+  try {
+    console.log('🔄 Sincronizando con backend para:', email);
+    const backendData = await checkUserExists(email);
+    
+    if (backendData.exists && backendData.has_profile) {
+      console.log('✅ Usuario encontrado en backend con perfil completo');
+      return backendData;
+    }
+    
+    console.log('⚠️ Usuario no encontrado o sin perfil en backend');
+    return null;
+  } catch (error) {
+    console.error('❌ Error sincronizando con backend:', error);
+    return null;
+  }
+}
+
+// DETECCIÓN AUTOMÁTICA CON IA (CORREGIDA - SIN ERROR REGEX)
 async function detectItemWithAI(file) {
   console.log('🤖 IA analizando prenda:', file.name);
   
@@ -67,7 +144,7 @@ async function detectItemWithAI(file) {
   // CALZADO (Mayor prioridad)
   if (fileName.includes('zapatilla') || fileName.includes('sneaker') || fileName.includes('running')) {
     detectedType = 'shoes'; detectedCategory = 'sneakers'; detectedItem = 'Zapatillas'; confidence = 0.95;
-  } else if (fileName.includes('zapato') || fileName.includes('dress') && fileName.includes('shoe')) {
+  } else if (fileName.includes('zapato') || (fileName.includes('dress') && fileName.includes('shoe'))) {
     detectedType = 'shoes'; detectedCategory = 'dress_shoes'; detectedItem = 'Zapatos Formales'; confidence = 0.91;
   } else if (fileName.includes('bota') || fileName.includes('boot')) {
     detectedType = 'shoes'; detectedCategory = 'boots'; detectedItem = 'Botas'; confidence = 0.89;
@@ -93,7 +170,7 @@ async function detectItemWithAI(file) {
   }
   
   // SUPERIORES
-  else if (fileName.includes('camisa') || fileName.includes('shirt') && !fileName.includes('tshirt')) {
+  else if (fileName.includes('camisa') || (fileName.includes('shirt') && !fileName.includes('tshirt'))) {
     detectedCategory = 'shirt'; detectedItem = 'Camisa'; confidence = 0.93;
   } else if (fileName.includes('blusa') || fileName.includes('blouse')) {
     detectedCategory = 'blouse'; detectedItem = 'Blusa'; confidence = 0.91;
@@ -258,7 +335,7 @@ function toggleMobileMenu() {
 }
 
 // ===================================================================
-// SISTEMA DE LOGIN MEJORADO
+// SISTEMA DE LOGIN MEJORADO CON BACKEND
 // ===================================================================
 function handleMainLogin() {
   console.log('🔐 Iniciando sesión directa...');
@@ -396,13 +473,44 @@ function handleGoogleCredentialResponse(response) {
   }
 }
 
-function processLogin(userData) {
+// FUNCIÓN PROCESSLОGIN MODIFICADA - CON VERIFICACIÓN BACKEND
+async function processLogin(userData) {
+  console.log('🔄 Procesando login con verificación backend...');
+  
   isLoggedIn = true;
   currentUser = userData;
   
+  // Guardar en localStorage como respaldo
   localStorage.setItem('noshopia_auth', JSON.stringify(userData));
   localStorage.setItem('noshopia_logged_in', 'true');
   
+  // NUEVO: Verificar en backend si usuario ya tiene perfil
+  try {
+    showNotification('Verificando perfil en servidor...', 'info');
+    const backendData = await syncWithBackend(userData.email);
+    
+    if (backendData && backendData.has_profile) {
+      console.log('✅ Usuario encontrado con perfil completo en backend');
+      
+      // Marcar que tiene perfil
+      userProfile = backendData.profile || { completed: true };
+      
+      updateUserUI();
+      loadUserData();
+      
+      // Saltar formulario de perfil
+      setTimeout(() => {
+        showClosetQuestion();
+      }, 1000);
+      
+      showNotification(`Bienvenido de vuelta, ${userData.name}!`, 'success');
+      return;
+    }
+  } catch (error) {
+    console.error('Error verificando backend, usando modo local:', error);
+  }
+  
+  // Si no tiene perfil o hay error de backend, continuar flujo normal
   updateUserUI();
   loadUserData();
   
@@ -413,7 +521,14 @@ function processLogin(userData) {
   showNotification(`¡Bienvenido ${userData.name}!`, 'success');
 }
 
+// FUNCIÓN UPDATEUSERUI CORREGIDA - SIN DOBLE ESTADO
 function updateUserUI() {
+  // CORREGIDO: Ocultar botón de Google cuando esté logueado
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.style.display = 'none';
+  }
+  
   const mainLoginBtn = document.getElementById('mainLoginBtn');
   if (mainLoginBtn) {
     mainLoginBtn.style.display = 'none';
@@ -438,12 +553,14 @@ function updateUserUI() {
   if (welcomeSection) welcomeSection.style.display = 'block';
 }
 
+// FUNCIÓN UPDATELOGOUTBUTTON CORREGIDA - SOLO "CERRAR SESIÓN"
 function updateLogoutButton() {
   let logoutBtn = document.getElementById('professionalLogoutBtn');
   
   if (!logoutBtn) {
     logoutBtn = document.createElement('button');
     logoutBtn.id = 'professionalLogoutBtn';
+    // CORREGIDO: Solo "Cerrar Sesión"
     logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Cerrar Sesión';
     
     logoutBtn.style.cssText = `
@@ -484,6 +601,7 @@ function updateLogoutButton() {
   logoutBtn.style.display = 'flex';
 }
 
+// FUNCIÓN LOGOUT CORREGIDA - RESTAURAR BOTÓN GOOGLE
 function logout() {
   console.log('👋 Cerrando sesión...');
   
@@ -503,6 +621,13 @@ function logout() {
   
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
+  
+  // CORREGIDO: Restaurar botón de Google
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
+  if (headerLoginBtn) {
+    headerLoginBtn.style.display = 'block';
+    headerLoginBtn.innerHTML = '<i class="fab fa-google"></i> Iniciar con Google';
+  }
   
   const mainLoginBtn = document.getElementById('mainLoginBtn');
   if (mainLoginBtn) {
@@ -534,7 +659,8 @@ function logout() {
   }, 500);
 }
 
-function checkExistingSession() {
+// FUNCIÓN CHECKEXISTINGSESSION MEJORADA - CON BACKEND
+async function checkExistingSession() {
   try {
     const savedAuth = localStorage.getItem('noshopia_auth');
     const loggedIn = localStorage.getItem('noshopia_logged_in') === 'true';
@@ -546,6 +672,17 @@ function checkExistingSession() {
         
         isLoggedIn = true;
         currentUser = userData;
+        
+        // NUEVO: Verificar backend
+        try {
+          const backendData = await syncWithBackend(userData.email);
+          if (backendData && backendData.has_profile) {
+            console.log('✅ Perfil confirmado en backend');
+            userProfile = backendData.profile || { completed: true };
+          }
+        } catch (error) {
+          console.log('⚠️ Backend no disponible, usando datos locales');
+        }
         
         updateUserUI();
         loadUserData();
@@ -565,22 +702,47 @@ function checkExistingSession() {
 }
 
 // ===================================================================
-// FLUJO CONDICIONAL DEL PERFIL
+// FLUJO DE PERFIL CON BACKEND
 // ===================================================================
 let userProfile = { skin_color: null, age_range: null, gender: null };
 
-function checkProfileAndRedirect() {
-  console.log('🔄 Verificando estado del perfil para flujo automático...');
+// FUNCIÓN CHECKPROFILEANDREDIRECT MEJORADA - CON BACKEND
+async function checkProfileAndRedirect() {
+  console.log('🔄 Verificando estado del perfil...');
   
   if (!currentUser?.email) return;
   
   try {
+    // NUEVO: Verificar primero en backend
+    const backendData = await syncWithBackend(currentUser.email);
+    
+    if (backendData && backendData.has_profile) {
+      console.log('✅ Perfil completado en backend → Directo a opciones');
+      userProfile = backendData.profile || { completed: true };
+      
+      const profileForm = document.getElementById('profileForm');
+      if (profileForm) profileForm.style.display = 'none';
+      
+      showClosetQuestion();
+      showNotification('Perfil cargado desde servidor', 'success');
+      return;
+    }
+    
+    // Si no está en backend, verificar localStorage como respaldo
     const savedProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
     
     if (savedProfile) {
-      console.log('✅ Perfil completado → Directo a opciones');
+      console.log('✅ Perfil en localStorage → Verificando con backend...');
       const profileData = JSON.parse(savedProfile);
       userProfile = profileData;
+      
+      // Intentar sincronizar con backend
+      try {
+        await createUserProfile(currentUser, profileData);
+        console.log('✅ Perfil sincronizado con backend');
+      } catch (error) {
+        console.log('⚠️ Error sincronizando, continuando con datos locales');
+      }
       
       const profileForm = document.getElementById('profileForm');
       if (profileForm) profileForm.style.display = 'none';
@@ -610,6 +772,7 @@ function checkProfileAndRedirect() {
     
   } catch (error) {
     console.error('Error verificando perfil:', error);
+    // Fallback a formulario si hay error
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
       profileForm.style.display = 'block';
@@ -627,10 +790,33 @@ function showClosetQuestion() {
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) {
     closetQuestion.style.display = 'block';
+    
+    // CORREGIDO: Habilitar opciones de closet
     setTimeout(() => {
+      enableClosetOptions();
       closetQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 500);
   }
+}
+
+// NUEVA FUNCIÓN: Habilitar opciones de closet
+function enableClosetOptions() {
+  const enableClosetBtn = document.getElementById('enableClosetBtn');
+  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+  
+  if (enableClosetBtn) {
+    enableClosetBtn.style.pointerEvents = 'auto';
+    enableClosetBtn.style.opacity = '1';
+    enableClosetBtn.style.cursor = 'pointer';
+  }
+  
+  if (useDirectModeBtn) {
+    useDirectModeBtn.style.pointerEvents = 'auto';
+    useDirectModeBtn.style.opacity = '1';
+    useDirectModeBtn.style.cursor = 'pointer';
+  }
+  
+  console.log('✅ Opciones de closet habilitadas');
 }
 
 function setupProfileForm() {
@@ -664,17 +850,37 @@ function setupProfileForm() {
   });
 }
 
-function submitUserProfile() {
+// FUNCIÓN SUBMITUSERPROFILE MODIFICADA - CON BACKEND
+async function submitUserProfile() {
   if (!userProfile.skin_color || !userProfile.age_range || !userProfile.gender) {
     showNotification('Completa todos los campos', 'error');
     return;
   }
   
-  console.log('👤 Perfil creado:', userProfile);
+  console.log('👤 Creando perfil:', userProfile);
   
-  if (currentUser?.email) {
-    localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
+  try {
+    // NUEVO: Enviar al backend
+    showNotification('Guardando perfil en servidor...', 'info');
+    
+    const result = await createUserProfile(currentUser, userProfile);
+    console.log('✅ Perfil creado en backend:', result);
+    
+    // Guardar también en localStorage como respaldo
+    if (currentUser?.email) {
+      localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
+    }
+    
     showNotification('Perfil guardado correctamente', 'success');
+    
+  } catch (error) {
+    console.error('Error creando perfil en backend:', error);
+    
+    // Fallback: guardar solo en localStorage
+    if (currentUser?.email) {
+      localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
+      showNotification('Perfil guardado localmente (sin conexión)', 'info');
+    }
   }
   
   const profileForm = document.getElementById('profileForm');
@@ -1454,7 +1660,7 @@ function saveRecommendation(index) {
 }
 
 // ===================================================================
-// PERSISTENCIA DE DATOS - INCLUYENDO ITEMS INTELIGENTES
+// PERSISTENCIA DE DATOS - CON RESPALDO BACKEND
 // ===================================================================
 function saveUserData() {
   if (!currentUser?.email) return;
@@ -1471,15 +1677,26 @@ function saveUserData() {
     lastUpdated: new Date().toISOString()
   };
   
+  // Guardar en localStorage
   localStorage.setItem(`noshopia_user_data_${currentUser.email}`, JSON.stringify(userData));
-  console.log('💾 Datos del closet inteligente guardados');
+  
+  // También en sessionStorage como respaldo
+  sessionStorage.setItem(`noshopia_session_${currentUser.email}`, JSON.stringify(userData));
+  
+  console.log('💾 Datos guardados localmente');
 }
 
 function loadUserData() {
   if (!currentUser?.email) return;
   
   try {
-    const userData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
+    let userData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
+    
+    // Fallback a sessionStorage si no está en localStorage
+    if (!userData) {
+      userData = sessionStorage.getItem(`noshopia_session_${currentUser.email}`);
+    }
+    
     if (userData) {
       const data = JSON.parse(userData);
       uploadedFiles = data.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
@@ -1489,7 +1706,7 @@ function loadUserData() {
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
-      console.log('✅ Closet inteligente cargado:', getTotalClosetItems(), 'prendas');
+      console.log('✅ Datos locales cargados:', getTotalClosetItems(), 'prendas');
     }
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -1517,6 +1734,7 @@ function upgradeToPremium() {
   setTimeout(() => scrollToSection('equipo'), 1000);
 }
 
+// GOOGLE LOGIN MEJORADO
 function initializeGoogleLogin() {
   if (typeof google === 'undefined') {
     setTimeout(initializeGoogleLogin, 1000);
@@ -1572,11 +1790,24 @@ function showGoogleAccountPicker() {
     width: '280'
   });
 }
+
+// FUNCIÓN SETUPEVENTLISTENERS CORREGIDA - CON OPCIONES DE CLOSET
 function setupEventListeners() {
   setupOccasionButtons();
   setupClosetTabs();
   setupDirectUpload();
   setupProfileForm();
+  
+  // CORREGIDO: Event listeners para opciones de closet
+  const enableClosetBtn = document.getElementById('enableClosetBtn');
+  if (enableClosetBtn) {
+    enableClosetBtn.addEventListener('click', enableCloset);
+  }
+  
+  const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+  if (useDirectModeBtn) {
+    useDirectModeBtn.addEventListener('click', useDirectMode);
+  }
   
   document.querySelectorAll('.mobile-nav-item').forEach(item => {
     item.addEventListener('click', () => {
@@ -1609,13 +1840,13 @@ function setupEventListeners() {
 }
 
 function initializeApp() {
-  console.log('🔧 Inicializando NoShopiA...');
+  console.log('🔧 Inicializando NoShopiA v2.1...');
   
   setTimeout(initializeGoogleLogin, 500);
   setupEventListeners();
   setTimeout(checkExistingSession, 1000);
   
-  console.log('✅ NoShopiA inicializada correctamente');
+  console.log('✅ NoShopiA v2.1 inicializada correctamente');
 }
 
 // ===================================================================
@@ -1657,5 +1888,4 @@ window.addEventListener('load', () => {
 
 window.APP_INITIALIZED = true;
 
-
-console.log('✅ app.js cargado - NoShopiA v2.0 lista');
+console.log('✅ app.js v2.1 cargado - NoShopiA con sincronización backend');
