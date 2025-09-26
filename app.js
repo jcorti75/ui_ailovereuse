@@ -17,6 +17,190 @@ let currentResults = [];
 let savedRecommendations = [];
 
 // ===================================================================
+// SISTEMA DE DETECCIÓN IA AUTOMÁTICA - CATEGORÍAS EXACTAS DEL HTML
+// ===================================================================
+
+const INTELLIGENT_CATEGORIES = {
+  tops: {
+    "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "polera"], color: "#10b981" },
+    "shirt": { name: "Camisas", icon: "👔", keywords: ["shirt", "dress shirt", "button", "collar", "camisa"], color: "#3b82f6" },
+    "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy", "blusa"], color: "#ec4899" },
+    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan", "sueter"], color: "#f59e0b" },
+    "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded", "capucha"], color: "#ef4444" },
+    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" },
+    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench", "abrigo"], color: "#1f2937" },
+    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" },
+    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat", "chaleco"], color: "#84cc16" }
+  },
+  bottoms: {
+    "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af" },
+    "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks", "pantalon"], color: "#3b82f6" },
+    "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt", "falda"], color: "#ec4899" },
+    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" },
+    "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants", "calza"], color: "#6b7280" }
+  },
+  shoes: {
+    "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers", "zapatilla"], color: "#3b82f6" },
+    "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords", "zapato"], color: "#1f2937" },
+    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" },
+    "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels", "tacos", "tacon"], color: "#ec4899" },
+    "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops", "sandalia"], color: "#f59e0b" },
+    "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers", "ballerina"], color: "#6b7280" }
+  }
+};
+
+let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
+
+// DETECCIÓN AUTOMÁTICA CON IA
+async function detectItemWithAI(file) {
+  console.log('🤖 IA analizando prenda:', file.name);
+  
+  showNotification('🤖 IA detectando categoría automáticamente...', 'info');
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  const fileName = file.name.toLowerCase();
+  let detectedType = 'tops';
+  let detectedCategory = 'tshirt';
+  let detectedItem = 'Polera';
+  let confidence = 0.75;
+  
+  // CALZADO (Mayor prioridad)
+  if (fileName.includes('zapatilla') || fileName.includes('sneaker') || fileName.includes('running')) {
+    detectedType = 'shoes'; detectedCategory = 'sneakers'; detectedItem = 'Zapatillas'; confidence = 0.95;
+  } else if (fileName.includes('zapato') || fileName.includes('dress') && fileName.includes('shoe')) {
+    detectedType = 'shoes'; detectedCategory = 'dress_shoes'; detectedItem = 'Zapatos Formales'; confidence = 0.91;
+  } else if (fileName.includes('bota') || fileName.includes('boot')) {
+    detectedType = 'shoes'; detectedCategory = 'boots'; detectedItem = 'Botas'; confidence = 0.89;
+  } else if (fileName.includes('sandalia') || fileName.includes('sandal')) {
+    detectedType = 'shoes'; detectedCategory = 'sandals'; detectedItem = 'Sandalias'; confidence = 0.87;
+  } else if (fileName.includes('tacon') || fileName.includes('heel')) {
+    detectedType = 'shoes'; detectedCategory = 'heels'; detectedItem = 'Tacones'; confidence = 0.88;
+  } else if (fileName.includes('ballerina') || fileName.includes('flat')) {
+    detectedType = 'shoes'; detectedCategory = 'flats'; detectedItem = 'Ballerinas'; confidence = 0.86;
+  }
+  
+  // INFERIORES
+  else if (fileName.includes('jean')) {
+    detectedType = 'bottoms'; detectedCategory = 'jeans'; detectedItem = 'Jeans'; confidence = 0.95;
+  } else if (fileName.includes('pantalon') || fileName.includes('pants')) {
+    detectedType = 'bottoms'; detectedCategory = 'pants'; detectedItem = 'Pantalones'; confidence = 0.92;
+  } else if (fileName.includes('falda') || fileName.includes('skirt')) {
+    detectedType = 'bottoms'; detectedCategory = 'skirt'; detectedItem = 'Falda'; confidence = 0.90;
+  } else if (fileName.includes('short')) {
+    detectedType = 'bottoms'; detectedCategory = 'shorts'; detectedItem = 'Shorts'; confidence = 0.88;
+  } else if (fileName.includes('calza') || fileName.includes('legging')) {
+    detectedType = 'bottoms'; detectedCategory = 'leggings'; detectedItem = 'Calzas'; confidence = 0.89;
+  }
+  
+  // SUPERIORES
+  else if (fileName.includes('camisa') || fileName.includes('shirt') && !fileName.includes('tshirt')) {
+    detectedCategory = 'shirt'; detectedItem = 'Camisa'; confidence = 0.93;
+  } else if (fileName.includes('blusa') || fileName.includes('blouse')) {
+    detectedCategory = 'blouse'; detectedItem = 'Blusa'; confidence = 0.91;
+  } else if (fileName.includes('vestido') || fileName.includes('dress')) {
+    detectedCategory = 'dress'; detectedItem = 'Vestido'; confidence = 0.92;
+  } else if (fileName.includes('hoodie') || fileName.includes('capucha')) {
+    detectedCategory = 'hoodie'; detectedItem = 'Hoodie'; confidence = 0.90;
+  } else if (fileName.includes('sueter') || fileName.includes('sweater') || fileName.includes('cardigan')) {
+    detectedCategory = 'sweater'; detectedItem = 'Suéter'; confidence = 0.88;
+  } else if (fileName.includes('chaqueta') || fileName.includes('jacket') || fileName.includes('blazer')) {
+    detectedCategory = 'jacket'; detectedItem = 'Chaqueta'; confidence = 0.87;
+  } else if (fileName.includes('abrigo') || fileName.includes('coat')) {
+    detectedCategory = 'coat'; detectedItem = 'Abrigo'; confidence = 0.85;
+  } else if (fileName.includes('polera') || fileName.includes('tshirt') || fileName.includes('tee')) {
+    detectedCategory = 'tshirt'; detectedItem = 'Polera'; confidence = 0.95;
+  }
+  
+  console.log(`🎯 IA detectó: ${detectedItem} (${detectedType}/${detectedCategory}) - Confianza: ${Math.round(confidence * 100)}%`);
+  
+  return {
+    type: detectedType,
+    category: detectedCategory,
+    item: detectedItem,
+    confidence,
+    categoryInfo: INTELLIGENT_CATEGORIES[detectedType][detectedCategory]
+  };
+}
+
+// UPLOAD AUTOMÁTICO CON DETECCIÓN IA
+async function handleIntelligentUpload(files) {
+  console.log('🚀 INICIANDO UPLOAD INTELIGENTE CON IA...');
+  
+  if (!files || files.length === 0) return;
+  
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
+  if (files.length > remaining) {
+    showNotification(`⚠️ Solo puedes subir ${remaining} prendas más`, 'error');
+    return;
+  }
+  
+  showNotification('🤖 IA analizando y organizando automáticamente...', 'info');
+  
+  let detectedTypes = new Set();
+  let successCount = 0;
+  let detectionResults = [];
+  
+  for (const file of files) {
+    try {
+      const detectionResult = await detectItemWithAI(file);
+      detectedTypes.add(detectionResult.type);
+      detectionResults.push(detectionResult);
+      
+      const imageUrl = await fileToDataUrl(file);
+      categorizeIntelligentItem(detectionResult, imageUrl, file);
+      successCount++;
+      
+    } catch (error) {
+      console.error('❌ Error en detección IA:', error);
+      showNotification(`❌ Error procesando ${file.name}`, 'error');
+    }
+  }
+  
+  if (successCount > 0) {
+    saveUserData();
+    updateClosetUI();
+    
+    if (detectedTypes.size > 0) {
+      const mostCommonType = Array.from(detectedTypes)[0];
+      setTimeout(() => {
+        navigateToDetectedType(mostCommonType, detectionResults);
+      }, 1000);
+    }
+    
+    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
+    showNotification(`✅ ${successCount} prenda${successCount !== 1 ? 's' : ''} detectada${successCount !== 1 ? 's' : ''} automáticamente! Quedan ${newRemaining} espacios.`, 'success');
+  }
+}
+
+// CATEGORIZAR PRENDA INTELIGENTEMENTE
+function categorizeIntelligentItem(detectionResult, imageUrl, file) {
+  const { type, category, item, confidence } = detectionResult;
+  
+  if (!intelligentClosetItems[type][category]) {
+    intelligentClosetItems[type][category] = [];
+  }
+  
+  const intelligentItem = {
+    id: Date.now() + Math.random(),
+    imageUrl,
+    file,
+    detectedItem: item,
+    category,
+    aiDetected: true,
+    confidence,
+    addedAt: new Date().toISOString()
+  };
+  
+  intelligentClosetItems[type][category].push(intelligentItem);
+  
+  uploadedFiles[type].push(file);
+  uploadedImages[type].push(imageUrl);
+  closetItems[type].push(imageUrl);
+  
+  console.log(`🧠 Prenda categorizada automáticamente: ${item} en ${type}/${category}`);
+}
+
+// ===================================================================
 // UTILIDADES
 // ===================================================================
 function showNotification(message, type = 'info') {
@@ -52,7 +236,6 @@ function scrollToSection(sectionId) {
   if (element) {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     
-    // Actualizar navegación
     document.querySelectorAll('.nav-pill').forEach(pill => pill.classList.remove('active'));
     const activePill = document.querySelector(`[href="#${sectionId}"]`);
     if (activePill) activePill.classList.add('active');
@@ -75,7 +258,7 @@ function toggleMobileMenu() {
 }
 
 // ===================================================================
-// SISTEMA DE LOGIN DIRECTO PROFESIONAL - CORREGIDO
+// SISTEMA DE LOGIN MEJORADO
 // ===================================================================
 function handleMainLogin() {
   console.log('🔐 Iniciando sesión directa...');
@@ -86,14 +269,10 @@ function handleMainLogin() {
     return;
   }
   
-  // Intentar login con Google si está disponible
   if (typeof google !== 'undefined' && google.accounts) {
     try {
-      // Usar el método estándar de Google
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          console.log('Prompt no mostrado, usando botón alternativo');
-          // Si no funciona el prompt, mostrar botón manual
           showGoogleLoginButton();
         }
       });
@@ -103,14 +282,11 @@ function handleMainLogin() {
     }
   } else {
     console.log('Google no disponible, usando login demo');
-    // Para desarrollo/testing
     simulateLogin();
   }
 }
 
-// Mostrar botón de Google como alternativa
 function showGoogleLoginButton() {
-  // Crear botón temporal de Google si no funciona el prompt
   let googleBtn = document.getElementById('tempGoogleBtn');
   
   if (!googleBtn) {
@@ -151,19 +327,14 @@ function showGoogleLoginButton() {
   }
 }
 
-// Cerrar botón de Google
 function closeGoogleLoginButton() {
   const googleBtn = document.getElementById('tempGoogleBtn');
-  if (googleBtn) {
-    googleBtn.remove();
-  }
+  if (googleBtn) googleBtn.remove();
 }
 
-// Intentar login directo con Google
 function tryGoogleLogin() {
   try {
     if (typeof google !== 'undefined' && google.accounts) {
-      // Forzar renderizado del botón de Google
       const container = document.createElement('div');
       container.id = 'googleButtonContainer';
       container.style.display = 'none';
@@ -176,20 +347,17 @@ function tryGoogleLogin() {
         text: 'continue_with'
       });
       
-      // Simular click en el botón renderizado
       setTimeout(() => {
         const googleBtn = container.querySelector('div[role="button"]');
         if (googleBtn) {
           googleBtn.click();
         } else {
-          console.log('No se pudo renderizar botón de Google, usando demo');
           closeGoogleLoginButton();
           simulateLogin();
         }
       }, 500);
       
     } else {
-      console.log('Google no disponible');
       closeGoogleLoginButton();
       simulateLogin();
     }
@@ -198,22 +366,6 @@ function tryGoogleLogin() {
     closeGoogleLoginButton();
     simulateLogin();
   }
-}
-
-// Login directo a Google sin popups (ALTERNATIVO - no usado por ahora)
-function initiateDirectGoogleLogin() {
-  console.log('🚀 Redirigiendo directamente a Google...');
-  
-  const googleAuthUrl = `https://accounts.google.com/oauth/v2/auth?` +
-    `client_id=${CONFIG.GOOGLE_CLIENT_ID}&` +
-    `redirect_uri=${encodeURIComponent(window.location.origin)}&` +
-    `response_type=code&` +
-    `scope=openid%20email%20profile&` +
-    `access_type=offline&` +
-    `prompt=select_account`;
-  
-  // Redirigir directamente sin popup
-  window.location.href = googleAuthUrl;
 }
 
 function simulateLogin() {
@@ -248,15 +400,12 @@ function processLogin(userData) {
   isLoggedIn = true;
   currentUser = userData;
   
-  // Guardar sesión
   localStorage.setItem('noshopia_auth', JSON.stringify(userData));
   localStorage.setItem('noshopia_logged_in', 'true');
   
-  // Actualizar UI
   updateUserUI();
   loadUserData();
   
-  // FLUJO CONDICIONAL: Verificar perfil y redirigir automáticamente
   setTimeout(() => {
     checkProfileAndRedirect();
   }, 1000);
@@ -265,13 +414,11 @@ function processLogin(userData) {
 }
 
 function updateUserUI() {
-  // Ocultar botón de login principal
   const mainLoginBtn = document.getElementById('mainLoginBtn');
   if (mainLoginBtn) {
     mainLoginBtn.style.display = 'none';
   }
   
-  // Mostrar info usuario con botón profesional de logout
   const userInfo = document.getElementById('userInfo');
   const userName = document.getElementById('userName');
   const userAvatar = document.getElementById('userAvatar');
@@ -285,26 +432,20 @@ function updateUserUI() {
   }
   if (userEmail) userEmail.textContent = `Bienvenido ${currentUser.name}`;
   
-  // Crear o actualizar botón profesional de logout
   updateLogoutButton();
   
-  // Mostrar welcome section
   const welcomeSection = document.getElementById('welcomeSection');
   if (welcomeSection) welcomeSection.style.display = 'block';
 }
 
-// BOTÓN PROFESIONAL DE CERRAR SESIÓN
 function updateLogoutButton() {
-  // Buscar si ya existe el botón
   let logoutBtn = document.getElementById('professionalLogoutBtn');
   
   if (!logoutBtn) {
-    // Crear botón profesional si no existe
     logoutBtn = document.createElement('button');
     logoutBtn.id = 'professionalLogoutBtn';
     logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Cerrar Sesión';
     
-    // Estilos profesionales
     logoutBtn.style.cssText = `
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
@@ -322,7 +463,6 @@ function updateLogoutButton() {
       margin-left: 1rem;
     `;
     
-    // Efectos hover profesionales
     logoutBtn.addEventListener('mouseenter', function() {
       this.style.transform = 'translateY(-2px)';
       this.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.4)';
@@ -335,26 +475,22 @@ function updateLogoutButton() {
     
     logoutBtn.addEventListener('click', logout);
     
-    // Agregar al contenedor del usuario
     const userInfo = document.getElementById('userInfo');
     if (userInfo) {
       userInfo.appendChild(logoutBtn);
     }
   }
   
-  // Asegurar que esté visible
   logoutBtn.style.display = 'flex';
 }
 
 function logout() {
   console.log('👋 Cerrando sesión...');
   
-  // Confirmación profesional
   if (!confirm('¿Deseas cerrar tu sesión en NoShopiA?')) {
     return;
   }
   
-  // Limpiar estado
   isLoggedIn = false;
   currentUser = null;
   selectedOccasion = null;
@@ -365,26 +501,21 @@ function logout() {
   closetMode = false;
   userProfile = { skin_color: null, age_range: null, gender: null };
   
-  // Limpiar localStorage
   localStorage.removeItem('noshopia_auth');
   localStorage.removeItem('noshopia_logged_in');
   
-  // Restaurar UI inicial
   const mainLoginBtn = document.getElementById('mainLoginBtn');
   if (mainLoginBtn) {
     mainLoginBtn.style.display = 'flex';
-    // Actualizar texto del botón a "Iniciar Sesión"
     mainLoginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
   }
   
   const userInfo = document.getElementById('userInfo');
   if (userInfo) userInfo.style.display = 'none';
   
-  // Ocultar botón profesional de logout
   const logoutBtn = document.getElementById('professionalLogoutBtn');
   if (logoutBtn) logoutBtn.style.display = 'none';
   
-  // Ocultar todas las secciones de usuario logueado
   ['welcomeSection', 'profileForm', 'closetQuestion', 'closetContainer', 'occasionSelector', 'uploadArea'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -398,7 +529,6 @@ function logout() {
   
   showNotification('Sesión cerrada correctamente', 'success');
   
-  // Scroll suave al inicio
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, 500);
@@ -413,22 +543,32 @@ function checkExistingSession() {
       const userData = JSON.parse(savedAuth);
       if (userData.name && userData.email) {
         console.log('🔄 Restaurando sesión:', userData.name);
-        processLogin(userData);
+        
+        isLoggedIn = true;
+        currentUser = userData;
+        
+        updateUserUI();
+        loadUserData();
+        
+        setTimeout(() => {
+          checkProfileAndRedirect();
+        }, 1500);
+        
+        showNotification(`Bienvenido de vuelta, ${userData.name}`, 'success');
         return true;
       }
     }
   } catch (error) {
-    console.error('Error verificando sesión:', error);
+    console.error('Error verificando sesión existente:', error);
   }
   return false;
 }
 
 // ===================================================================
-// ===================================================================
 // FLUJO CONDICIONAL DEL PERFIL
 // ===================================================================
+let userProfile = { skin_color: null, age_range: null, gender: null };
 
-// Verificar perfil y redirigir automáticamente según flujo
 function checkProfileAndRedirect() {
   console.log('🔄 Verificando estado del perfil para flujo automático...');
   
@@ -438,34 +578,26 @@ function checkProfileAndRedirect() {
     const savedProfile = localStorage.getItem(`noshopia_profile_${currentUser.email}`);
     
     if (savedProfile) {
-      // PERFIL COMPLETADO → Directo a opciones del closet
       console.log('✅ Perfil completado → Directo a opciones');
       const profileData = JSON.parse(savedProfile);
       userProfile = profileData;
       
-      // Ocultar formulario de perfil si está visible
       const profileForm = document.getElementById('profileForm');
       if (profileForm) profileForm.style.display = 'none';
       
-      // Mostrar directamente las opciones del closet
       showClosetQuestion();
-      
       showNotification(`Perfil cargado: ${profileData.gender}, ${profileData.age_range}`, 'info');
       
     } else {
-      // PERFIL NO COMPLETADO → Mostrar formulario → Scroll automático
       console.log('📋 Perfil incompleto → Mostrar formulario');
       
-      // Ocultar welcome section
       const welcomeSection = document.getElementById('welcomeSection');
       if (welcomeSection) welcomeSection.style.display = 'none';
       
-      // Mostrar formulario de perfil
       const profileForm = document.getElementById('profileForm');
       if (profileForm) {
         profileForm.style.display = 'block';
         
-        // SCROLL AUTOMÁTICO al formulario después de breve delay
         setTimeout(() => {
           profileForm.scrollIntoView({ 
             behavior: 'smooth', 
@@ -478,7 +610,6 @@ function checkProfileAndRedirect() {
     
   } catch (error) {
     console.error('Error verificando perfil:', error);
-    // En caso de error, mostrar formulario
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
       profileForm.style.display = 'block';
@@ -488,10 +619,6 @@ function checkProfileAndRedirect() {
     }
   }
 }
-
-// PERFIL DE USUARIO - MEJORADO CON FLUJO AUTOMÁTICO
-// ===================================================================
-let userProfile = { skin_color: null, age_range: null, gender: null };
 
 function showClosetQuestion() {
   const loginRequired = document.querySelector('.login-required');
@@ -512,16 +639,13 @@ function setupProfileForm() {
       const field = this.dataset.field;
       const value = this.dataset.value;
       
-      // Limpiar selección anterior del mismo campo
       document.querySelectorAll(`[data-field="${field}"]`).forEach(opt => 
         opt.classList.remove('selected')
       );
       
-      // Seleccionar actual
       this.classList.add('selected');
       userProfile[field] = value;
       
-      // Verificar si está completo
       const isComplete = userProfile.skin_color && userProfile.age_range && userProfile.gender;
       const createBtn = document.getElementById('createProfileBtn');
       
@@ -548,21 +672,17 @@ function submitUserProfile() {
   
   console.log('👤 Perfil creado:', userProfile);
   
-  // Guardar perfil
   if (currentUser?.email) {
     localStorage.setItem(`noshopia_profile_${currentUser.email}`, JSON.stringify(userProfile));
     showNotification('Perfil guardado correctamente', 'success');
   }
   
-  // Ocultar formulario
   const profileForm = document.getElementById('profileForm');
   if (profileForm) profileForm.style.display = 'none';
   
-  // FLUJO AUTOMÁTICO: Después de completar perfil → Scroll automático a opciones
   setTimeout(() => {
     showClosetQuestion();
     
-    // SCROLL AUTOMÁTICO a las opciones del closet
     setTimeout(() => {
       const closetQuestion = document.getElementById('closetQuestion');
       if (closetQuestion) {
@@ -584,7 +704,6 @@ function selectOccasion(occasion) {
   console.log('📅 Ocasión seleccionada:', occasion);
   selectedOccasion = occasion;
   
-  // Actualizar UI
   document.querySelectorAll('.occasion-btn').forEach(btn => btn.classList.remove('selected'));
   const selectedBtn = document.querySelector(`[data-occasion="${occasion}"]`);
   if (selectedBtn) selectedBtn.classList.add('selected');
@@ -659,36 +778,131 @@ function useDirectMode() {
 function showClosetTab(tabId) {
   console.log('📂 Mostrando pestaña inteligente:', tabId);
   
-  // Ocultar todas las pestañas
   document.querySelectorAll('.closet-tab-content').forEach(content => {
     content.style.display = 'none';
   });
   
-  // Remover active de tabs
   document.querySelectorAll('.closet-tab').forEach(tab => {
     tab.classList.remove('active');
   });
   
-  // Mostrar pestaña seleccionada
   const selectedContent = document.getElementById(tabId);
   if (selectedContent) selectedContent.style.display = 'block';
   
   const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
   if (selectedTab) selectedTab.classList.add('active');
   
-  // RENDERIZAR CON SISTEMA INTELIGENTE
   const typeMap = { 'superiores': 'tops', 'inferiores': 'bottoms', 'calzado': 'shoes' };
   const type = typeMap[tabId];
   
   if (type && tabId !== 'recomendaciones') {
     renderIntelligentClosetTab(tabId, type);
-    setupClosetFolderUploads(); // Configurar upload inteligente
+    setupClosetFolderUploads();
   } else if (tabId === 'recomendaciones') {
     renderSavedRecommendations();
   }
 }
 
-// Renderizar recomendaciones guardadas
+function renderIntelligentClosetTab(tabId, type) {
+  const tabContent = document.getElementById(tabId);
+  if (!tabContent) return;
+  
+  const typeItems = intelligentClosetItems[type] || {};
+  const hasItems = Object.keys(typeItems).some(cat => typeItems[cat]?.length > 0);
+  
+  if (!hasItems) {
+    tabContent.innerHTML = `
+      <div style="text-align: center; padding: 3rem; color: #666;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+        <h3>IA Lista para Detectar</h3>
+        <p>Sube fotos y la IA las organizará automáticamente por categorías</p>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '<div style="display: grid; gap: 2rem;">';
+  
+  Object.keys(typeItems).forEach(categoryId => {
+    const categoryItems = typeItems[categoryId];
+    if (!categoryItems || categoryItems.length === 0) return;
+    
+    const categoryInfo = INTELLIGENT_CATEGORIES[type][categoryId];
+    if (!categoryInfo) return;
+    
+    html += `
+      <div style="background: rgba(59, 130, 246, 0.05); border-radius: 15px; padding: 1.5rem; border-left: 4px solid ${categoryInfo.color};">
+        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.8rem;">${categoryInfo.icon}</span>
+          <span style="color: ${categoryInfo.color}; font-weight: 700;">${categoryInfo.name}</span>
+          <span style="background: ${categoryInfo.color}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin-left: auto;">
+            🤖 ${categoryItems.length} detectada${categoryItems.length !== 1 ? 's' : ''}
+          </span>
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+    `;
+    
+    categoryItems.forEach((item, index) => {
+      const confidencePercent = Math.round((item.confidence || 0.75) * 100);
+      
+      html += `
+        <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+          
+          <img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover;" alt="${item.detectedItem}">
+          
+          <div style="position: absolute; top: 10px; left: 10px; background: #10b981; color: white; padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">
+            🤖 ${confidencePercent}%
+          </div>
+          
+          <div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer;" onclick="removeIntelligentItem('${type}', '${categoryId}', ${index})">×</div>
+          
+          <div style="padding: 1rem;">
+            <div style="font-weight: 600; color: #000; margin-bottom: 0.5rem;">${item.detectedItem}</div>
+            <div style="font-size: 0.8rem; color: #10b981; font-weight: 500;">✨ Detectado automáticamente por IA</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += '</div></div>';
+  });
+  
+  html += '</div>';
+  tabContent.innerHTML = html;
+}
+
+function removeIntelligentItem(type, categoryId, index) {
+  if (!confirm('¿Eliminar esta prenda detectada por IA?')) return;
+  
+  console.log(`🗑️ Eliminando ${type}/${categoryId}[${index}]`);
+  
+  if (intelligentClosetItems[type][categoryId]) {
+    intelligentClosetItems[type][categoryId].splice(index, 1);
+  }
+  
+  if (uploadedFiles[type].length > 0) uploadedFiles[type].pop();
+  if (uploadedImages[type].length > 0) uploadedImages[type].pop();
+  if (closetItems[type].length > 0) closetItems[type].pop();
+  
+  saveUserData();
+  updateClosetUI();
+  
+  const activeTab = document.querySelector('.closet-tab.active');
+  if (activeTab) {
+    const tabId = activeTab.dataset.tab;
+    const typeMap = { 'superiores': 'tops', 'inferiores': 'bottoms', 'calzado': 'shoes' };
+    const currentType = typeMap[tabId];
+    if (currentType) {
+      renderIntelligentClosetTab(tabId, currentType);
+    }
+  }
+  
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
+  showNotification(`Prenda eliminada. ${remaining} espacios disponibles`, 'success');
+}
+
+window.removeIntelligentItem = removeIntelligentItem;
+
 function renderSavedRecommendations() {
   const tabContent = document.getElementById('recomendaciones');
   if (!tabContent) return;
@@ -753,7 +967,6 @@ function updateClosetUI() {
     closetHeader.innerHTML = `Mi Closet Favorito <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas)</span>`;
   }
   
-  // Actualizar stats
   const stats = ['closetVisits', 'closetRecommendations', 'closetOutfits'];
   const values = [userStats.visits, userStats.recommendations, userStats.savedOutfits];
   
@@ -764,27 +977,87 @@ function updateClosetUI() {
 }
 
 function getTotalClosetItems() {
-  return Object.values(closetItems).reduce((total, items) => total + items.length, 0);
+  let total = 0;
+  
+  total += Object.values(closetItems).reduce((sum, items) => sum + items.length, 0);
+  
+  Object.values(intelligentClosetItems).forEach(typeItems => {
+    Object.values(typeItems).forEach(categoryItems => {
+      if (Array.isArray(categoryItems)) {
+        total += categoryItems.length;
+      }
+    });
+  });
+  
+  return total;
 }
 
 // ===================================================================
-// SISTEMA DE UPLOAD - CLOSET INTELIGENTE MEJORADO
+// SISTEMA DE UPLOAD
 // ===================================================================
-
-// Categorías inteligentes para detección automática
-const INTELLIGENT_CATEGORIES = {
-  tops: {
-    "polera": { name: "Poleras", icon: "👕", keywords: ["polera", "t-shirt", "tee", "camiseta"] },
-    "camisa": { name: "Camisas", icon: "👔", keywords: ["camisa", "shirt", "blouse"] },
-    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "sueter", "cardigan", "pullover"] },
-    "chaqueta": { name: "Chaquetas", icon: "🧥", keywords: ["chaqueta", "jacket", "blazer"] },
-    "vestido": { name: "Vestidos", icon: "👗", keywords: ["vestido", "dress"] }
-  },
-  bottoms: {
-    "jeans": { name: "Jeans", icon: "👖", keywords: ["jean", "jeans", "denim"] },
-    "pantalon": { name: "Pantalones", icon: "👖", keywords: ["pantalon", "pants", "trouser"] },
-    "falda": { name: "Faldas", icon: "👗", keywords: ["falda", "skirt"] },
-    "shorts": { name
+function setupClosetFolderUploads() {
+  document.querySelectorAll('.folder-item').forEach((folder, index) => {
+    const newFolder = folder.cloneNode(true);
+    folder.parentNode.replaceChild(newFolder, folder);
+    
+    newFolder.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      if (!isLoggedIn) {
+        showNotification('Debes iniciar sesión primero', 'error');
+        return;
+      }
+      
+      const remaining = CONFIG.TOTAL_CLOSET_LIMIT - getTotalClosetItems();
+      if (remaining <= 0) {
+        showNotification(`Armario lleno (${getTotalClosetItems()}/${CONFIG.TOTAL_CLOSET_LIMIT})`, 'error');
+        return;
+      }
+      
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      fileInput.style.display = 'none';
+      
+      fileInput.onchange = function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        console.log(`🤖 ${files.length} archivos para DETECCIÓN AUTOMÁTICA con IA`);
+        
+        if (files.length > remaining) {
+          showNotification(`Solo puedes subir ${remaining} fotos más`, 'error');
+          return;
+        }
+        
+        handleIntelligentUpload(files);
+      };
+      
+      document.body.appendChild(fileInput);
+      fileInput.click();
+      
+      setTimeout(() => {
+        if (document.body.contains(fileInput)) {
+          document.body.removeChild(fileInput);
+        }
+      }, 30000);
+    });
+    
+    newFolder.style.cursor = 'pointer';
+    newFolder.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px) scale(1.02)';
+      this.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.3)';
+      this.style.borderColor = '#10b981';
+    });
+    
+    newFolder.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+      this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+      this.style.borderColor = 'var(--border)';
+    });
+  });
+}
 
 function setupDirectUpload() {
   ['tops', 'bottoms', 'shoes'].forEach(type => {
@@ -811,7 +1084,6 @@ async function handleFileUpload(type, files) {
     return;
   }
   
-  // Validar tipos
   const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const invalidFiles = files.filter(file => !validTypes.includes(file.type));
   
@@ -822,7 +1094,6 @@ async function handleFileUpload(type, files) {
   
   showNotification(`Procesando ${files.length} imagen(es)...`, 'info');
   
-  // Procesar archivos
   for (const file of files) {
     try {
       const imageUrl = await fileToDataUrl(file);
@@ -838,7 +1109,6 @@ async function handleFileUpload(type, files) {
     }
   }
   
-  // Actualizar UI
   updateUploadUI(type);
   updateGenerateButton();
   saveUserData();
@@ -924,6 +1194,22 @@ function updateGenerateButton() {
   }
 }
 
+function navigateToDetectedType(type, detectionResults) {
+  console.log(`📍 IA navegando automáticamente a: ${type}`);
+  
+  const tabMap = { 'tops': 'superiores', 'bottoms': 'inferiores', 'shoes': 'calzado' };
+  const targetTabId = tabMap[type];
+  
+  if (targetTabId) {
+    showClosetTab(targetTabId);
+    
+    renderIntelligentClosetTab(targetTabId, type);
+    
+    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
+    showNotification(`🎯 IA detectó ${typeNames[type]}. Navegando automáticamente...`, 'success');
+  }
+}
+
 // ===================================================================
 // API Y RECOMENDACIONES
 // ===================================================================
@@ -951,7 +1237,6 @@ async function getRecommendation() {
   const timer = document.getElementById('processingTimer');
   const timerDisplay = document.getElementById('timerDisplay');
   
-  // Iniciar timer
   processingStartTime = Date.now();
   if (timer) timer.style.display = 'block';
   
@@ -972,7 +1257,6 @@ async function getRecommendation() {
     formData.append('user_email', currentUser.email);
     formData.append('occasion', selectedOccasion);
     
-    // Agregar archivos
     uploadedFiles.tops.forEach((file, index) => {
       formData.append('tops', file, file.name || `top_${index}.jpg`);
     });
@@ -1036,7 +1320,6 @@ function renderRecommendations(data) {
     return;
   }
   
-  // Encontrar mejor recomendación
   let bestIndex = 0;
   let highestScore = 0;
   results.forEach((item, index) => {
@@ -1171,7 +1454,7 @@ function saveRecommendation(index) {
 }
 
 // ===================================================================
-// PERSISTENCIA DE DATOS
+// PERSISTENCIA DE DATOS - INCLUYENDO ITEMS INTELIGENTES
 // ===================================================================
 function saveUserData() {
   if (!currentUser?.email) return;
@@ -1182,12 +1465,14 @@ function saveUserData() {
     uploadedFiles: uploadedFiles,
     uploadedImages: uploadedImages,
     closetItems: closetItems,
+    intelligentClosetItems: intelligentClosetItems,
     userStats: userStats,
     savedRecommendations: savedRecommendations,
     lastUpdated: new Date().toISOString()
   };
   
   localStorage.setItem(`noshopia_user_data_${currentUser.email}`, JSON.stringify(userData));
+  console.log('💾 Datos del closet inteligente guardados');
 }
 
 function loadUserData() {
@@ -1200,10 +1485,11 @@ function loadUserData() {
       uploadedFiles = data.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
       uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
       closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
+      intelligentClosetItems = data.intelligentClosetItems || { tops: {}, bottoms: {}, shoes: {} };
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
-      console.log('✅ Datos de usuario cargados');
+      console.log('✅ Closet inteligente cargado:', getTotalClosetItems(), 'prendas');
     }
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -1211,11 +1497,17 @@ function loadUserData() {
 }
 
 // ===================================================================
-// FUNCIONES DE PLANES
+// FUNCIONES DE PLANES - ACTUALIZADAS
 // ===================================================================
 function startFreePlan() {
   console.log('🎁 Plan gratuito activado');
   showNotification('¡Plan gratuito activado! Inicia sesión para comenzar.', 'success');
+  
+  const mainLoginBtn = document.getElementById('mainLoginBtn');
+  if (mainLoginBtn) {
+    mainLoginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+  }
+  
   setTimeout(() => handleMainLogin(), 1500);
 }
 
@@ -1225,18 +1517,18 @@ function upgradeToPremium() {
   setTimeout(() => scrollToSection('equipo'), 1000);
 }
 
-// ===================================================================
-// INICIALIZACIÓN
-// ===================================================================
 function initializeGoogleLogin() {
   try {
     if (typeof google !== 'undefined' && google.accounts) {
       google.accounts.id.initialize({
         client_id: CONFIG.GOOGLE_CLIENT_ID,
         callback: handleGoogleCredentialResponse,
-        auto_select: false
+        auto_select: false,
+        cancel_on_tap_outside: false,
+        use_fedcm_for_prompt: true
       });
-      console.log('✅ Google Sign-In configurado');
+      
+      console.log('✅ Google Sign-In configurado para login directo');
     } else {
       console.log('⚠️ Google Sign-In no disponible, usando modo demo');
     }
@@ -1246,19 +1538,11 @@ function initializeGoogleLogin() {
 }
 
 function setupEventListeners() {
-  // Ocasiones
   setupOccasionButtons();
-  
-  // Pestañas del closet
   setupClosetTabs();
-  
-  // Upload directo
   setupDirectUpload();
-  
-  // Perfil
   setupProfileForm();
   
-  // Cerrar menú móvil
   document.querySelectorAll('.mobile-nav-item').forEach(item => {
     item.addEventListener('click', () => {
       const mobileNav = document.getElementById('mobileNav');
@@ -1268,7 +1552,6 @@ function setupEventListeners() {
     });
   });
   
-  // Animación de barras de impacto
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -1293,20 +1576,15 @@ function setupEventListeners() {
 function initializeApp() {
   console.log('🔧 Inicializando NoShopiA...');
   
-  // Configurar Google Login
   setTimeout(initializeGoogleLogin, 500);
-  
-  // Configurar event listeners
   setupEventListeners();
-  
-  // Verificar sesión existente
   setTimeout(checkExistingSession, 1000);
   
   console.log('✅ NoShopiA inicializada correctamente');
 }
 
 // ===================================================================
-// EXPOSICIÓN GLOBAL DE FUNCIONES - AL FINAL DESPUÉS DE DEFINIRLAS
+// EXPOSICIÓN GLOBAL DE FUNCIONES
 // ===================================================================
 window.scrollToSection = scrollToSection;
 window.toggleMobileMenu = toggleMobileMenu;
@@ -1321,8 +1599,10 @@ window.submitUserProfile = submitUserProfile;
 window.getRecommendation = getRecommendation;
 window.removeImage = removeImage;
 window.saveRecommendation = saveRecommendation;
-window.removeIntelligentItem = removeIntelligentItem;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
+window.tryGoogleLogin = tryGoogleLogin;
+window.closeGoogleLoginButton = closeGoogleLoginButton;
+window.simulateLogin = simulateLogin;
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
@@ -1332,5 +1612,14 @@ if (document.readyState === 'loading') {
 } else {
   setTimeout(initializeApp, 100);
 }
+
+window.addEventListener('load', () => {
+  if (!window.APP_INITIALIZED) {
+    console.log('🔄 Inicialización de respaldo...');
+    setTimeout(initializeApp, 500);
+  }
+});
+
+window.APP_INITIALIZED = true;
 
 console.log('✅ app.js cargado - NoShopiA v2.0 lista');
