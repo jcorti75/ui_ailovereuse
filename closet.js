@@ -584,9 +584,12 @@ function showClosetTab(tabId) {
 // CONFIGURACIÓN DE UPLOADS AUTOMÁTICOS
 // =======================================================
 
-// CONFIGURAR UPLOAD AUTOMÁTICO CENTRAL (SIN PESTAÑAS)
+// CORRECCIÓN CRÍTICA PARA SUBIDA DE FOTOS DESDE CUALQUIER DISPOSITIVO en closet.js
+// Reemplaza la función setupAutomaticUpload() en tu closet.js
+
+// FUNCIÓN CORREGIDA: Configurar upload automático (HABILITADO PARA TODOS LOS DISPOSITIVOS)
 function setupAutomaticUpload() {
-  console.log('🤖 CONFIGURANDO UPLOAD AUTOMÁTICO CENTRAL...');
+  console.log('📱 CONFIGURANDO UPLOAD AUTOMÁTICO UNIVERSAL - TODOS LOS DISPOSITIVOS...');
   
   // Buscar zona de upload central
   const uploadZone = document.getElementById('automaticUploadZone');
@@ -595,13 +598,18 @@ function setupAutomaticUpload() {
     return;
   }
   
-  // Configurar evento de click
-  uploadZone.addEventListener('click', function(e) {
+  // CRÍTICO: Remover cualquier event listener previo
+  const newUploadZone = uploadZone.cloneNode(true);
+  uploadZone.parentNode.replaceChild(newUploadZone, uploadZone);
+  
+  // CONFIGURAR EVENTO DE CLICK UNIVERSAL (TODOS LOS DISPOSITIVOS)
+  newUploadZone.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('🖱️ CLICK DETECTADO EN ZONA DE UPLOAD AUTOMÁTICO');
+    console.log('📸 CLICK DETECTADO - INICIANDO SELECCIÓN DESDE CUALQUIER DISPOSITIVO');
     
+    // Verificar autenticación
     if (!checkIsLoggedIn()) {
       showNotification('❌ Debes iniciar sesión primero', 'error');
       return;
@@ -614,43 +622,242 @@ function setupAutomaticUpload() {
       return;
     }
     
-    // CREAR INPUT DE ARCHIVO TEMPORAL
+    // CREAR INPUT DE ARCHIVO UNIVERSAL (MÓVIL, TABLET, NOTEBOOK, PC)
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'image/*';
+    fileInput.accept = 'image/*'; // Más amplio para móviles
     fileInput.multiple = true;
     fileInput.style.display = 'none';
     
-    console.log('📁 Input de archivo creado para upload automático');
+    // ATRIBUTOS PARA COMPATIBILIDAD UNIVERSAL
+    fileInput.setAttribute('capture', 'environment'); // Habilitar cámara en móviles
+    fileInput.setAttribute('webkitdirectory', 'false');
+    fileInput.setAttribute('directory', 'false');
     
-    // CUANDO SE SELECCIONEN ARCHIVOS - USAR DETECCIÓN AUTOMÁTICA
+    console.log('📱 Input universal creado - Compatible con todos los dispositivos');
+    
+    // MANEJADOR DE ARCHIVOS SELECCIONADOS (UNIVERSAL)
     fileInput.onchange = function(e) {
-      console.log('📷 Archivos seleccionados - iniciando detección automática IA');
+      console.log('📷 ✅ ARCHIVOS SELECCIONADOS DESDE DISPOSITIVO');
       const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        handleAutomaticUpload(files);
+      
+      if (files.length === 0) {
+        console.log('❌ No se seleccionaron archivos');
+        return;
       }
+      
+      console.log(`📸 ${files.length} archivos seleccionados desde tu dispositivo:`, files.map(f => f.name));
+      
+      // PROCESAR CON IA AUTOMÁTICA
+      handleAutomaticUpload(files);
     };
     
-    // Agregar al DOM y hacer click
-    document.body.appendChild(fileInput);
-    console.log('🖱️ Abriendo selector de archivos automático...');
-    fileInput.click();
+    // MANEJADOR DE ERROR
+    fileInput.onerror = function(error) {
+      console.error('❌ Error en selector de archivos:', error);
+      showNotification('Error abriendo selector de archivos', 'error');
+    };
     
-    // Limpiar después de uso
+    // AGREGAR AL DOM Y ACTIVAR
+    document.body.appendChild(fileInput);
+    
+    console.log('📱 ACTIVANDO SELECTOR UNIVERSAL (móvil, notebook, PC, tablet)...');
+    
+    // TRIGGER CLICK INMEDIATO
+    setTimeout(() => {
+      try {
+        fileInput.click(); // Activar selector universal
+        console.log('✅ Selector de archivos/cámara activado');
+      } catch (error) {
+        console.error('❌ Error activando selector:', error);
+        showNotification('Error abriendo selector de archivos', 'error');
+      }
+    }, 100);
+    
+    // LIMPIAR DESPUÉS DE USO
     setTimeout(() => {
       if (document.body.contains(fileInput)) {
         document.body.removeChild(fileInput);
+        console.log('🧹 Input temporal removido');
       }
-    }, 2000);
+    }, 30000); // 30 segundos timeout
   });
   
-  // Mejorar estilos visuales
-  uploadZone.style.cursor = 'pointer';
-  uploadZone.style.transition = 'all 0.3s ease';
+  // ESTILOS RESPONSIVE PARA TODOS LOS DISPOSITIVOS
+  newUploadZone.style.cursor = 'pointer';
+  newUploadZone.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+  newUploadZone.style.userSelect = 'none';
+  newUploadZone.style.webkitUserSelect = 'none'; // Safari móvil
+  newUploadZone.style.msUserSelect = 'none'; // IE/Edge
   
-  console.log('✅ UPLOAD AUTOMÁTICO CONFIGURADO');
+  // EFECTOS TOUCH/HOVER UNIVERSALES
+  newUploadZone.addEventListener('mouseenter', function() {
+    this.style.transform = 'translateY(-8px) scale(1.02)';
+    this.style.boxShadow = '0 25px 50px rgba(59, 130, 246, 0.4)';
+    this.style.borderColor = 'var(--success)';
+  });
+  
+  newUploadZone.addEventListener('mouseleave', function() {
+    this.style.transform = 'translateY(0) scale(1)';
+    this.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.2)';
+    this.style.borderColor = 'var(--primary)';
+  });
+  
+  // SOPORTE TOUCH PARA MÓVILES Y TABLETS
+  newUploadZone.addEventListener('touchstart', function() {
+    this.style.transform = 'translateY(-5px) scale(1.01)';
+    this.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
+  });
+  
+  newUploadZone.addEventListener('touchend', function() {
+    this.style.transform = 'translateY(0) scale(1)';
+    this.style.boxShadow = '0 10px 30px rgba(59, 130, 246, 0.2)';
+  });
+  
+  console.log('✅ UPLOAD UNIVERSAL CONFIGURADO - Compatible con móviles, notebooks, tablets y PCs');
+  
+  // INDICADOR VISUAL DE QUE ESTÁ LISTO
+  const aiIcon = newUploadZone.querySelector('.upload-ai-icon');
+  if (aiIcon) {
+    aiIcon.style.animation = 'bounce 2s infinite';
+  }
 }
+}
+
+// FUNCIÓN AUXILIAR: Verificar si está logueado (compatible)
+function checkIsLoggedIn() {
+  try {
+    if (typeof window.isLoggedIn === 'function') {
+      return window.isLoggedIn();
+    } else if (typeof window.isLoggedIn === 'boolean') {
+      return window.isLoggedIn;
+    } else {
+      // Fallback
+      const savedAuth = localStorage.getItem('noshopia_logged_in');
+      return savedAuth === 'true';
+    }
+  } catch (error) {
+    console.warn('Error verificando login:', error);
+    return false;
+  }
+}
+
+// FUNCIÓN CORREGIDA: Manejar upload automático desde cualquier dispositivo
+async function handleAutomaticUpload(files) {
+  console.log('📤 INICIANDO UPLOAD AUTOMÁTICO UNIVERSAL - TODOS LOS DISPOSITIVOS...');
+  
+  if (!files || files.length === 0) {
+    console.log('❌ No hay archivos para procesar');
+    return;
+  }
+  
+  console.log(`📷 ${files.length} archivos recibidos desde tu dispositivo para análisis IA`);
+  
+  // Verificar autenticación nuevamente
+  if (!checkIsLoggedIn()) {
+    showNotification('❌ Debes iniciar sesión para usar el closet', 'error');
+    return;
+  }
+  
+  // Verificar límites
+  const remaining = getRemainingClosetSlots();
+  if (files.length > remaining) {
+    showNotification(`⚠️ Solo puedes subir ${remaining} prendas más. Armario: ${getTotalClosetItems()}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    return;
+  }
+  
+  // VALIDAR TIPOS DE ARCHIVO (Compatible con móviles y desktop)
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic']; // Agregado HEIC para iPhone
+  const invalidFiles = files.filter(file => !validTypes.includes(file.type.toLowerCase()));
+  
+  if (invalidFiles.length > 0) {
+    console.error('❌ Archivos inválidos:', invalidFiles.map(f => `${f.name} (${f.type})`));
+    showNotification(`❌ Solo se permiten fotos JPG, PNG, WebP o HEIC. ${invalidFiles.length} archivo(s) rechazado(s).`, 'error');
+    return;
+  }
+  
+  // VALIDAR TAMAÑO FLEXIBLE SEGÚN DISPOSITIVO
+  const maxSize = navigator.userAgent.includes('Mobile') ? 15 * 1024 * 1024 : 10 * 1024 * 1024; // 15MB móvil, 10MB desktop
+  const oversizedFiles = files.filter(file => file.size > maxSize);
+  
+  if (oversizedFiles.length > 0) {
+    const maxSizeMB = Math.floor(maxSize / (1024 * 1024));
+    console.error('❌ Archivos muy grandes:', oversizedFiles.map(f => f.name));
+    showNotification(`❌ Archivos muy grandes (máx ${maxSizeMB}MB). ${oversizedFiles.length} archivo(s) rechazado(s).`, 'error');
+    return;
+  }
+  
+  showNotification('🤖 IA analizando fotos desde tu dispositivo...', 'info');
+  
+  let detectedTypes = new Set();
+  let successCount = 0;
+  let detectionResults = [];
+  
+  // PROCESAR CADA ARCHIVO CON IA
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    
+    try {
+      console.log(`🔍 Procesando foto ${i + 1}/${files.length}: ${file.name}`);
+      
+      // DETECCIÓN IA AUTOMÁTICA
+      const detectionResult = await detectItemWithAI(file);
+      detectedTypes.add(detectionResult.type);
+      detectionResults.push(detectionResult);
+      
+      // Convertir imagen
+      const imageUrl = await fileToDataUrl(file);
+      
+      // CATEGORIZAR AUTOMÁTICAMENTE
+      const item = categorizeIntelligentItem(
+        detectionResult.type, 
+        detectionResult.category, 
+        detectionResult.item, 
+        imageUrl, 
+        file,
+        detectionResult.confidence
+      );
+      
+      successCount++;
+      
+    } catch (error) {
+      console.error('❌ Error en detección IA:', error);
+      showNotification(`❌ Error procesando ${file.name}`, 'error');
+    }
+  }
+  
+  // FINALIZAR PROCESO
+  if (successCount > 0) {
+    // Guardar datos
+    saveUserClosetData();
+    
+    // Actualizar UI
+    updateIntelligentClosetUI();
+    updateClosetDisplay();
+    
+    // NAVEGACIÓN AUTOMÁTICA AL TIPO MÁS DETECTADO
+    if (detectedTypes.size > 0) {
+      const mostCommonType = Array.from(detectedTypes)[0];
+      setTimeout(() => {
+        navigateToDetectedType(mostCommonType, detectionResults);
+      }, 1500);
+    }
+    
+    const newRemaining = getRemainingClosetSlots();
+    showNotification(`✅ ${successCount} prenda${successCount !== 1 ? 's' : ''} detectada${successCount !== 1 ? 's' : ''} y organizada${successCount !== 1 ? 's' : ''} automáticamente! Quedan ${newRemaining} espacios.`, 'success');
+    
+    // Mostrar popup de progreso
+    if (typeof showProgressPopup === 'function') {
+      showProgressPopup(successCount, newRemaining);
+    }
+  }
+}
+
+// EXPONER FUNCIONES GLOBALMENTE
+window.setupAutomaticUpload = setupAutomaticUpload;
+window.handleAutomaticUpload = handleAutomaticUpload;
+
+console.log('✅ Corrección de subida de fotos aplicada - PC totalmente habilitado');
 
 // =======================================================
 // RENDERIZADO Y VISUALIZACIÓN
