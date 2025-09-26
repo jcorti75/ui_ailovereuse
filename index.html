@@ -1,148 +1,229 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NoShopiA - Reutiliza tu ropa con IA</title>
-  <meta name="description" content="Reutiliza tu ropa con IA y minimiza tu impacto ambiental. Sube tus prendas y recibe combinaciones perfectas." />
 
   <!-- Google Sign-In -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- Fonts + Icons -->
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <style>
     :root{
-      --primary:#3b82f6; --text-primary:#1f2937; --text-secondary:#6b7280;
-      --background:#ffffff; --border:#e5e7eb; --accent:#10b981; --warning:#f59e0b;
-      --error:#ef4444; --success:#10b981; --gold:#fbbf24;
+      --primary:#3b82f6;
+      --text-primary:#1f2937;
+      --text-secondary:#6b7280;
+      --background:#ffffff;
+      --border:#e5e7eb;
+      --accent:#10b981;
+      --warning:#f59e0b;
+      --error:#ef4444;
+      --success:#10b981;
+      --gold:#fbbf24;
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--background);color:#000;line-height:1.6;overflow-x:hidden}
-    section{padding:6rem 5%;position:relative;z-index:2;background:var(--background)}
+    body{
+      font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;
+      background:var(--background); color:#000; line-height:1.6; overflow-x:hidden; min-height:100vh;
+      font-size:1.2em;
+    }
 
-    /* Header / Nav */
-    header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-    nav{max-width:1200px;margin:0 auto;padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-    .logo{font-weight:900;font-size:3rem;display:flex;align-items:center;letter-spacing:1px}
+    /* Header */
+    header{
+      position:fixed; inset:0 0 auto 0; padding:1rem 5%;
+      background:rgba(255,255,255,.95); backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border); z-index:1000;
+    }
+    nav{max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between}
+    .logo{font-size:3rem; font-weight:900; display:flex; align-items:center; letter-spacing:1px}
     .logo-no{color:#ef4444}.logo-shop{color:#000000}.logo-i{color:#22c55e}.logo-a{color:#22c55e}
-    .nav-pills{display:flex;gap:.5rem;background:rgba(59,130,246,.1);padding:.5rem;border-radius:999px}
-    .nav-pill{padding:.7rem 1.5rem;border-radius:25px;text-decoration:none;color:#000000;font-weight:500;font-size:.9rem;display:flex;align-items:center;gap:.5rem;transition:all .25s ease}
-    .nav-pill:hover,.nav-pill.active{background:rgba(59,130,246,.2);transform:translateY(-2px)}
-    .mobile-menu-toggle{display:none;background:none;border:0;font-size:1.5rem;color:var(--primary);cursor:pointer}
-    .mobile-nav{display:none;position:fixed;top:100%;left:0;right:0;background:rgba(255,255,255,.98);backdrop-filter:blur(20px);padding:2rem;border-bottom:1px solid var(--border);transform:translateY(-100%);transition:transform .3s ease}
-    .mobile-nav.active{transform:translateY(0)}
-    .mobile-nav-item{display:block;padding:1rem;border-radius:10px;text-decoration:none;color:#000;margin-bottom:.5rem}
-    .mobile-nav-item:hover{background:rgba(59,130,246,.1)}
-    .auth-container{display:flex;align-items:center;margin-left:1rem}
-    #headerLoginBtn{background:linear-gradient(135deg,var(--primary),#1d4ed8);color:#fff;border:0;padding:.8rem 1.5rem;border-radius:25px;font-weight:600;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;box-shadow:0 4px 15px rgba(59,130,246,.3);transition:all .2s}
-    #headerLoginBtn:hover:not(:disabled){background:linear-gradient(135deg,#2563eb,#1e40af);transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,.4)}
-    #headerLoginBtn:disabled{opacity:.6;cursor:not-allowed}
-    .user-info{display:none;align-items:center;gap:1rem}
+
+    .nav-pills{display:flex; gap:.5rem; background:rgba(59,130,246,.1); padding:.5rem; border-radius:50px; backdrop-filter:blur(10px)}
+    .nav-pill{
+      padding:.7rem 1.5rem; border-radius:25px; color:#000; text-decoration:none; font-weight:500;
+      display:flex; gap:.5rem; align-items:center; font-size:.9rem; transition:.3s;
+    }
+    .nav-pill:hover,.nav-pill.active{background:rgba(59,130,246,.2); transform:translateY(-2px)}
+
+    .auth-container{display:flex; align-items:center; gap:1rem; margin-left:1rem}
+    #headerLoginBtn{
+      background:linear-gradient(135deg,var(--primary),#1d4ed8); color:#fff; border:none; padding:.8rem 1.5rem; border-radius:25px;
+      font-weight:600; font-size:.9rem; cursor:pointer; display:inline-flex; gap:.5rem; align-items:center;
+      box-shadow:0 4px 15px rgba(59,130,246,.3); transition:.3s;
+    }
+    #headerLoginBtn:hover:not(:disabled){background:linear-gradient(135deg,#2563eb,#1e40af); transform:translateY(-2px); box-shadow:0 6px 20px rgba(59,130,246,.4)}
+    #headerLoginBtn:disabled{opacity:.6; cursor:not-allowed}
+    .user-info{display:none; align-items:center; gap:1rem}
     .user-avatar{width:35px;height:35px;border-radius:50%;border:2px solid var(--primary)}
-    #userName{color:#000;font-weight:600;font-size:.95rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .logout-btn{background:transparent;border:1px solid var(--primary);color:var(--primary);padding:.5rem 1rem;border-radius:20px;font-size:.9rem;cursor:pointer}
-    .logout-btn:hover{background:var(--primary);color:#fff;transform:translateY(-1px)}
+    #userName{color:#000; font-weight:600; font-size:.95rem; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .logout-btn{background:transparent; border:1px solid var(--primary); color:var(--primary); padding:.5rem 1rem; border-radius:20px; cursor:pointer; font-size:.9rem}
+    .logout-btn:hover{background:var(--primary); color:#fff}
+
+    /* Mobile menu */
+    .mobile-menu-toggle{display:none; background:none; border:none; font-size:1.6rem; color:var(--primary); cursor:pointer; margin-left:.5rem}
+    .mobile-nav{display:none}
+    .mobile-nav.active{
+      display:block; position:fixed; top:70px; left:0; right:0; background:rgba(255,255,255,.98);
+      border-bottom:1px solid var(--border); padding:1rem 5%; z-index:999;
+    }
+    .mobile-nav-item{display:block; padding:1rem; color:#000; text-decoration:none; border-radius:10px; transition:.2s}
+    .mobile-nav-item:hover{background:rgba(59,130,246,.1)}
+
+    /* Sections */
+    section{padding:6rem 5%; position:relative; z-index:1; background:var(--background)}
+    .section-container{max-width:1200px; margin:0 auto; text-align:center}
+    .section-title h2{font-size:2.5rem; font-weight:800; margin-bottom:1rem; color:#000}
+    .section-subtitle{font-size:1.2rem; margin:0 auto 4rem; max-width:600px; color:#000; opacity:.8}
 
     /* Hero */
-    .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem;background:var(--background)}
-    .hero h1{font-size:clamp(2.5rem,6vw,4rem);font-weight:800;margin-bottom:1rem;color:#000;line-height:1.2}
-    .hero-subtitle{font-size:1.3rem;margin-bottom:.5rem;font-weight:600;color:#000}
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;max-width:800px;margin:2rem auto 0}
-    .stat-item{background:rgba(255,255,255,0.8);padding:2rem 1rem;border-radius:20px;border:1px solid var(--border);text-align:center;transition:all .25s}
-    .stat-item:hover{transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
-    .stat-number{font-size:2.5rem;font-weight:900;color:var(--primary);margin-bottom:.5rem;display:block}
+    .hero{min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:6rem 2rem 4rem}
+    .hero h1{font-size:clamp(2.5rem,6vw,4rem); font-weight:800; color:#000; margin-bottom:1rem}
+    .hero-subtitle{font-size:1.3rem; font-weight:600; color:#000; margin-bottom:.5rem}
+    .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; max-width:800px; margin:0 auto}
+    .stat-item{background:rgba(255,255,255,.8); padding:2rem 1rem; border-radius:20px; border:1px solid var(--border); transition:.3s}
+    .stat-item:hover{transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .stat-number{font-size:2.5rem; font-weight:900; color:var(--primary); display:block; margin-bottom:.5rem}
 
-    /* Section headings */
-    .section-container{max-width:1200px;margin:0 auto;text-align:center}
-    .section-title h2{font-size:2.5rem;font-weight:800;margin-bottom:1rem;color:#000}
-    .section-subtitle{font-size:1.2rem;margin-bottom:3rem;max-width:700px;margin-inline:auto;color:#000;opacity:.85}
-
-    /* Impacto */
-    .impact-bars{display:grid;gap:2rem;max-width:800px;margin:0 auto}
+    /* Impact */
+    .impact-bars{display:grid; gap:2rem; max-width:800px; margin:0 auto}
     .impact-item{text-align:left}
-    .impact-label{display:flex;justify-content:space-between;margin-bottom:.5rem;font-weight:600;color:#000}
-    .impact-bar{height:12px;background:rgba(59,130,246,.1);border-radius:10px;overflow:hidden}
-    .impact-fill{height:100%;background:linear-gradient(135deg,var(--primary),#1d4ed8);border-radius:10px;transition:width 1.8s ease;width:0%}
-    .impact-fill[data-width="85"]{width:85%}.impact-fill[data-width="72"]{width:72%}.impact-fill[data-width="68"]{width:68%}.impact-fill[data-width="63"]{width:63%}
+    .impact-label{display:flex; justify-content:space-between; font-weight:600; color:#000; margin-bottom:.5rem}
+    .impact-bar{height:12px; background:rgba(59,130,246,.1); border-radius:10px; overflow:hidden; margin-bottom:.5rem}
+    .impact-fill{height:100%; background:linear-gradient(135deg,var(--primary),#1d4ed8); width:0%; transition:width 2s}
+    .impact-fill[data-width="85"]{width:85%}
+    .impact-fill[data-width="72"]{width:72%}
+    .impact-fill[data-width="68"]{width:68%}
+    .impact-fill[data-width="63"]{width:63%}
 
-    /* Precios */
-    .pricing-section{background:rgba(249,250,251,.6)}
-    .pricing-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;max-width:900px;margin:0 auto}
-    .pricing-card{background:#fff;border-radius:25px;padding:3rem 2rem;border:1px solid var(--border);text-align:center;position:relative;transition:transform .2s, box-shadow .2s}
-    .pricing-card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,.08)}
-    .pricing-card.premium{border-color:var(--primary);background:rgba(59,130,246,.02)}
-    .pricing-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:.4rem 1.2rem;border-radius:999px;font-weight:800;font-size:.85rem}
-    .pricing-icon{font-size:3rem;margin-bottom:1rem}
-    .pricing-title{font-size:1.8rem;font-weight:700;margin-bottom:.4rem;color:#000}
-    .pricing-price{font-size:3rem;font-weight:900;color:#000;margin:1rem 0}
-    .pricing-period{font-size:1rem;color:#000;opacity:.7;margin-bottom:1.5rem;font-weight:600}
-    .pricing-features{list-style:none;text-align:left;margin:0 auto 2rem;max-width:420px}
-    .pricing-features li{padding:.45rem 0;color:#000;line-height:1.6}
-    .pricing-btn{width:100%;padding:1rem 2rem;border:0;border-radius:25px;font-weight:700;cursor:pointer;font-size:1rem;transition:all .2s}
-    .pricing-btn.free{background:rgba(59,130,246,.12);color:var(--primary);border:2px solid var(--primary)}
-    .pricing-btn.premium{background:var(--primary);color:#fff}
-    .pricing-btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(59,130,246,.25)}
+    /* Pricing */
+    .pricing-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:2rem; max-width:800px; margin:3rem auto 0}
+    .pricing-card{background:#fff; border-radius:25px; padding:3rem 2rem; border:1px solid var(--border); transition:.3s; position:relative}
+    .pricing-card:hover{transform:translateY(-10px); box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    .pricing-card.premium{border-color:var(--primary); background:rgba(59,130,246,.02)}
+    .pricing-badge{position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--primary); color:#fff; padding:.5rem 2rem; border-radius:20px; font-weight:800; font-size:.9rem}
+    .pricing-icon{font-size:3rem; margin-bottom:1rem}
+    .pricing-title{font-size:1.8rem; font-weight:700; color:#000}
+    .pricing-price{font-size:3rem; font-weight:900; color:#000; margin:1rem 0}
+    .pricing-period{font-size:1rem; color:#000; opacity:.7; font-weight:600; margin-bottom:2rem}
+    .pricing-features{list-style:none; text-align:left; margin-bottom:2rem}
+    .pricing-features li{padding:.5rem 0; color:#000}
+    .pricing-btn{width:100%; padding:1rem 2rem; border:none; border-radius:25px; font-weight:600; cursor:pointer; transition:.3s; font-size:1rem}
+    .pricing-btn.free{background:rgba(59,130,246,.1); color:var(--primary); border:2px solid var(--primary)}
+    .pricing-btn.premium{background:var(--primary); color:#fff}
+    .pricing-btn:hover{transform:translateY(-2px); box-shadow:0 10px 25px rgba(59,130,246,.25)}
 
-    /* Cómo funciona */
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;margin-top:1rem}
-    .feature-card{background:#fff;border-radius:25px;padding:3rem 2rem;border:1px solid var(--border);text-align:center;transition:all .2s}
-    .feature-card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,.08)}
-    .feature-icon{font-size:4rem;margin-bottom:1rem;display:block}
+    /* How it works */
+    .features-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:2rem; margin-top:3rem}
+    .feature-card{background:#fff; border-radius:25px; padding:3rem 2rem; border:1px solid var(--border); transition:.3s; text-align:center}
+    .feature-card:hover{transform:translateY(-10px); box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    .feature-icon{font-size:4rem; margin-bottom:2rem; display:block}
 
-    /* Upload / Closet (solo UI estática para la demo) */
+    /* Upload / Closet */
     .upload-section{background:rgba(249,250,251,.5)}
-    .welcome-section,.profile-section,.closet-question,.closet-container,.occasion-section,.upload-area{display:none}
-    .welcome-section{background:rgba(34,197,94,.05);border:2px solid rgba(34,197,94,.2);border-radius:20px;padding:2rem;margin:2rem 0}
-    .closet-question{background:rgba(59,130,246,.05);border:2px solid rgba(59,130,246,.2);border-radius:20px;padding:2rem;margin:2rem 0}
-    .closet-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-top:1.5rem}
-    .closet-option{background:#fff;border:2px solid var(--border);border-radius:20px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
-    .closet-option:hover{transform:translateY(-5px);border-color:var(--primary);background:rgba(59,130,246,.08)}
-    .option-icon{font-size:3rem;margin-bottom:.5rem;color:var(--primary)}
+    .welcome-section{display:none; background:rgba(34,197,94,.05); border:2px solid rgba(34,197,94,.2); border-radius:20px; padding:3rem 2rem; margin:2rem 0; text-align:center}
+    .closet-question{display:none; background:rgba(59,130,246,.05); border:2px solid rgba(59,130,246,.2); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
+    .closet-options{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:2rem; margin-top:2rem}
+    .closet-option{background:#fff; border:2px solid var(--border); border-radius:20px; padding:2rem; cursor:pointer; transition:.3s; text-align:center; position:relative}
+    .closet-option:hover{transform:translateY(-5px); border-color:var(--primary); background:rgba(59,130,246,.08)}
+    .option-icon{font-size:3rem; margin-bottom:1rem; color:var(--primary)}
 
-    /* Team */
-    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:2rem;margin-top:1rem}
-    .team-card{background:#fff;border-radius:25px;padding:2rem;border:1px solid var(--border);text-align:center;transition:all .2s}
-    .team-card:hover{transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,.08)}
-    .team-role{font-size:1rem;color:var(--primary);font-weight:600;margin:.25rem 0 1rem}
+    .closet-container{display:none; background:#fff; border-radius:25px; border:2px solid var(--border); overflow:hidden; margin:2rem 0; box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    .closet-header{background:linear-gradient(135deg,var(--primary),#1d4ed8); color:#fff; padding:1.5rem 2rem; display:flex; gap:1rem; align-items:center}
+    .closet-stats{background:rgba(255,255,255,.1); padding:1rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; text-align:center}
+    .closet-stat{color:#fff}.closet-stat-number{font-size:1.5rem; font-weight:700; display:block}
 
-    /* Footer CTA + Footer */
-    .footer-cta{background:rgba(59,130,246,.06);padding:4rem 5%}
-    .cta-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;max-width:640px;margin:2rem auto 0}
-    .cta-feature{background:#fff;border:2px solid var(--border);border-radius:20px;padding:2rem;text-align:center;transition:all .2s}
-    .cta-feature:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,.06)}
-    footer{background:#fff;color:#000;padding:3rem 5% 2rem;border-top:1px solid var(--border)}
-    .footer-content{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr;gap:3rem;margin-bottom:1.5rem}
-    .footer-column h3{font-size:1.3rem;font-weight:700;margin-bottom:1rem;color:#000}
-    .footer-column p,.footer-column a{color:#000;opacity:.75;text-decoration:none;line-height:1.8;display:block;margin-bottom:.35rem}
+    .automatic-upload-zone{border:3px dashed var(--primary); border-radius:25px; padding:3rem 2rem; margin:2rem 2rem 0; text-align:center; cursor:pointer; background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.06))}
+    .automatic-upload-zone:hover{border-color:var(--success); transform:translateY(-4px); box-shadow:0 20px 40px rgba(16,185,129,.15)}
+    .upload-ai-icon{font-size:4rem; color:var(--primary); margin-bottom:1rem; animation:bounce 2s infinite}
+    @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
+    .ai-features{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-top:1.2rem}
+    .ai-feature{background:#fff; border-radius:15px; padding:1rem; transition:.3s; border:1px solid var(--border)}
+    .ai-feature:hover{transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,0,0,.06)}
+    .closet-tabs{display:flex; gap:.2rem; background:#f8fafc; border-top:1px solid var(--border); border-bottom:1px solid var(--border)}
+    .closet-tab{padding:1rem 1.2rem; background:transparent; border:none; cursor:pointer; font-weight:600; color:#000; opacity:.75; transition:.2s; border-bottom:3px solid transparent; display:flex; gap:.5rem; align-items:center}
+    .closet-tab.active{color:var(--primary); opacity:1; border-bottom-color:var(--primary)}
+    .closet-content{padding:2rem; min-height:380px}
+    .closet-tab-content{display:none}
+    .closet-tab-content.active{display:block}
+
+    .occasion-section{display:none; background:rgba(59,130,246,.05); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
+    .occasion-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.5rem; margin-bottom:2rem}
+    .occasion-btn{background:#fff; border:2px solid var(--border); border-radius:15px; padding:1.2rem; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; gap:.7rem}
+    .occasion-btn i{font-size:2rem; color:var(--primary)}
+    .occasion-btn:hover,.occasion-btn.selected{transform:translateY(-5px); border-color:var(--primary); background:rgba(59,130,246,.08)}
+
+    .upload-area{display:none; background:rgba(59,130,246,.02); border:2px dashed var(--border); border-radius:25px; padding:3rem 2rem; margin:2rem 0}
+    .upload-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; margin:2rem 0}
+    .upload-item{background:#fff; border-radius:20px; padding:2rem 1.5rem; border:1px solid var(--border); text-align:center}
+    .file-input{display:none}
+    .file-label{display:block; margin-top:1rem; padding:1rem 2rem; background:var(--primary); color:#fff; border-radius:25px; font-weight:600; cursor:pointer; transition:.3s}
+    .file-label:hover{transform:translateY(-2px); box-shadow:0 5px 15px rgba(59,130,246,.25)}
+    .preview-area{margin-top:1rem; display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center}
+    .preview-image{width:120px; height:120px; object-fit:cover; border-radius:15px; border:2px solid var(--primary)}
+    .remove-image{position:relative; top:-118px; left:95px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px}
+
+    .generate-section{background:linear-gradient(135deg,rgba(59,130,246,.05),rgba(34,197,94,.05)); border:2px solid var(--border); border-radius:25px; padding:2rem; text-align:center}
+    .generate-btn{padding:1.2rem 2.4rem; background:linear-gradient(135deg,var(--success),#059669); color:#fff; border:none; border-radius:50px; font-weight:700; font-size:1.1rem; cursor:pointer; display:inline-flex; gap:.8rem; align-items:center; box-shadow:0 10px 30px rgba(16,185,129,.28)}
+    .generate-btn:disabled{opacity:.6; cursor:not-allowed}
+    .processing-timer{display:none; background:rgba(59,130,246,.1); border-radius:12px; padding:.6rem 1rem; margin:1rem auto; font-weight:600; color:var(--primary); width:max-content}
+
+    /* Team & Footer */
+    .team-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:2rem; margin-top:3rem}
+    .team-card{background:#fff; border-radius:25px; padding:2rem; border:1px solid var(--border); text-align:center; transition:.3s}
+    .team-card:hover{transform:translateY(-10px); box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    .team-role{font-size:1rem; color:var(--primary); font-weight:600; margin-bottom:1rem}
+
+    .footer-cta{background:rgba(59,130,246,.05); padding:4rem 5%}
+    .cta-features{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; max-width:600px; margin:0 auto 3rem}
+    .cta-feature{background:#fff; border:2px solid var(--border); border-radius:20px; padding:2rem; text-align:center}
+
+    footer{background:#fff; color:#000; padding:3rem 5% 2rem; border-top:1px solid var(--border)}
+    .footer-content{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr; gap:3rem; margin-bottom:2rem}
+    .footer-column h3{font-size:1.3rem; font-weight:700; margin-bottom:1.5rem; color:#000}
+    .footer-column p,.footer-column a{color:#000; opacity:.75; text-decoration:none; line-height:1.8; display:block; margin-bottom:.5rem}
     .footer-column a:hover{opacity:1}
 
+    /* Notifications */
+    .notification{position:fixed; top:20px; right:20px; padding:1rem 1.4rem; border-radius:15px; color:#fff; font-weight:600; z-index:10000; max-width:350px; box-shadow:0 10px 30px rgba(0,0,0,.18); animation:slideInRight .3s}
+    .notification.success{background:linear-gradient(135deg,#10b981,#059669)}
+    .notification.error{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    .notification.info{background:linear-gradient(135deg,var(--primary),#1d4ed8)}
+    @keyframes slideInRight{from{transform:translateX(100%); opacity:0}to{transform:translateX(0); opacity:1}}
+
+    /* Profile mini form (render/control en app.js) */
+    .profile-section{display:none; background:rgba(59,130,246,.05); border:2px solid rgba(59,130,246,.2); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
+    .profile-field{ text-align:left; margin-bottom:2rem}
+    .profile-field label{display:block; font-weight:600; color:#000; margin-bottom:1rem; font-size:1.1rem}
+    .profile-options{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
+    .profile-option{background:#fff; border:2px solid var(--border); border-radius:15px; padding:1rem .5rem; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; gap:.5rem; font-size:.9rem; font-weight:500; color:#000; text-align:center; min-height:80px; justify-content:center}
+    .profile-option:hover{transform:translateY(-3px); border-color:var(--primary); background:rgba(59,130,246,.1)}
+    .profile-option.selected{border-color:var(--primary); background:rgba(59,130,246,.15)}
+
     /* Responsive */
-    @media (max-width: 900px){
-      .logo{font-size:2.4rem}
+    @media (max-width: 768px){
       .nav-pills{display:none}
       .mobile-menu-toggle{display:block}
-      .mobile-nav{display:block}
-      .footer-content{grid-template-columns:1fr;text-align:center}
-      .team-grid{grid-template-columns:1fr}
-      .features-grid{grid-template-columns:1fr}
-      .pricing-cards{grid-template-columns:1fr}
+      .logo{font-size:2rem}
+      .footer-content{grid-template-columns:1fr; text-align:center; gap:2rem}
+      .profile-options{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <!-- ===================== HEADER ===================== -->
   <header>
     <nav>
-      <div class="logo" aria-label="NoShopiA">
+      <div class="logo">
         <span class="logo-no">No</span><span class="logo-shop">shop</span><span class="logo-i">i</span><span class="logo-a">A</span>
       </div>
 
-      <div style="display:flex;align-items:center;gap:1rem">
+      <div style="display:flex; align-items:center;">
+        <!-- Desktop pills -->
         <div class="nav-pills">
           <a href="#inicio" class="nav-pill active" data-section="inicio">🏠 Inicio</a>
           <a href="#impacto" class="nav-pill" data-section="impacto">🌍 Impacto Ambiental</a>
@@ -151,6 +232,7 @@
           <a href="#equipo" class="nav-pill" data-section="equipo">👥 Equipo</a>
         </div>
 
+        <!-- Mobile hamburger -->
         <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
           <i class="fas fa-bars"></i>
         </button>
@@ -159,16 +241,16 @@
           <button id="headerLoginBtn" disabled style="opacity:.6">
             <i class="fas fa-spinner fa-spin"></i> Cargando...
           </button>
-          <div class="user-info" id="userInfo">
-            <img id="userAvatar" class="user-avatar" alt="Usuario"/>
+          <div class="user-info" id="userInfo" style="display:none;">
+            <img class="user-avatar" id="userAvatar" alt="Usuario"/>
             <span id="userName" title="Usuario activo"></span>
-            <button id="logoutBtn" class="logout-btn">Salir</button>
+            <button class="logout-btn" id="logoutBtn" onclick="logout()">Salir</button>
           </div>
         </div>
       </div>
     </nav>
 
-    <!-- Menú móvil -->
+    <!-- Mobile Nav Panel -->
     <div class="mobile-nav" id="mobileNav">
       <a href="#inicio" class="mobile-nav-item" data-section="inicio">🏠 Inicio</a>
       <a href="#impacto" class="mobile-nav-item" data-section="impacto">🌍 Impacto Ambiental</a>
@@ -178,34 +260,24 @@
     </div>
   </header>
 
-  <!-- ===================== HERO ===================== -->
+  <!-- Hero -->
   <section id="inicio" class="hero">
-    <div style="max-width:900px">
-      <div style="font-size:4rem;margin-bottom:1rem">🚫🛍️👕</div>
+    <div style="max-width:900px;">
+      <span style="font-size:4rem; display:block; margin-bottom:1rem;">🚫🛍️👕</span>
       <h1>Reutiliza tu ropa con IA y minimiza tu Impacto Ambiental</h1>
       <p class="hero-subtitle">¿Tardas mucho eligiendo qué ponerte cada mañana?</p>
-      <p style="font-size:1.1rem;color:#000;opacity:.85;max-width:720px;margin:0 auto 2.2rem">
+      <p style="font-size:1.1rem; color:#000; opacity:.8; margin:0 auto 3rem; max-width:700px;">
         Descubre combinaciones únicas con tu ropa actual gracias a nuestra inteligencia artificial. Sin estrés, sin pérdida de tiempo, solo outfits perfectos que cuidan el planeta.
       </p>
-
       <div class="stats">
-        <div class="stat-item">
-          <span class="stat-number">15min</span>
-          <span style="opacity:.75">Ahorrados cada mañana</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">10s</span>
-          <span style="opacity:.75">Para generar outfit</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">25kg</span>
-          <span style="opacity:.75">CO₂ reducido</span>
-        </div>
+        <div class="stat-item"><span class="stat-number">15min</span><span style="color:#000; opacity:.7">Ahorrados cada mañana</span></div>
+        <div class="stat-item"><span class="stat-number">10s</span><span style="color:#000; opacity:.7">Para generar outfit</span></div>
+        <div class="stat-item"><span class="stat-number">25kg</span><span style="color:#000; opacity:.7">CO₂ reducido</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== IMPACTO ===================== -->
+  <!-- Impact -->
   <section id="impacto">
     <div class="section-container">
       <div class="section-title">
@@ -216,35 +288,34 @@
         <div class="impact-item">
           <div class="impact-label"><span>Reducción en consumo de agua</span><span>85%</span></div>
           <div class="impact-bar"><div class="impact-fill" data-width="85"></div></div>
-          <p style="opacity:.75;margin-top:.4rem">Cada prenda nueva requiere miles de litros de agua en su producción.</p>
+          <p style="font-size:.95rem; color:#000; opacity:.8">Cada prenda nueva requiere miles de litros de agua en su producción.</p>
         </div>
         <div class="impact-item">
           <div class="impact-label"><span>Menos emisiones de CO₂</span><span>72%</span></div>
           <div class="impact-bar"><div class="impact-fill" data-width="72"></div></div>
-          <p style="opacity:.75;margin-top:.4rem">El transporte y manufactura textil son grandes emisores de carbono.</p>
+          <p style="font-size:.95rem; color:#000; opacity:.8">El transporte y manufactura textil son grandes emisores de carbono.</p>
         </div>
         <div class="impact-item">
           <div class="impact-label"><span>Reducción residuos textiles</span><span>68%</span></div>
           <div class="impact-bar"><div class="impact-fill" data-width="68"></div></div>
-          <p style="opacity:.75;margin-top:.4rem">Millones de toneladas de ropa terminan en vertederos anualmente.</p>
+          <p style="font-size:.95rem; color:#000; opacity:.8">Millones de toneladas de ropa terminan en vertederos anualmente.</p>
         </div>
         <div class="impact-item">
           <div class="impact-label"><span>Menos uso de químicos</span><span>63%</span></div>
           <div class="impact-bar"><div class="impact-fill" data-width="63"></div></div>
-          <p style="opacity:.75;margin-top:.4rem">Los tintes y tratamientos textiles contaminan ríos y océanos.</p>
+          <p style="font-size:.95rem; color:#000; opacity:.8">Los tintes y tratamientos textiles contaminan ríos y océanos.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== PRECIOS ===================== -->
-  <section id="precios" class="pricing-section">
+  <!-- Pricing -->
+  <section id="precios">
     <div class="section-container">
       <div class="section-title">
         <h2>$ Precios Simples y Claros</h2>
         <p class="section-subtitle">Elige el plan que mejor se adapte a tu estilo de vida</p>
       </div>
-
       <div class="pricing-cards">
         <div class="pricing-card">
           <div class="pricing-icon">🎁</div>
@@ -262,7 +333,6 @@
           </ul>
           <button class="pricing-btn free" id="startFreePlan">Empezar Gratis</button>
         </div>
-
         <div class="pricing-card premium">
           <div class="pricing-badge">Más Popular</div>
           <div class="pricing-icon">⭐</div>
@@ -284,7 +354,7 @@
     </div>
   </section>
 
-  <!-- ===================== CÓMO FUNCIONA ===================== -->
+  <!-- How it works -->
   <section id="funcionamiento">
     <div class="section-container">
       <div class="section-title">
@@ -292,82 +362,204 @@
         <p class="section-subtitle">Descubre combinaciones únicas con tu ropa actual en solo tres simples pasos</p>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">📱</div>
-          <h3>1. Sube tus prendas</h3>
-          <p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado. Nuestra IA analiza cada pieza automáticamente.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🤖</div>
-          <h3>2. IA genera recomendaciones</h3>
-          <p>Nuestro algoritmo avanzado analiza colores, estilos, ocasiones y tendencias para crear outfits únicos y balanceados.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">✨</div>
-          <h3>3. Recibe sugerencias</h3>
-          <p>Obtén recomendaciones personalizadas rankeadas por score de compatibilidad en menos de 10 segundos.</p>
-        </div>
+        <div class="feature-card"><div class="feature-icon">📱</div><h3>1. Sube tus prendas</h3><p>Fotografía las prendas que quieres incluir: superiores, inferiores y calzado. Nuestra IA analiza cada pieza automáticamente.</p></div>
+        <div class="feature-card"><div class="feature-icon">🤖</div><h3>2. IA genera recomendaciones</h3><p>Analiza colores, estilos, ocasiones y tendencias para crear outfits únicos y balanceados.</p></div>
+        <div class="feature-card"><div class="feature-icon">✨</div><h3>3. Recibe sugerencias</h3><p>Personalizadas y rankeadas por score de compatibilidad en menos de 10 segundos.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== UPLOAD / CLOSET (estructura base) ===================== -->
+  <!-- Upload / Closet -->
   <section id="upload" class="upload-section">
     <div class="section-container">
       <h2 style="color:#000">✨ Tu Guardarropa Digital Personalizado</h2>
-      <p style="color:#000;opacity:.85;margin-bottom:1.2rem">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
+      <p style="color:#000; opacity:.8; margin-bottom:2rem">Sube fotos de la ropa que ya tienes y descubre combinaciones increíbles</p>
 
-      <!-- Welcome (oculto hasta login real) -->
+      <!-- Bienvenida -->
       <div id="welcomeSection" class="welcome-section">
-        <h3 style="margin-bottom:.6rem">🎉 ¡Bienvenido a NoShopiA!</h3>
-        <p style="opacity:.8;margin-bottom:.6rem">Tu perfil ha sido creado exitosamente. Para darte mejores recomendaciones, necesitamos conocerte un poco más.</p>
-        <p style="font-weight:600"><span id="welcomeUserName">Usuario</span>, estás listo para empezar</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-top:1rem">
-          <div><strong id="visitCounter">1</strong><div>Visitas</div></div>
-          <div><strong id="recommendationCounter">0</strong><div>Recomendaciones</div></div>
-          <div><strong id="outfitCounter">0</strong><div>Outfits Guardados</div></div>
+        <h3 style="color:#000; margin-bottom:1rem;">🎉 ¡Bienvenido a NoShopiA!</h3>
+        <p style="color:#000; opacity:.8; margin-bottom:1rem;">Tu perfil ha sido verificado. Estás listo para comenzar.</p>
+        <p style="color:#000; font-weight:600; margin-bottom:1rem;"><span id="welcomeUserName">Usuario</span>, ¡vamos por tus primeras recomendaciones!</p>
+        <div class="closet-stats">
+          <div class="closet-stat"><span class="closet-stat-number" id="visitCounter">1</span><span>Visitas</span></div>
+          <div class="closet-stat"><span class="closet-stat-number" id="recommendationCounter">0</span><span>Recomendaciones</span></div>
+          <div class="closet-stat"><span class="closet-stat-number" id="outfitCounter">0</span><span>Outfits Guardados</span></div>
         </div>
       </div>
 
-      <!-- Perfil (oculto inicial) -->
-      <div id="profileForm" class="profile-section" style="display:none">
-        <h3 style="text-align:center;margin-bottom:1rem">👤 Completa tu Perfil (Solo una vez)</h3>
-        <p style="opacity:.8;text-align:center;margin-bottom:1.5rem">Para personalizar mejor tus recomendaciones futuras</p>
-        <div style="max-width:640px;margin:0 auto;text-align:left">
-          <!-- Campos se llenan por tu app.js -->
+      <!-- Perfil (solo si falta) -->
+      <div id="profileForm" class="profile-section">
+        <h3 style="text-align:center; margin-bottom:1rem;">👤 Completa tu Perfil (Solo una vez)</h3>
+        <p style="text-align:center; opacity:.8; margin-bottom:2rem;">Para personalizar mejor tus recomendaciones</p>
+        <div style="max-width:600px; margin:0 auto;">
+          <div class="profile-field">
+            <label>Color de piel:</label>
+            <div class="profile-options">
+              <button type="button" class="profile-option" data-field="skin_color" data-value="claro"><div style="background:#F5DEB3; width:30px; height:30px; border-radius:50%;"></div>Claro</button>
+              <button type="button" class="profile-option" data-field="skin_color" data-value="medio"><div style="background:#DEB887; width:30px; height:30px; border-radius:50%;"></div>Medio</button>
+              <button type="button" class="profile-option" data-field="skin_color" data-value="oscuro"><div style="background:#8B4513; width:30px; height:30px; border-radius:50%;"></div>Oscuro</button>
+            </div>
+          </div>
+          <div class="profile-field">
+            <label>Rango de edad:</label>
+            <div class="profile-options">
+              <button type="button" class="profile-option" data-field="age_range" data-value="menor_18"><i class="fas fa-child" style="color:var(--primary)"></i>Menor 18</button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="18-24"><i class="fas fa-user-graduate" style="color:var(--primary)"></i>18–24</button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="25-34"><i class="fas fa-user-tie" style="color:var(--primary)"></i>25–34</button>
+            </div>
+            <div class="profile-options" style="margin-top:1rem;">
+              <button type="button" class="profile-option" data-field="age_range" data-value="35-44"><i class="fas fa-user" style="color:var(--primary)"></i>35–44</button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="45-54"><i class="fas fa-user-check" style="color:var(--primary)"></i>45–54</button>
+              <button type="button" class="profile-option" data-field="age_range" data-value="mas_54"><i class="fas fa-user-clock" style="color:var(--primary)"></i>Más de 54</button>
+            </div>
+          </div>
+          <div class="profile-field">
+            <label>Género:</label>
+            <div class="profile-options">
+              <button type="button" class="profile-option" data-field="gender" data-value="hombre"><i class="fas fa-mars" style="color:var(--primary)"></i>Hombre</button>
+              <button type="button" class="profile-option" data-field="gender" data-value="mujer"><i class="fas fa-venus" style="color:var(--primary)"></i>Mujer</button>
+              <button type="button" class="profile-option" data-field="gender" data-value="no_binario"><i class="fas fa-genderless" style="color:var(--primary)"></i>No binario</button>
+            </div>
+          </div>
         </div>
-        <div style="text-align:center;margin-top:1.5rem">
-          <button id="createProfileBtn" class="pricing-btn premium" disabled style="opacity:.6">Selecciona todas las opciones</button>
+        <div style="text-align:center; margin-top:2rem;">
+          <button id="createProfileBtn" class="generate-btn" disabled style="opacity:.6"><i class="fas fa-user-plus"></i> Selecciona todas las opciones</button>
         </div>
       </div>
 
-      <!-- Pregunta de modo -->
+      <!-- Modalidad -->
       <div id="closetQuestion" class="closet-question">
-        <h3>👗 ¿Cómo quieres obtener recomendaciones?</h3>
-        <p style="opacity:.8">Elige el método que mejor se adapte a tu estilo</p>
+        <h3 style="color:#000; margin-bottom:1rem;">👗 ¿Cómo quieres obtener recomendaciones?</h3>
+        <p style="opacity:.8; margin-bottom:2rem;">Elige el método que mejor se adapte a tu estilo</p>
         <div class="closet-options">
-          <div class="closet-option" id="enableClosetBtn">
-            <div class="option-icon">✨</div>
-            <h4>Mi Closet Inteligente</h4>
-            <p style="opacity:.75">IA detecta automáticamente el tipo de prenda</p>
+          <div class="closet-option" id="enableClosetBtn" data-mode="closet"><div class="option-icon">✨</div><h4>Mi Closet Inteligente</h4><p style="opacity:.75; font-size:.95rem">IA detecta automáticamente el tipo de prenda</p></div>
+          <div class="closet-option" id="useDirectModeBtn" data-mode="direct"><div class="option-icon">⚡</div><h4>Recomendaciones Rápidas</h4><p style="opacity:.75; font-size:.95rem">Subida directa de fotos</p></div>
+        </div>
+      </div>
+
+      <!-- Closet inteligente -->
+      <div id="closetContainer" class="closet-container">
+        <div class="closet-header">
+          <i class="fas fa-brain" style="font-size:1.5rem;"></i>
+          <div>
+            <h2>Mi Closet Inteligente</h2>
+            <span id="userEmail" style="opacity:.9; font-size:.95rem; color:#fff;">Bienvenido Usuario</span>
           </div>
-          <div class="closet-option" id="useDirectModeBtn">
-            <div class="option-icon">⚡</div>
-            <h4>Recomendaciones Rápidas</h4>
-            <p style="opacity:.75">Subida directa de fotos</p>
+        </div>
+
+        <div class="closet-stats">
+          <div class="closet-stat"><span class="closet-stat-number" id="closetVisits">1</span><span>Visitas</span></div>
+          <div class="closet-stat"><span class="closet-stat-number" id="closetRecommendations">0</span><span>Recomendaciones</span></div>
+          <div class="closet-stat"><span class="closet-stat-number" id="closetOutfits">0</span><span>Outfits Guardados</span></div>
+        </div>
+
+        <!-- Zona de subida INTELIGENTE (IA detecta tops/bottoms/shoes) -->
+        <div class="automatic-upload-zone" id="automaticUploadZone">
+          <div class="upload-ai-icon">🤖</div>
+          <h3 class="upload-ai-title" style="font-size:1.8rem; font-weight:800; color:#000; margin-bottom:.4rem;">Sube cualquier prenda</h3>
+          <p class="upload-ai-subtitle" style="font-size:1.1rem; color:var(--primary); font-weight:600">La IA detecta automáticamente si es superior, inferior o calzado</p>
+          <p class="upload-ai-description" style="max-width:700px; margin:0 auto; opacity:.8">Haz clic o arrastra tus fotos. Se enviarán al endpoint <strong>/api/recommend</strong> y se clasificarán automáticamente en 👕/👖/👞.</p>
+          <input type="file" id="automaticUploadInput" class="file-input" accept="image/*" multiple />
+          <div class="ai-features">
+            <div class="ai-feature"><div class="ai-feature-icon">🧠</div><div class="ai-feature-title" style="font-weight:600">Detección Automática</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Identifica el tipo por IA</div></div>
+            <div class="ai-feature"><div class="ai-feature-icon">📂</div><div class="ai-feature-title" style="font-weight:600">Organización Inteligente</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Guarda por subcategorías</div></div>
+            <div class="ai-feature"><div class="ai-feature-icon">⚡</div><div class="ai-feature-title" style="font-weight:600">Navegación Automática</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Te lleva a la pestaña correcta</div></div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="closet-tabs">
+          <button class="closet-tab active" data-tab="superiores"><i class="fas fa-tshirt"></i> Prendas Superiores</button>
+          <button class="closet-tab" data-tab="inferiores"><i class="fas fa-user-tie"></i> Prendas Inferiores</button>
+          <button class="closet-tab" data-tab="calzado"><i class="fas fa-shoe-prints"></i> Calzado</button>
+          <button class="closet-tab" data-tab="recomendaciones"><i class="fas fa-star"></i> Mis Recomendaciones</button>
+        </div>
+
+        <div class="closet-content">
+          <div id="superiores" class="closet-tab-content active">
+            <div style="text-align:center; padding:3rem; color:#666;">
+              <i class="fas fa-tshirt" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
+              <p>No hay prendas superiores aún</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+            </div>
+          </div>
+
+          <div id="inferiores" class="closet-tab-content">
+            <div style="text-align:center; padding:3rem; color:#666;">
+              <i class="fas fa-user-tie" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
+              <p>No hay prendas inferiores aún</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+            </div>
+          </div>
+
+          <div id="calzado" class="closet-tab-content">
+            <div style="text-align:center; padding:3rem; color:#666;">
+              <i class="fas fa-shoe-prints" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
+              <p>No hay calzado aún</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+            </div>
+          </div>
+
+          <div id="recomendaciones" class="closet-tab-content">
+            <h3 style="margin-bottom:1rem; color:#000;">⭐ Mis Recomendaciones Guardadas</h3>
+            <div id="savedRecommendationsList" style="text-align:center; opacity:.75; padding:1.5rem;">Aquí aparecerán tus combinaciones favoritas guardadas</div>
           </div>
         </div>
       </div>
 
-      <!-- Contenedores que tu app mostrará según modo -->
-      <div id="closetContainer" class="closet-container"></div>
-      <div id="occasionSelector" class="occasion-section"></div>
-      <div id="uploadArea" class="upload-area"></div>
-      <div id="result" style="display:none;margin-top:2rem"></div>
+      <!-- Direct mode -->
+      <div id="occasionSelector" class="occasion-section">
+        <h3>¿Qué planes tienes para esta ocasión?</h3>
+        <div class="occasion-grid">
+          <button class="occasion-btn" data-occasion="oficina"><i class="fas fa-briefcase"></i><span>Oficina</span></button>
+          <button class="occasion-btn" data-occasion="deportivo"><i class="fas fa-dumbbell"></i><span>Deportes/Gym</span></button>
+          <button class="occasion-btn" data-occasion="casual"><i class="fas fa-users"></i><span>Junta casual</span></button>
+          <button class="occasion-btn" data-occasion="formal"><i class="fas fa-black-tie"></i><span>Outfit Formal</span></button>
+          <button class="occasion-btn" data-occasion="matrimonio"><i class="fas fa-ring"></i><span>Matrimonio</span></button>
+        </div>
+      </div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="upload-grid">
+          <div class="upload-item">
+            <i class="fas fa-tshirt" style="font-size:2.2rem; color:var(--primary); margin-bottom:1rem;"></i>
+            <h4>Parte Superior</h4>
+            <p style="opacity:.8">Camisas, blusas, suéteres</p>
+            <label for="tops-upload" class="file-label">📤 Subir Superiores (máx 3)</label>
+            <input type="file" id="tops-upload" class="file-input" accept="image/*" multiple/>
+            <div id="tops-preview" class="preview-area"></div>
+          </div>
+          <div class="upload-item">
+            <i class="fas fa-user-tie" style="font-size:2.2rem; color:var(--primary); margin-bottom:1rem;"></i>
+            <h4>Parte Inferior</h4>
+            <p style="opacity:.8">Pantalones, faldas, shorts</p>
+            <label for="bottoms-upload" class="file-label">📤 Subir Inferiores (máx 3)</label>
+            <input type="file" id="bottoms-upload" class="file-input" accept="image/*" multiple/>
+            <div id="bottoms-preview" class="preview-area"></div>
+          </div>
+          <div class="upload-item">
+            <i class="fas fa-shoe-prints" style="font-size:2.2rem; color:var(--primary); margin-bottom:1rem;"></i>
+            <h4>Calzado</h4>
+            <p style="opacity:.8">Zapatos, sneakers, botas</p>
+            <label for="shoes-upload" class="file-label">📤 Subir Zapatos (máx 5)</label>
+            <input type="file" id="shoes-upload" class="file-input" accept="image/*" multiple/>
+            <div id="shoes-preview" class="preview-area"></div>
+          </div>
+        </div>
+
+        <div class="generate-section">
+          <h3 style="color:#000; margin-bottom:.6rem;">🚀 ¡Genera tus Recomendaciones!</h3>
+          <p style="opacity:.8; margin-bottom:1rem;">Nuestra IA analizará todas las combinaciones</p>
+          <div class="processing-timer" id="processingTimer">⏱️ Procesando... <span id="timerDisplay">0.0s</span></div>
+          <button class="generate-btn" id="generateBtn" disabled><i class="fas fa-upload"></i> Completa todos los campos</button>
+        </div>
+
+        <div id="result" style="display:none; margin-top:2rem;"></div>
+      </div>
     </div>
   </section>
 
-  <!-- ===================== EQUIPO ===================== -->
+  <!-- Team -->
   <section id="equipo">
     <div class="section-container">
       <div class="section-title">
@@ -378,7 +570,7 @@
         <div class="team-card">
           <h3>José Francisco Corti Badia</h3>
           <p class="team-role">Founder & CEO</p>
-          <p>Ingeniero Comercial, Diplomado en GenAI U. de Chile 2025 y Diplomado en AI PUC 2022. 15+ años creando soluciones de IA.</p>
+          <p>Ingeniero Comercial, Diplomado en GenAI U. de Chile 2025 y Diplomado en AI PUC 2022. +15 años creando soluciones tecnológicas con IA.</p>
         </div>
         <div class="team-card">
           <h3>Paola Andrea Curti Simpson</h3>
@@ -389,33 +581,25 @@
     </div>
   </section>
 
-  <!-- ===================== CTA FINAL ===================== -->
+  <!-- Footer CTA -->
   <section class="footer-cta">
     <div class="section-container">
-      <h3 style="font-size:2rem;font-weight:800">🚀 ¡Comienza Ahora!</h3>
-      <p style="opacity:.85">Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
+      <h3 style="font-size:2rem; font-weight:700; color:#000">🚀 ¡Comienza Ahora!</h3>
+      <p style="opacity:.8">Únete a miles de personas que ya están revolucionando su estilo de manera sostenible</p>
       <div class="cta-features">
-        <div class="cta-feature">
-          <div style="font-size:3rem;margin-bottom:.5rem;color:var(--success)">🎁</div>
-          <h4 style="font-size:1.4rem">Gratis</h4>
-          <p style="opacity:.75">Sin costo inicial</p>
-        </div>
-        <div class="cta-feature">
-          <div style="font-size:3rem;margin-bottom:.5rem;color:var(--primary)">⚡</div>
-          <h4 style="font-size:1.4rem">Instantáneo</h4>
-          <p style="opacity:.75">Resultados en 10 segundos</p>
-        </div>
+        <div class="cta-feature"><div style="font-size:4rem; margin-bottom:1rem; color:var(--success);">🎁</div><h4 style="font-weight:700; font-size:1.4rem;">Gratis</h4><p style="opacity:.75">Sin costo inicial</p></div>
+        <div class="cta-feature"><div style="font-size:4rem; margin-bottom:1rem; color:var(--primary);">⚡</div><h4 style="font-weight:700; font-size:1.4rem;">Instantáneo</h4><p style="opacity:.75">Resultados en 10 segundos</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== FOOTER ===================== -->
+  <!-- Footer -->
   <footer>
     <div class="footer-content">
       <div class="footer-column">
         <h3><span class="logo-no">No</span><span class="logo-shop">shop</span><span class="logo-i">i</span><span class="logo-a">A</span></h3>
         <p>Maximiza tu ropa, minimiza tu impacto ambiental con IA.</p>
-        <p>📧 <a href="mailto:info@noshopia.com">info@noshopia.com</a></p>
+        <p>📧 Contacto: <a href="mailto:info@noshopia.com">info@noshopia.com</a></p>
       </div>
       <div class="footer-column">
         <h3>Enlaces Rápidos</h3>
@@ -426,32 +610,254 @@
         <a href="#equipo" data-section="equipo">Nuestro Equipo</a>
       </div>
     </div>
-    <div style="padding-top:1rem;border-top:1px solid var(--border);text-align:center;opacity:.75">
+    <div style="padding-top:2rem; border-top:1px solid var(--border); text-align:center; opacity:.75;">
       © 2024 NoshopiA. Todos los derechos reservados.
     </div>
   </footer>
 
-  <!-- Navegación básica para el preview -->
+  <!-- BLOQUE: Traductor + Categorías (guardas anti-duplicado) -->
   <script>
-    document.addEventListener('DOMContentLoaded',()=>{
+    // === BACKEND → FRONTEND TRANSLATOR (idéntico a tu bloque) ===
+    window.BACKEND_TO_SPANISH_TRANSLATOR = {
+      /* SUPERIORES */
+      'shirt':{category:'shirt',name:'Camisa',icon:'👔',type:'tops'},
+      'dress_shirt':{category:'shirt',name:'Camisa',icon:'👔',type:'tops'},
+      'button_shirt':{category:'shirt',name:'Camisa',icon:'👔',type:'tops'},
+      't-shirt':{category:'tshirt',name:'Polera',icon:'👕',type:'tops'},
+      'tshirt':{category:'tshirt',name:'Polera',icon:'👕',type:'tops'},
+      'tee':{category:'tshirt',name:'Polera',icon:'👕',type:'tops'},
+      'tank_top':{category:'tshirt',name:'Polera',icon:'👕',type:'tops'},
+      'graphic_tee':{category:'tshirt',name:'Polera',icon:'👕',type:'tops'},
+      'blouse':{category:'blouse',name:'Blusa',icon:'👚',type:'tops'},
+      'silk_blouse':{category:'blouse',name:'Blusa',icon:'👚',type:'tops'},
+      'sweater':{category:'sweater',name:'Suéter',icon:'🧥',type:'tops'},
+      'cardigan':{category:'sweater',name:'Suéter',icon:'🧥',type:'tops'},
+      'pullover':{category:'sweater',name:'Suéter',icon:'🧥',type:'tops'},
+      'knitted':{category:'sweater',name:'Suéter',icon:'🧥',type:'tops'},
+      'hoodie':{category:'hoodie',name:'Hoodie',icon:'👘',type:'tops'},
+      'sweatshirt':{category:'hoodie',name:'Hoodie',icon:'👘',type:'tops'},
+      'zip_hoodie':{category:'hoodie',name:'Hoodie',icon:'👘',type:'tops'},
+      'jacket':{category:'jacket',name:'Chaqueta',icon:'🧥',type:'tops'},
+      'blazer':{category:'jacket',name:'Chaqueta',icon:'🧥',type:'tops'},
+      'leather_jacket':{category:'jacket',name:'Chaqueta',icon:'🧥',type:'tops'},
+      'denim_jacket':{category:'jacket',name:'Chaqueta',icon:'🧥',type:'tops'},
+      'coat':{category:'coat',name:'Abrigo',icon:'🧥',type:'tops'},
+      'winter_coat':{category:'coat',name:'Abrigo',icon:'🧥',type:'tops'},
+      'trench_coat':{category:'coat',name:'Abrigo',icon:'🧥',type:'tops'},
+      'overcoat':{category:'coat',name:'Abrigo',icon:'🧥',type:'tops'},
+      'vest':{category:'vest',name:'Chaleco',icon:'🦺',type:'tops'},
+      'waistcoat':{category:'vest',name:'Chaleco',icon:'🦺',type:'tops'},
+      /* VESTIDOS (bottoms en tu app) */
+      'dress':{category:'dress',name:'Vestido',icon:'👗',type:'bottoms'},
+      'summer_dress':{category:'dress',name:'Vestido',icon:'👗',type:'bottoms'},
+      'evening_dress':{category:'dress',name:'Vestido',icon:'👗',type:'bottoms'},
+      /* INFERIORES */
+      'jeans':{category:'jeans',name:'Jeans',icon:'👖',type:'bottoms'},
+      'denim':{category:'jeans',name:'Jeans',icon:'👖',type:'bottoms'},
+      'blue_jeans':{category:'jeans',name:'Jeans',icon:'👖',type:'bottoms'},
+      'ripped_jeans':{category:'jeans',name:'Jeans',icon:'👖',type:'bottoms'},
+      'pants':{category:'pants',name:'Pantalones',icon:'👖',type:'bottoms'},
+      'trousers':{category:'pants',name:'Pantalones',icon:'👖',type:'bottoms'},
+      'formal_pants':{category:'pants',name:'Pantalones',icon:'👖',type:'bottoms'},
+      'chinos':{category:'pants',name:'Pantalones',icon:'👖',type:'bottoms'},
+      'slacks':{category:'pants',name:'Pantalones',icon:'👖',type:'bottoms'},
+      'shorts':{category:'shorts',name:'Shorts',icon:'🩳',type:'bottoms'},
+      'athletic_shorts':{category:'shorts',name:'Shorts',icon:'🩳',type:'bottoms'},
+      'bermuda':{category:'shorts',name:'Shorts',icon:'🩳',type:'bottoms'},
+      'skirt':{category:'skirt',name:'Falda',icon:'👗',type:'bottoms'},
+      'midi_skirt':{category:'skirt',name:'Falda',icon:'👗',type:'bottoms'},
+      'mini_skirt':{category:'skirt',name:'Falda',icon:'👗',type:'bottoms'},
+      'pencil_skirt':{category:'skirt',name:'Falda',icon:'👗',type:'bottoms'},
+      'leggings':{category:'leggings',name:'Calzas',icon:'🩱',type:'bottoms'},
+      'sweatpants':{category:'leggings',name:'Calzas',icon:'🩱',type:'bottoms'},
+      'athletic_pants':{category:'leggings',name:'Calzas',icon:'🩱',type:'bottoms'},
+      'yoga_pants':{category:'leggings',name:'Calzas',icon:'🩱',type:'bottoms'},
+      /* CALZADO */
+      'sneakers':{category:'sneakers',name:'Zapatillas',icon:'👟',type:'shoes'},
+      'running_shoes':{category:'sneakers',name:'Zapatillas',icon:'👟',type:'shoes'},
+      'athletic_shoes':{category:'sneakers',name:'Zapatillas',icon:'👟',type:'shoes'},
+      'trainers':{category:'sneakers',name:'Zapatillas',icon:'👟',type:'shoes'},
+      'dress_shoes':{category:'dress_shoes',name:'Zapatos Formales',icon:'👞',type:'shoes'},
+      'formal_shoes':{category:'dress_shoes',name:'Zapatos Formales',icon:'👞',type:'shoes'},
+      'leather_shoes':{category:'dress_shoes',name:'Zapatos Formales',icon:'👞',type:'shoes'},
+      'oxfords':{category:'dress_shoes',name:'Zapatos Formales',icon:'👞',type:'shoes'},
+      'boots':{category:'boots',name:'Botas',icon:'🥾',type:'shoes'},
+      'ankle_boots':{category:'boots',name:'Botas',icon:'🥾',type:'shoes'},
+      'hiking_boots':{category:'boots',name:'Botas',icon:'🥾',type:'shoes'},
+      'combat_boots':{category:'boots',name:'Botas',icon:'🥾',type:'shoes'},
+      'heels':{category:'heels',name:'Tacones',icon:'👠',type:'shoes'},
+      'stiletto_heels':{category:'heels',name:'Tacones',icon:'👠',type:'shoes'},
+      'high_heels':{category:'heels',name:'Tacones',icon:'👠',type:'shoes'},
+      'pumps':{category:'heels',name:'Tacones',icon:'👠',type:'shoes'},
+      'sandals':{category:'sandals',name:'Sandalias',icon:'👡',type:'shoes'},
+      'leather_sandals':{category:'sandals',name:'Sandalias',icon:'👡',type:'shoes'},
+      'flip_flops':{category:'sandals',name:'Sandalias',icon:'👡',type:'shoes'},
+      'flats':{category:'flats',name:'Ballerinas',icon:'🥿',type:'shoes'},
+      'ballet_flats':{category:'flats',name:'Ballerinas',icon:'🥿',type:'shoes'},
+      'loafers':{category:'flats',name:'Ballerinas',icon:'🥿',type:'shoes'},
+      /* FALLBACKS */
+      'top':{category:'tshirt',name:'Superior',icon:'👕',type:'tops'},
+      'bottom':{category:'pants',name:'Inferior',icon:'👖',type:'bottoms'},
+      'shoe':{category:'sneakers',name:'Calzado',icon:'👟',type:'shoes'}
+    };
+
+    // Helpers
+    window.getCategoryInfo = function(type,category){
+      if(!window.INTELLIGENT_CATEGORIES || !window.INTELLIGENT_CATEGORIES[type] || !window.INTELLIGENT_CATEGORIES[type][category]){
+        return {name:'Desconocido', icon:'❓', keywords:[], color:'#6b7280'};
+      }
+      return window.INTELLIGENT_CATEGORIES[type][category];
+    };
+    window.findCategoryByKeyword = function(type,keyword){
+      if(!window.INTELLIGENT_CATEGORIES || !window.INTELLIGENT_CATEGORIES[type]) return null;
+      const k = (keyword||'').toLowerCase();
+      for(const [key,info] of Object.entries(window.INTELLIGENT_CATEGORIES[type])){
+        if(info.keywords.some(w=>w.toLowerCase().includes(k))) return key;
+      }
+      return null;
+    };
+    window.translateBackendItem = function(detected_item){
+      if(!detected_item){ return {category:'unknown', name:'Sin clasificar', icon:'❓', type:'tops'}; }
+      const t = window.BACKEND_TO_SPANISH_TRANSLATOR[detected_item.toLowerCase()];
+      if(t){ return t; }
+      return {category:'unknown', name:detected_item, icon:'❓', type:'tops'};
+    };
+
+    // === INTELLIGENT_CATEGORIES (solo si no existe; evita choque con app.js) ===
+    if(!window.INTELLIGENT_CATEGORIES){
+      window.INTELLIGENT_CATEGORIES = {
+        tops:{
+          "tshirt":{name:"Poleras",icon:"👕",keywords:["t-shirt","tee","graphic","tank top","polera"],color:"#10b981"},
+          "shirt":{name:"Camisas",icon:"👔",keywords:["shirt","dress shirt","button","collar","camisa"],color:"#3b82f6"},
+          "blouse":{name:"Blusas",icon:"👚",keywords:["blouse","silk blouse","flowy","blusa"],color:"#ec4899"},
+          "sweater":{name:"Suéteres",icon:"🧥",keywords:["sweater","knitted","wool","pullover","cardigan","sueter"],color:"#f59e0b"},
+          "hoodie":{name:"Hoodies",icon:"👘",keywords:["hoodie","zip-up","sweatshirt","hooded","capucha"],color:"#ef4444"},
+          "jacket":{name:"Chaquetas",icon:"🧥",keywords:["jacket","leather","denim","blazer","outer","chaqueta"],color:"#6b7280"},
+          "coat":{name:"Abrigos",icon:"🧥",keywords:["coat","winter coat","overcoat","trench","abrigo"],color:"#1f2937"},
+          "dress":{name:"Vestidos",icon:"👗",keywords:["dress","summer dress","evening dress","gown","vestido"],color:"#8b5cf6"},
+          "vest":{name:"Chalecos",icon:"🦺",keywords:["vest","waistcoat","chaleco"],color:"#84cc16"}
+        },
+        bottoms:{
+          "jeans":{name:"Jeans",icon:"👖",keywords:["jeans","denim","blue jeans","ripped"],color:"#1e40af"},
+          "pants":{name:"Pantalones",icon:"👖",keywords:["pants","trousers","formal pants","chinos","slacks","pantalon"],color:"#3b82f6"},
+          "skirt":{name:"Faldas",icon:"👗",keywords:["skirt","midi skirt","pencil skirt","mini skirt","falda"],color:"#ec4899"},
+          "shorts":{name:"Shorts",icon:"🩳",keywords:["shorts","athletic shorts","bermuda"],color:"#10b981"},
+          "leggings":{name:"Calzas",icon:"🩱",keywords:["leggings","sweatpants","athletic pants","yoga pants","calza"],color:"#6b7280"},
+          "dress":{name:"Vestidos",icon:"👗",keywords:["dress","summer dress","evening dress","gown","vestido"],color:"#8b5cf6"}
+        },
+        shoes:{
+          "sneakers":{name:"Zapatillas",icon:"👟",keywords:["sneakers","running shoes","athletic shoes","trainers","zapatilla"],color:"#3b82f6"},
+          "dress_shoes":{name:"Zapatos Formales",icon:"👞",keywords:["dress shoes","leather shoes","formal shoes","oxfords","zapato"],color:"#1f2937"},
+          "boots":{name:"Botas",icon:"🥾",keywords:["boots","ankle boots","hiking boots","combat boots","bota"],color:"#92400e"},
+          "heels":{name:"Tacones",icon:"👠",keywords:["heels","stiletto heels","pumps","high heels","tacos","tacon"],color:"#ec4899"},
+          "sandals":{name:"Sandalias",icon:"👡",keywords:["sandals","leather sandals","flip flops","sandalia"],color:"#f59e0b"},
+          "flats":{name:"Ballerinas",icon:"🥿",keywords:["flats","ballet flats","loafers","ballerina"],color:"#6b7280"}
+        }
+      };
+    }
+
+    console.log("✅ Sistema de categorías listo (HTML).");
+  </script>
+
+  <!-- Navegación y UX genérica (no interfiere con app.js) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Anchor scroll suave y pill activo
       document.querySelectorAll('[data-section]').forEach(link=>{
-        link.addEventListener('click',(e)=>{
+        link.addEventListener('click', e=>{
           e.preventDefault();
-          const id = link.getAttribute('href')?.replace('#','') || link.dataset.section;
+          const id = link.getAttribute('data-section');
           const el = document.getElementById(id);
-          if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+          if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
           document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
           if(link.classList.contains('nav-pill')) link.classList.add('active');
-          document.getElementById('mobileNav')?.classList.remove('active');
+          // cerrar móvil
+          const mobileNav = document.getElementById('mobileNav');
+          if(mobileNav) mobileNav.classList.remove('active');
         });
       });
-      const mobileBtn = document.getElementById('mobileMenuToggle');
+
+      // Menú hamburguesa
+      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
       const mobileNav = document.getElementById('mobileNav');
-      if(mobileBtn && mobileNav){ mobileBtn.addEventListener('click',()=>mobileNav.classList.toggle('active')); }
+      if(mobileMenuToggle && mobileNav){
+        mobileMenuToggle.addEventListener('click', ()=> mobileNav.classList.toggle('active'));
+      }
+
+      // Barras impacto animación
+      const observer = new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            const w = entry.target.dataset.width;
+            if(w){ setTimeout(()=> entry.target.style.width = w + '%', 200); }
+          }
+        });
+      });
+      document.querySelectorAll('.impact-fill').forEach(el=>observer.observe(el));
+
+      // Closet Inteligente: click/drag&drop → handleIntelligentUpload(files)
+      const zone = document.getElementById('automaticUploadZone');
+      const input = document.getElementById('automaticUploadInput');
+      const triggerInput = ()=> input && input.click();
+
+      if(zone && input){
+        zone.addEventListener('click', triggerInput);
+        input.addEventListener('change', (e)=>{
+          const files = Array.from(e.target.files||[]);
+          if(files.length && window.handleIntelligentUpload){ window.handleIntelligentUpload(files); }
+          // Navega a pestaña correcta automáticamente desde app.js (updateClosetUI + showClosetTab)
+        });
+
+        // Drag & Drop
+        ;['dragenter','dragover'].forEach(evt=> zone.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); zone.style.borderColor='var(--success)'; }));
+        ;['dragleave','drop'].forEach(evt=> zone.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); zone.style.borderColor='var(--primary)'; }));
+        zone.addEventListener('drop', (e)=>{
+          const files = Array.from(e.dataTransfer.files||[]);
+          if(files.length && window.handleIntelligentUpload){ window.handleIntelligentUpload(files); }
+        });
+      }
+
+      // Botones de plan (delegado a app.js si existe)
+      const freeBtn = document.getElementById('startFreePlan');
+      if(freeBtn){ freeBtn.addEventListener('click', ()=> window.startFreePlan && window.startFreePlan()); }
+      const premiumBtn = document.getElementById('upgradeToPremium');
+      if(premiumBtn){ premiumBtn.addEventListener('click', ()=> window.upgradeToPremium && window.upgradeToPremium()); }
+
+      // Tabs Closet (UI básica; lógica completa en app.js showClosetTab)
+      document.querySelectorAll('.closet-tab').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const tabId = btn.dataset.tab;
+          if(window.showClosetTab) window.showClosetTab(tabId);
+          document.querySelectorAll('.closet-tab').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('.closet-tab-content').forEach(c=>c.classList.remove('active'));
+          const cont = document.getElementById(tabId); if(cont) cont.classList.add('active');
+        });
+      });
+
+      // Modalidad botones
+      const enableClosetBtn = document.getElementById('enableClosetBtn');
+      const useDirectModeBtn = document.getElementById('useDirectModeBtn');
+      if(enableClosetBtn){ enableClosetBtn.addEventListener('click', ()=> window.enableCloset && window.enableCloset()); }
+      if(useDirectModeBtn){ useDirectModeBtn.addEventListener('click', ()=> window.useDirectMode && window.useDirectMode()); }
+
+      // Generate (Direct Mode) – app.js controla estado
+      const genBtn = document.getElementById('generateBtn');
+      if(genBtn){ genBtn.addEventListener('click', ()=> window.getRecommendation && window.getRecommendation()); }
+
+      // Ocasiones (Direct Mode) – app.js las engancha
+      document.querySelectorAll('.occasion-btn').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          document.querySelectorAll('.occasion-btn').forEach(o=>o.classList.remove('selected'));
+          b.classList.add('selected');
+        });
+      });
+
+      console.log('✅ Navegación + Zona Inteligente listos (HTML)');
     });
   </script>
 
-  <!-- Orden de scripts reales (cuando lo uses en producción) -->
+  <!-- Orden de scripts: EXACTO como pediste -->
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script src="auth.js"></script>
