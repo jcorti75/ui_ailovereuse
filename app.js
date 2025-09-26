@@ -680,17 +680,32 @@ function getTotalClosetItems() {
 // Categorías inteligentes para detección automática
 const INTELLIGENT_CATEGORIES = {
   tops: {
-    "polera": { name: "Poleras", icon: "👕", keywords: ["polera", "t-shirt", "tee", "camiseta"] },
-    "camisa": { name: "Camisas", icon: "👔", keywords: ["camisa", "shirt", "blouse"] },
-    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "sueter", "cardigan", "pullover"] },
-    "chaqueta": { name: "Chaquetas", icon: "🧥", keywords: ["chaqueta", "jacket", "blazer"] },
-    "vestido": { name: "Vestidos", icon: "👗", keywords: ["vestido", "dress"] }
+    "tshirt": { name: "Poleras", icon: "👕", keywords: ["t-shirt", "tee", "graphic", "tank top", "polera"], color: "#10b981" },
+    "shirt": { name: "Camisas", icon: "👔", keywords: ["shirt", "dress shirt", "button", "collar", "camisa"], color: "#3b82f6" },
+    "blouse": { name: "Blusas", icon: "👚", keywords: ["blouse", "silk blouse", "flowy", "blusa"], color: "#ec4899" },
+    "sweater": { name: "Suéteres", icon: "🧥", keywords: ["sweater", "knitted", "wool", "pullover", "cardigan", "sueter"], color: "#f59e0b" },
+    "hoodie": { name: "Hoodies", icon: "👘", keywords: ["hoodie", "zip-up", "sweatshirt", "hooded", "capucha"], color: "#ef4444" },
+    "jacket": { name: "Chaquetas", icon: "🧥", keywords: ["jacket", "leather", "denim", "blazer", "outer", "chaqueta"], color: "#6b7280" },
+    "coat": { name: "Abrigos", icon: "🧥", keywords: ["coat", "winter coat", "overcoat", "trench", "abrigo"], color: "#1f2937" },
+    "dress": { name: "Vestidos", icon: "👗", keywords: ["dress", "summer dress", "evening dress", "gown", "vestido"], color: "#8b5cf6" },
+    "vest": { name: "Chalecos", icon: "🦺", keywords: ["vest", "waistcoat", "chaleco"], color: "#84cc16" }
   },
   bottoms: {
-    "jeans": { name: "Jeans", icon: "👖", keywords: ["jean", "jeans", "denim"] },
-    "pantalon": { name: "Pantalones", icon: "👖", keywords: ["pantalon", "pants", "trouser"] },
-    "falda": { name: "Faldas", icon: "👗", keywords: ["falda", "skirt"] },
-    "shorts": { name
+    "jeans": { name: "Jeans", icon: "👖", keywords: ["jeans", "denim", "blue jeans", "ripped"], color: "#1e40af" },
+    "pants": { name: "Pantalones", icon: "👖", keywords: ["pants", "trousers", "formal pants", "chinos", "slacks", "pantalon"], color: "#3b82f6" },
+    "skirt": { name: "Faldas", icon: "👗", keywords: ["skirt", "midi skirt", "pencil skirt", "mini skirt", "falda"], color: "#ec4899" },
+    "shorts": { name: "Shorts", icon: "🩳", keywords: ["shorts", "athletic shorts", "bermuda"], color: "#10b981" },
+    "leggings": { name: "Calzas", icon: "🩱", keywords: ["leggings", "sweatpants", "athletic pants", "yoga pants", "calza"], color: "#6b7280" }
+  },
+  shoes: {
+    "sneakers": { name: "Zapatillas", icon: "👟", keywords: ["sneakers", "running shoes", "athletic shoes", "trainers", "zapatilla"], color: "#3b82f6" },
+    "dress_shoes": { name: "Zapatos Formales", icon: "👞", keywords: ["dress shoes", "leather shoes", "formal shoes", "oxfords", "zapato"], color: "#1f2937" },
+    "boots": { name: "Botas", icon: "🥾", keywords: ["boots", "ankle boots", "hiking boots", "combat boots", "bota"], color: "#92400e" },
+    "heels": { name: "Tacones", icon: "👠", keywords: ["heels", "stiletto heels", "pumps", "high heels", "tacos", "tacon"], color: "#ec4899" },
+    "sandals": { name: "Sandalias", icon: "👡", keywords: ["sandals", "leather sandals", "flip flops", "sandalia"], color: "#f59e0b" },
+    "flats": { name: "Ballerinas", icon: "🥿", keywords: ["flats", "ballet flats", "loafers", "ballerina"], color: "#6b7280" }
+  }
+};
 
 function setupDirectUpload() {
   ['tops', 'bottoms', 'shoes'].forEach(type => {
