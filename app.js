@@ -19,108 +19,148 @@ let intelligentClosetItems = { tops: {}, bottoms: {}, shoes: {} };
 let userProfile = { skin_color: null, age_range: null, gender: null };
 
 // ===================================================================
-// DETECCIÓN IA SIMPLIFICADA - SOLO INGLÉS
+// DETECCIÓN IA REAL CON BACKEND - REEMPLAZA detectItemWithAI
 // ===================================================================
-async function detectItemWithAI(file) {
-  console.log('🤖 Detectando categoría:', file.name);
-  
-  const fileName = file.name.toLowerCase();
-  
-  // CATEGORÍAS SOLO EN INGLÉS
-  const categoryPatterns = {
-    // TOPS - Solo inglés
-    tops: [
-      'shirt', 'dress shirt', 'button up', 'oxford', 'flannel',
-      'blouse', 'silk blouse', 'chiffon', 'peasant',
-      't-shirt', 'tshirt', 'tee', 'graphic', 'vintage tee', 'crop top',
-      'tank top', 'camisole', 'tube top', 'halter',
-      'sweater', 'pullover', 'knitted', 'wool', 'cashmere',
-      'cardigan', 'zip cardigan', 'oversized',
-      'hoodie', 'sweatshirt', 'fleece',
-      'jacket', 'leather jacket', 'denim jacket', 'bomber', 'varsity',
-      'blazer', 'sport coat', 'suit jacket', 'tuxedo',
-      'coat', 'winter coat', 'trench', 'pea coat', 'rain coat', 'parka',
-      'windbreaker', 'anorak', 'puffer', 'down jacket',
-      'dress', 'summer dress', 'evening dress', 'cocktail', 'maxi dress',
-      'mini dress', 'wrap dress', 'shift', 'bodycon',
-      'vest', 'waistcoat', 'poncho', 'shawl', 'cape', 'kimono',
-      'polo', 'henley', 'baseball', 'muscle', 'top', 'graphic-tshirt', 'graphic t-shirt'
-    ],
+async function detectGarmentType(file) {
+  try {
+    showNotification('🔍 Detectando tipo de prenda con IA...', 'info');
     
-    // BOTTOMS - Solo inglés
-    bottoms: [
-      'pants', 'trousers', 'slacks', 'dress pants', 'formal pants', 'suit pants',
-      'chinos', 'khakis', 'cargo pants', 'wide leg', 'straight leg',
-      'jeans', 'jean', 'denim', 'blue denim', 'black jeans', 'white jeans',
-      'ripped', 'distressed', 'skinny', 'boyfriend', 'mom jeans',
-      'bootcut', 'flare', 'high waisted',
-      'skirt', 'mini skirt', 'midi skirt', 'maxi skirt', 'pencil skirt',
-      'pleated', 'a-line', 'wrap skirt', 'denim skirt', 'leather skirt',
-      'shorts', 'denim shorts', 'athletic shorts', 'board shorts', 'cargo shorts',
-      'bermuda', 'bike shorts', 'short',
-      'leggings', 'yoga pants', 'athletic leggings', 'sweatpants',
-      'joggers', 'track pants', 'gym shorts', 'compression',
-      'capris', 'culottes', 'palazzo', 'harem', 'overalls', 'jumper', 'bottom'
-    ],
+    const formData = new FormData();
+    formData.append('image', file);
     
-    // SHOES - Solo inglés
-    shoes: [
-      'shoes', 'dress shoes', 'leather shoes', 'oxford shoes', 'derby',
-      'loafers', 'loafer', 'penny loafers', 'boat shoes', 'driving shoes', 'monk strap',
-      'sneakers', 'sneaker', 'running shoes', 'athletic shoes', 'basketball',
-      'tennis shoes', 'cross training', 'walking shoes', 'gym shoes',
-      'canvas', 'skate shoes',
-      'boots', 'boot', 'ankle boots', 'knee high', 'combat boots', 'chelsea',
-      'cowboy', 'work boots', 'hiking boots', 'rain boots', 'snow boots',
-      'riding', 'desert', 'doc martens',
-      'heels', 'heel', 'high heels', 'stiletto', 'block heels', 'wedge',
-      'kitten heels', 'platform', 'pumps', 'pump',
-      'sandals', 'sandal', 'strappy', 'gladiator', 'flip flops', 'flip',
-      'slides', 'espadrilles', 'wedge sandals',
-      'flats', 'ballet flats', 'pointed', 'slip on',
-      'moccasins', 'clogs', 'crocs', 'water shoes', 'climbing', 'shoe'
-    ]
-  };
+    const response = await fetch(`${CONFIG.API_BASE}/api/detect`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.detail || 'Error en detección');
+    }
+    
+    // Convertir detected_item a category
+    const category = mapDetectedItemToCategory(result.detected_item);
+    
+    return {
+      success: result.success,
+      detected_item: result.detected_item,
+      category: category
+    };
+    
+  } catch (error) {
+    console.error('❌ Error detectando prenda:', error);
+    showNotification(`Error detectando prenda: ${error.message}`, 'error');
+    return {
+      success: false,
+      error: error.message,
+      detected_item: 'unknown',
+      category: 'unknown'
+    };
+  }
+}
+
+// NUEVA: Función para mapear detected_item del modelo a categories del frontend
+function mapDetectedItemToCategory(detected_item) {
+  if (!detected_item || detected_item === "unknown") {
+    return "unknown";
+  }
   
-  // Buscar en qué categoría encaja
-  for (const [category, patterns] of Object.entries(categoryPatterns)) {
-    for (const pattern of patterns) {
-      if (fileName.includes(pattern)) {
-        console.log(`🎯 Detectado: ${fileName} → ${category} (patrón: ${pattern})`);
-        return {
-          category: category,
-          confidence: 0.8,
-          detectedPattern: pattern
-        };
-      }
+  const detected_lower = detected_item.toLowerCase();
+  
+  // TOPS - Lista completa en inglés
+  const tops = [
+    'shirt', 'dress shirt', 'button up', 'oxford', 'flannel',
+    'blouse', 'silk blouse', 'chiffon', 'peasant',
+    't-shirt', 'tshirt', 'tee', 'graphic', 'vintage tee', 'crop top',
+    'tank top', 'camisole', 'tube top', 'halter',
+    'sweater', 'pullover', 'knitted', 'wool', 'cashmere',
+    'cardigan', 'zip cardigan', 'oversized',
+    'hoodie', 'sweatshirt', 'fleece',
+    'jacket', 'leather jacket', 'denim jacket', 'bomber', 'varsity',
+    'blazer', 'sport coat', 'suit jacket', 'tuxedo',
+    'coat', 'winter coat', 'trench', 'pea coat', 'rain coat', 'parka',
+    'windbreaker', 'anorak', 'puffer', 'down jacket',
+    'dress', 'summer dress', 'evening dress', 'cocktail', 'maxi dress',
+    'mini dress', 'wrap dress', 'shift', 'bodycon',
+    'vest', 'waistcoat', 'poncho', 'shawl', 'cape', 'kimono',
+    'polo', 'henley', 'baseball', 'muscle', 'top', 'graphic-tshirt', 'graphic t-shirt'
+  ];
+  
+  // BOTTOMS - Lista completa en inglés
+  const bottoms = [
+    'pants', 'trousers', 'slacks', 'dress pants', 'formal pants', 'suit pants',
+    'chinos', 'khakis', 'cargo pants', 'wide leg', 'straight leg',
+    'jeans', 'jean', 'denim', 'blue denim', 'black jeans', 'white jeans',
+    'ripped', 'distressed', 'skinny', 'boyfriend', 'mom jeans',
+    'bootcut', 'flare', 'high waisted',
+    'skirt', 'mini skirt', 'midi skirt', 'maxi skirt', 'pencil skirt',
+    'pleated', 'a-line', 'wrap skirt', 'denim skirt', 'leather skirt',
+    'shorts', 'denim shorts', 'athletic shorts', 'board shorts', 'cargo shorts',
+    'bermuda', 'bike shorts', 'short',
+    'leggings', 'yoga pants', 'athletic leggings', 'sweatpants',
+    'joggers', 'track pants', 'gym shorts', 'compression',
+    'capris', 'culottes', 'palazzo', 'harem', 'overalls', 'jumper', 'bottom'
+  ];
+  
+  // SHOES - Lista completa en inglés
+  const shoes = [
+    'shoes', 'dress shoes', 'leather shoes', 'oxford shoes', 'derby',
+    'loafers', 'loafer', 'penny loafers', 'boat shoes', 'driving shoes', 'monk strap',
+    'sneakers', 'sneaker', 'running shoes', 'athletic shoes', 'basketball',
+    'tennis shoes', 'cross training', 'walking shoes', 'gym shoes',
+    'canvas', 'skate shoes',
+    'boots', 'boot', 'ankle boots', 'knee high', 'combat boots', 'chelsea',
+    'cowboy', 'work boots', 'hiking boots', 'rain boots', 'snow boots',
+    'riding', 'desert', 'doc martens',
+    'heels', 'heel', 'high heels', 'stiletto', 'block heels', 'wedge',
+    'kitten heels', 'platform', 'pumps', 'pump',
+    'sandals', 'sandal', 'strappy', 'gladiator', 'flip flops', 'flip',
+    'slides', 'espadrilles', 'wedge sandals',
+    'flats', 'ballet flats', 'pointed', 'slip on',
+    'moccasins', 'clogs', 'crocs', 'water shoes', 'climbing', 'shoe'
+  ];
+  
+  // Verificar en qué categoría encaja mejor
+  for (const pattern of tops) {
+    if (detected_lower.includes(pattern)) {
+      return "tops";
     }
   }
   
-  // Si no detecta nada
-  console.log(`❓ No detectado: ${fileName} → unknown`);
-  return {
-    category: 'unknown',
-    confidence: 0.0,
-    detectedPattern: null
-  };
+  for (const pattern of bottoms) {
+    if (detected_lower.includes(pattern)) {
+      return "bottoms";
+    }
+  }
+  
+  for (const pattern of shoes) {
+    if (detected_lower.includes(pattern)) {
+      return "shoes";
+    }
+  }
+  
+  return "unknown";
 }
 
+// ACTUALIZADA: handleIntelligentUpload ahora usa IA real del backend
 async function handleIntelligentUpload(files) {
-  console.log('🚀 CLOSET INTELIGENTE: Upload automático');
+  console.log('🚀 CLOSET INTELIGENTE: Upload automático con IA real');
   
   if (!files || files.length === 0) return;
   
-  showNotification('🤖 IA categorizando automáticamente...', 'info');
+  showNotification('🤖 IA analizando imágenes con modelo real...', 'info');
   
   let successCount = 0;
   
   for (const file of files) {
     try {
-      const detection = await detectItemWithAI(file);
+      // USAR BACKEND EN LUGAR DE PATRONES DE TEXTO
+      const detection = await detectGarmentType(file);
       
-      if (detection.category === 'unknown') {
-        console.log(`❓ No se pudo categorizar: ${file.name}`);
-        showNotification(`❓ No se pudo categorizar: ${file.name}`, 'info');
+      if (!detection.success || detection.category === 'unknown') {
+        console.log(`❓ No se pudo categorizar: ${file.name} - ${detection.detected_item}`);
+        showNotification(`❓ No detectado: ${file.name} (${detection.detected_item})`, 'info');
         continue;
       }
       
@@ -128,8 +168,10 @@ async function handleIntelligentUpload(files) {
       categorizeIntelligentItem(detection, imageUrl, file);
       successCount++;
       
+      console.log(`🎯 IA Real: ${file.name} → ${detection.detected_item} → ${detection.category}`);
+      
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error('❌ Error IA:', error);
       showNotification(`❌ Error procesando ${file.name}`, 'error');
     }
   }
@@ -137,19 +179,20 @@ async function handleIntelligentUpload(files) {
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
-    showNotification(`✅ ${successCount} prenda${successCount !== 1 ? 's' : ''} categorizadas automáticamente`, 'success');
+    showNotification(`✅ ${successCount} prenda${successCount !== 1 ? 's' : ''} categorizadas con IA real`, 'success');
   }
 }
 
+// ACTUALIZADA: categorizeIntelligentItem para usar datos del backend
 function categorizeIntelligentItem(detection, imageUrl, file) {
-  const { category, confidence, detectedPattern } = detection;
+  const { category, detected_item } = detection;
   
-  // Agregar directamente a la categoría detectada
+  // Agregar directamente a la categoría detectada por la IA
   uploadedFiles[category].push(file);
   uploadedImages[category].push(imageUrl);
   closetItems[category].push(imageUrl);
   
-  console.log(`🧠 Categorizado: ${detectedPattern || 'Unknown'} → ${category}`);
+  console.log(`🧠 IA categorizada: ${detected_item} → ${category}`);
 }
 
 // ===================================================================
@@ -1481,8 +1524,10 @@ window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 window.scrollToSection = scrollToSection;
 window.toggleMobileMenu = toggleMobileMenu;
 
-// Funciones de IA
+// Funciones de IA - NUEVAS FUNCIONES EXPUESTAS
 window.handleIntelligentUpload = handleIntelligentUpload;
+window.detectGarmentType = detectGarmentType;
+window.mapDetectedItemToCategory = mapDetectedItemToCategory;
 
 // ===================================================================
 // AUTO-INICIALIZACIÓN
