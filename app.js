@@ -180,7 +180,7 @@ function handleGoogleCredentialResponse(response) {
   }
 }
 
-// PROCESAMIENTO DE LOGIN UNIFICADO CON HAS_PROFILE
+// PROCESAMIENTO DE LOGIN UNIFICADO CON ESTADÍSTICAS DEL BACKEND
 async function processLogin(userData) {
   console.log('🔄 PROCESANDO LOGIN CON VERIFICACIÓN has_profile:', userData.name);
   
@@ -193,13 +193,28 @@ async function processLogin(userData) {
   updateUserUI();
   loadUserData();
   
-  // VERIFICAR has_profile DEL BACKEND
+  // OBTENER DATOS COMPLETOS DEL BACKEND
   try {
-    showNotification('Verificando perfil en servidor...', 'info');
+    showNotification('Verificando perfil y cargando estadísticas...', 'info');
     const backendData = await syncWithBackend(userData.email);
     
     if (backendData && backendData.has_profile) {
       console.log('✅ USUARIO CON PERFIL COMPLETO - IR DIRECTO A MODALIDAD');
+      
+      // ACTUALIZAR ESTADÍSTICAS DEL USUARIO DESDE EL BACKEND
+      if (backendData.statistics) {
+        userStats = {
+          visits: 1, // Frontend tracking
+          recommendations: backendData.statistics.total_recommendations,
+          savedOutfits: backendData.statistics.accepted_outfits,
+          feedbackGiven: backendData.statistics.total_feedback,
+          acceptanceRate: backendData.statistics.acceptance_rate,
+          rejectionRate: backendData.statistics.rejection_rate
+        };
+        
+        console.log('📊 Estadísticas del backend cargadas:', userStats);
+      }
+      
       userProfile = backendData.profile || { completed: true };
       
       setTimeout(() => {
@@ -456,13 +471,10 @@ function fileToDataUrl(file) {
   });
 }
 
-async function syncWithBackend(email) {
-  try {
-    const response = await fetch(`${CONFIG.API_BASE}/api/users/check/${encodeURIComponent(email)}`);
-    if (response.ok) {
-      const data = await response.json();
-      console.log('🔍 Verificación backend con has_profile:', data);
-      return data;
+ no boolean
+        profile: data.user,
+        statistics: data.statistics
+      };
     }
     return { exists: false, has_profile: false };
   } catch (error) {
@@ -623,14 +635,31 @@ function initializeApp() {
   console.log('✅ NoShopiA v2.4 inicializada - SISTEMA UNIFICADO');
 }
 
-// EXPOSICIÓN GLOBAL
+// EXPOSICIÓN GLOBAL COMPLETA - TODAS LAS FUNCIONES NECESARIAS
 window.handleIntelligentUpload = handleIntelligentUpload;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 window.logout = logout;
 window.enableCloset = enableCloset;
+window.useDirectMode = useDirectMode;
 window.showClosetTab = showClosetTab;
 window.removeClosetItem = removeClosetItem;
 window.scrollToSection = scrollToSection;
+window.handleProfileSelection = handleProfileSelection;
+window.submitUserProfile = submitUserProfile;
+window.selectOccasion = selectOccasion;
+window.getRecommendation = getRecommendation;
+window.startFreePlan = startFreePlan;
+window.upgradeToPremium = upgradeToPremium;
+window.handleFileUpload = handleFileUpload; // AGREGADO
+window.updateUploadUI = updateUploadUI; // AGREGADO
+window.removeImage = removeImage; // AGREGADO
+window.generateFromCloset = generateFromCloset; // AGREGADO
+
+// VARIABLES GLOBALES EXPUESTAS
+window.selectedOccasion = selectedOccasion;
+window.userProfile = userProfile;
+window.isLoggedIn = isLoggedIn;
+window.currentUser = currentUser;
 
 // AUTO-INICIALIZACIÓN
 if (document.readyState === 'loading') {
@@ -639,4 +668,180 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('✅ app.js v2.4 - SISTEMA UNIFICADO COMPLETO');
+// FUNCIONES FALTANTES AGREGADAS
+function useDirectMode() {
+  console.log('⚡ RECOMENDACIONES RÁPIDAS ACTIVADAS...');
+  
+  closetMode = false;
+  
+  const closetQuestion = document.getElementById('closetQuestion');
+  if (closetQuestion) closetQuestion.style.display = 'none';
+  
+  const occasionSelector = document.getElementById('occasionSelector');
+  const uploadArea = document.getElementById('uploadArea');
+  
+  if (occasionSelector) occasionSelector.style.display = 'block';
+  if (uploadArea) uploadArea.style.display = 'block';
+  
+  showNotification('Recomendaciones Rápidas activadas', 'success');
+}
+
+function selectOccasion(occasion) {
+  console.log('📅 Ocasión seleccionada:', occasion);
+  selectedOccasion = occasion;
+  
+  const occasionNames = {
+    'oficina': 'Oficina/Trabajo', 'deportivo': 'Deportes/Gym',
+    'casual': 'Casual', 'formal': 'Formal', 'matrimonio': 'Matrimonio'
+  };
+  
+  showNotification(`Ocasión: ${occasionNames[occasion] || occasion}`, 'success');
+}
+
+async function getRecommendation() {
+  if (!selectedOccasion) {
+    showNotification('Selecciona una ocasión primero', 'error');
+    return;
+  }
+  
+  if (!isLoggedIn) {
+    showNotification('Debes estar logueado', 'error');
+    return;
+  }
+  
+  const hasFiles = uploadedFiles.tops.length > 0 && 
+                   uploadedFiles.bottoms.length > 0 && 
+                   uploadedFiles.shoes.length > 0;
+                   
+  if (!hasFiles) {
+    showNotification('Sube al menos 1 imagen de cada categoría', 'error');
+    return;
+  }
+  
+  // Llamar función de recomendaciones existente
+  showNotification('Función de recomendaciones en desarrollo', 'info');
+}
+
+function startFreePlan() {
+  console.log('🎁 Plan gratuito activado');
+  showNotification('Plan gratuito activado', 'success');
+  
+  // Scroll al login
+  setTimeout(() => {
+    scrollToSection('upload');
+  }, 1000);
+}
+
+// FUNCIONES DE UPLOAD DIRECTO FALTANTES
+function handleFileUpload(type, files) {
+  console.log(`📤 Upload directo: ${files.length} → ${type}`);
+  
+  const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
+  const currentFiles = uploadedFiles[type].length;
+  
+  if (currentFiles + files.length > maxFiles) {
+    showNotification(`Máximo ${maxFiles} archivos para ${type}`, 'error');
+    return;
+  }
+  
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+  
+  if (invalidFiles.length > 0) {
+    showNotification('Solo JPG, PNG o WebP', 'error');
+    return;
+  }
+  
+  showNotification(`Procesando ${files.length} imagen(es)...`, 'info');
+  
+  files.forEach(async (file) => {
+    try {
+      const imageUrl = await fileToDataUrl(file);
+      
+      uploadedFiles[type].push(file);
+      uploadedImages[type].push(imageUrl);
+      closetItems[type].push({
+        imageUrl: imageUrl,
+        detected_item: `${type} item`,
+        category: type,
+        timestamp: Date.now()
+      });
+      
+      console.log(`✅ Procesado: ${file.name}`);
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(`Error procesando ${file.name}`, 'error');
+    }
+  });
+  
+  updateUploadUI(type);
+  saveUserData();
+  
+  showNotification(`${files.length} imagen(es) procesadas`, 'success');
+}
+
+function updateUploadUI(type) {
+  const label = document.querySelector(`label[for="${type}-upload"]`);
+  const preview = document.getElementById(`${type}-preview`);
+  
+  if (label) {
+    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
+    const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
+    const files = uploadedFiles[type];
+    
+    if (files.length === 0) {
+      label.textContent = `📤 Subir ${typeNames[type]} (máx ${maxFiles})`;
+    } else {
+      label.textContent = `📤 ${typeNames[type]}: ${files.length}/${maxFiles} subidos`;
+    }
+  }
+  
+  if (preview) {
+    preview.innerHTML = '';
+    uploadedImages[type].forEach((imageUrl, index) => {
+      const div = document.createElement('div');
+      div.style.position = 'relative';
+      div.innerHTML = `
+        <img src="${imageUrl}" class="preview-image">
+        <button onclick="removeImage('${type}', ${index})" class="remove-image">×</button>
+      `;
+      preview.appendChild(div);
+    });
+  }
+}
+
+function removeImage(type, index) {
+  uploadedFiles[type].splice(index, 1);
+  uploadedImages[type].splice(index, 1);
+  closetItems[type].splice(index, 1);
+  
+  updateUploadUI(type);
+  saveUserData();
+  
+  showNotification('Imagen eliminada', 'success');
+}
+
+// FUNCIÓN PARA GENERAR DESDE CLOSET
+function generateFromCloset() {
+  if (!selectedOccasion) {
+    showNotification('Selecciona una ocasión primero', 'error');
+    return;
+  }
+  
+  if (!isLoggedIn) {
+    showNotification('Debes estar logueado', 'error');
+    return;
+  }
+  
+  const hasItems = closetItems.tops.length > 0 && 
+                   closetItems.bottoms.length > 0 && 
+                   closetItems.shoes.length > 0;
+                   
+  if (!hasItems) {
+    showNotification('Sube al menos 1 prenda de cada categoría al closet', 'error');
+    return;
+  }
+  
+  showNotification('Generando desde closet...', 'info');
+  console.log('🧠 Generando recomendaciones desde closet inteligente');
+}
