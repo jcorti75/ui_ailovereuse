@@ -793,7 +793,7 @@
         }); 
       }
 
-      // Ocasiones (ambos modos)
+      // Ocasiones (ambos modos) - CORREGIDO
       document.querySelectorAll('.occasion-btn').forEach(b=>{
         b.addEventListener('click', ()=>{
           const occasion = b.dataset.occasion;
@@ -802,16 +802,21 @@
           document.querySelectorAll('.occasion-btn').forEach(o=>o.classList.remove('selected'));
           b.classList.add('selected');
           
-          // Actualizar variable global si existe
-          if(window.selectedOccasion !== undefined) {
-            window.selectedOccasion = occasion;
+          // LLAMAR FUNCIÓN APP.JS
+          if(window.selectOccasion) {
+            window.selectOccasion(occasion);
           }
           
-          // Llamar función de app.js si existe
-          if(window.selectOccasion) window.selectOccasion(occasion);
-          
           // Mostrar botón generar del closet si está en modo closet
-          updateClosetGenerateButton();
+          const isClosetMode = document.getElementById('closetContainer')?.style.display !== 'none';
+          const generateSection = document.getElementById('closetGenerateSection');
+          const generateBtn = document.getElementById('generateClosetBtn');
+          
+          if(isClosetMode && generateSection && generateBtn) {
+            generateSection.style.display = 'block';
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generar desde Mi Closet';
+          }
         });
       });
 
@@ -831,7 +836,7 @@
         }); 
       }
 
-      // Botón generar (modo directo)
+      // Botón generar (modo directo) - CORREGIDO
       const genBtn = document.getElementById('generateBtn');
       if(genBtn){ 
         genBtn.addEventListener('click', ()=> {
@@ -839,7 +844,28 @@
         }); 
       }
 
-      // Formulario perfil básico (app.js maneja lógica)
+      // Botón generar closet - AGREGADO
+      const genClosetBtn = document.getElementById('generateClosetBtn');
+      if(genClosetBtn){ 
+        genClosetBtn.addEventListener('click', ()=> {
+          if(window.generateFromCloset) window.generateFromCloset();
+        }); 
+      }
+
+      // Upload directo - AGREGADO
+      ['tops', 'bottoms', 'shoes'].forEach(type => {
+        const input = document.getElementById(`${type}-upload`);
+        if (input) {
+          input.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0 && window.handleFileUpload) {
+              window.handleFileUpload(type, files);
+            }
+          });
+        }
+      });
+
+      // Formulario perfil CON LÓGICA DE HABILITACIÓN DE BOTÓN
       document.querySelectorAll('.profile-option').forEach(option => {
         option.addEventListener('click', function() {
           const field = this.dataset.field;
@@ -851,12 +877,42 @@
           );
           this.classList.add('selected');
           
+          // ACTUALIZAR PERFIL Y BOTÓN
+          if(window.userProfile) {
+            window.userProfile[field] = value;
+          }
+          
           // Llamar función app.js si existe
           if(window.handleProfileSelection) {
             window.handleProfileSelection(field, value);
+          } else {
+            // FALLBACK: Habilitar botón directamente si app.js no está listo
+            updateProfileButtonFallback();
           }
         });
       });
+
+      // FUNCIÓN FALLBACK PARA HABILITAR BOTÓN
+      function updateProfileButtonFallback() {
+        const skinSelected = document.querySelector('[data-field="skin_color"].selected');
+        const ageSelected = document.querySelector('[data-field="age_range"].selected');
+        const genderSelected = document.querySelector('[data-field="gender"].selected');
+        
+        const createBtn = document.getElementById('createProfileBtn');
+        
+        if (createBtn && skinSelected && ageSelected && genderSelected) {
+          createBtn.disabled = false;
+          createBtn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Mi Perfil';
+          createBtn.style.opacity = '1';
+          createBtn.onclick = () => {
+            if(window.submitUserProfile) {
+              window.submitUserProfile();
+            } else {
+              console.log('Perfil listo para enviar');
+            }
+          };
+        }
+      }
 
       // Función para actualizar botón generar del closet
       function updateClosetGenerateButton() {
