@@ -138,19 +138,48 @@
     .closet-stats{background:rgba(255,255,255,.1); padding:1rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; text-align:center}
     .closet-stat{color:#fff}.closet-stat-number{font-size:1.5rem; font-weight:700; display:block}
 
-    .automatic-upload-zone{border:3px dashed var(--primary); border-radius:25px; padding:3rem 2rem; margin:2rem 2rem 0; text-align:center; cursor:pointer; background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.06))}
+    /* ZONA INTELIGENTE MEJORADA */
+    .automatic-upload-zone{
+      border:3px dashed var(--primary); border-radius:25px; padding:3rem 2rem; margin:2rem 2rem 0; text-align:center; cursor:pointer; 
+      background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.06)); position:relative; overflow:hidden;
+    }
+    .automatic-upload-zone::before{
+      content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; 
+      background:linear-gradient(45deg, transparent, rgba(59,130,246,.1), transparent);
+      transform:rotate(45deg); transition:all .3s; opacity:0;
+    }
     .automatic-upload-zone:hover{border-color:var(--success); transform:translateY(-4px); box-shadow:0 20px 40px rgba(16,185,129,.15)}
+    .automatic-upload-zone:hover::before{opacity:1; animation:shimmer 1.5s ease-out}
+    @keyframes shimmer{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
+    
     .upload-ai-icon{font-size:4rem; color:var(--primary); margin-bottom:1rem; animation:bounce 2s infinite}
     @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
+    .upload-ai-title{font-size:1.8rem; font-weight:800; color:#000; margin-bottom:.4rem}
+    .upload-ai-subtitle{font-size:1.1rem; color:var(--primary); font-weight:600; margin-bottom:1rem}
+    .upload-ai-description{max-width:700px; margin:0 auto 1.5rem; opacity:.8; line-height:1.5}
+    
     .ai-features{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-top:1.2rem}
     .ai-feature{background:#fff; border-radius:15px; padding:1rem; transition:.3s; border:1px solid var(--border)}
     .ai-feature:hover{transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,0,0,.06)}
+    .ai-feature-icon{font-size:2rem; margin-bottom:.5rem}
+    .ai-feature-title{font-weight:600; margin-bottom:.3rem}
+    .ai-feature-description{opacity:.8; font-size:.95rem}
+
     .closet-tabs{display:flex; gap:.2rem; background:#f8fafc; border-top:1px solid var(--border); border-bottom:1px solid var(--border)}
-    .closet-tab{padding:1rem 1.2rem; background:transparent; border:none; cursor:pointer; font-weight:600; color:#000; opacity:.75; transition:.2s; border-bottom:3px solid transparent; display:flex; gap:.5rem; align-items:center}
+    .closet-tab{
+      padding:1rem 1.2rem; background:transparent; border:none; cursor:pointer; font-weight:600; color:#000; opacity:.75; 
+      transition:.2s; border-bottom:3px solid transparent; display:flex; gap:.5rem; align-items:center; position:relative;
+    }
     .closet-tab.active{color:var(--primary); opacity:1; border-bottom-color:var(--primary)}
     .closet-content{padding:2rem; min-height:380px}
     .closet-tab-content{display:none}
     .closet-tab-content.active{display:block}
+
+    /* CONTADOR DE SUBCATEGORÍAS EN TABS */
+    .tab-subcategory-count{
+      position:absolute; top:-8px; right:-8px; background:var(--primary); color:#fff; border-radius:12px; 
+      padding:.2rem .6rem; font-size:.7rem; font-weight:700; min-width:20px; text-align:center;
+    }
 
     .occasion-section{display:none; background:rgba(59,130,246,.05); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
     .occasion-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.5rem; margin-bottom:2rem}
@@ -168,10 +197,20 @@
     .preview-image{width:120px; height:120px; object-fit:cover; border-radius:15px; border:2px solid var(--primary)}
     .remove-image{position:relative; top:-118px; left:95px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px}
 
-    .generate-section{background:linear-gradient(135deg,rgba(59,130,246,.05),rgba(34,197,94,.05)); border:2px solid var(--border); border-radius:25px; padding:2rem; text-align:center}
+    .generate-section{background:linear-gradient(135deg,rgba(59,130,246,.05),rgba(34,197,94,.05)); border:2px solid var(--border); border-radius:25px; padding:2rem; text-align:center; margin-top:2rem}
     .generate-btn{padding:1.2rem 2.4rem; background:linear-gradient(135deg,var(--success),#059669); color:#fff; border:none; border-radius:50px; font-weight:700; font-size:1.1rem; cursor:pointer; display:inline-flex; gap:.8rem; align-items:center; box-shadow:0 10px 30px rgba(16,185,129,.28)}
     .generate-btn:disabled{opacity:.6; cursor:not-allowed}
+    .generate-btn:hover:not(:disabled){transform:translateY(-3px); box-shadow:0 15px 40px rgba(16,185,129,.35)}
     .processing-timer{display:none; background:rgba(59,130,246,.1); border-radius:12px; padding:.6rem 1rem; margin:1rem auto; font-weight:600; color:var(--primary); width:max-content}
+
+    /* Profile mini form */
+    .profile-section{display:none; background:rgba(59,130,246,.05); border:2px solid rgba(59,130,246,.2); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
+    .profile-field{ text-align:left; margin-bottom:2rem}
+    .profile-field label{display:block; font-weight:600; color:#000; margin-bottom:1rem; font-size:1.1rem}
+    .profile-options{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
+    .profile-option{background:#fff; border:2px solid var(--border); border-radius:15px; padding:1rem .5rem; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; gap:.5rem; font-size:.9rem; font-weight:500; color:#000; text-align:center; min-height:80px; justify-content:center}
+    .profile-option:hover{transform:translateY(-3px); border-color:var(--primary); background:rgba(59,130,246,.1)}
+    .profile-option.selected{border-color:var(--primary); background:rgba(59,130,246,.15); transform:translateY(-3px); box-shadow:0 5px 15px rgba(59,130,246,.25)}
 
     /* Team & Footer */
     .team-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:2rem; margin-top:3rem}
@@ -181,12 +220,13 @@
 
     .footer-cta{background:rgba(59,130,246,.05); padding:4rem 5%}
     .cta-features{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; max-width:600px; margin:0 auto 3rem}
-    .cta-feature{background:#fff; border:2px solid var(--border); border-radius:20px; padding:2rem; text-align:center}
+    .cta-feature{background:#fff; border:2px solid var(--border); border-radius:20px; padding:2rem; text-align:center; transition:.3s}
+    .cta-feature:hover{transform:translateY(-5px); box-shadow:0 15px 40px rgba(0,0,0,.08)}
 
     footer{background:#fff; color:#000; padding:3rem 5% 2rem; border-top:1px solid var(--border)}
     .footer-content{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr; gap:3rem; margin-bottom:2rem}
     .footer-column h3{font-size:1.3rem; font-weight:700; margin-bottom:1.5rem; color:#000}
-    .footer-column p,.footer-column a{color:#000; opacity:.75; text-decoration:none; line-height:1.8; display:block; margin-bottom:.5rem}
+    .footer-column p,.footer-column a{color:#000; opacity:.75; text-decoration:none; line-height:1.8; display:block; margin-bottom:.5rem; cursor:pointer}
     .footer-column a:hover{opacity:1}
 
     /* Notifications */
@@ -196,15 +236,6 @@
     .notification.info{background:linear-gradient(135deg,var(--primary),#1d4ed8)}
     @keyframes slideInRight{from{transform:translateX(100%); opacity:0}to{transform:translateX(0); opacity:1}}
 
-    /* Profile mini form (render/control en app.js) */
-    .profile-section{display:none; background:rgba(59,130,246,.05); border:2px solid rgba(59,130,246,.2); border-radius:20px; padding:3rem 2rem; margin:2rem 0}
-    .profile-field{ text-align:left; margin-bottom:2rem}
-    .profile-field label{display:block; font-weight:600; color:#000; margin-bottom:1rem; font-size:1.1rem}
-    .profile-options{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
-    .profile-option{background:#fff; border:2px solid var(--border); border-radius:15px; padding:1rem .5rem; cursor:pointer; transition:.2s; display:flex; flex-direction:column; align-items:center; gap:.5rem; font-size:.9rem; font-weight:500; color:#000; text-align:center; min-height:80px; justify-content:center}
-    .profile-option:hover{transform:translateY(-3px); border-color:var(--primary); background:rgba(59,130,246,.1)}
-    .profile-option.selected{border-color:var(--primary); background:rgba(59,130,246,.15)}
-
     /* Responsive */
     @media (max-width: 768px){
       .nav-pills{display:none}
@@ -212,6 +243,9 @@
       .logo{font-size:2rem}
       .footer-content{grid-template-columns:1fr; text-align:center; gap:2rem}
       .profile-options{grid-template-columns:1fr}
+      .ai-features{grid-template-columns:1fr}
+      .automatic-upload-zone{margin:1rem; padding:2rem 1rem}
+      .upload-ai-title{font-size:1.4rem}
     }
   </style>
 </head>
@@ -453,26 +487,49 @@
           <div class="closet-stat"><span class="closet-stat-number" id="closetOutfits">0</span><span>Outfits Guardados</span></div>
         </div>
 
-        <!-- Zona de subida INTELIGENTE (IA detecta tops/bottoms/shoes) -->
+        <!-- ZONA DE SUBIDA INTELIGENTE MEJORADA -->
         <div class="automatic-upload-zone" id="automaticUploadZone">
           <div class="upload-ai-icon">🤖</div>
-          <h3 class="upload-ai-title" style="font-size:1.8rem; font-weight:800; color:#000; margin-bottom:.4rem;">Sube cualquier prenda</h3>
-          <p class="upload-ai-subtitle" style="font-size:1.1rem; color:var(--primary); font-weight:600">La IA detecta automáticamente si es superior, inferior o calzado</p>
-          <p class="upload-ai-description" style="max-width:700px; margin:0 auto; opacity:.8">Haz clic o arrastra tus fotos. Se enviarán al endpoint <strong>/api/recommend</strong> y se clasificarán automáticamente en 👕/👖/👞.</p>
+          <h3 class="upload-ai-title">Sube cualquier prenda</h3>
+          <p class="upload-ai-subtitle">La IA detecta automáticamente si es superior, inferior o calzado</p>
+          <p class="upload-ai-description">Haz clic o arrastra tus fotos. Se categorizarán automáticamente usando IA real del backend.</p>
           <input type="file" id="automaticUploadInput" class="file-input" accept="image/*" multiple />
           <div class="ai-features">
-            <div class="ai-feature"><div class="ai-feature-icon">🧠</div><div class="ai-feature-title" style="font-weight:600">Detección Automática</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Identifica el tipo por IA</div></div>
-            <div class="ai-feature"><div class="ai-feature-icon">📂</div><div class="ai-feature-title" style="font-weight:600">Organización Inteligente</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Guarda por subcategorías</div></div>
-            <div class="ai-feature"><div class="ai-feature-icon">⚡</div><div class="ai-feature-title" style="font-weight:600">Navegación Automática</div><div class="ai-feature-description" style="opacity:.8; font-size:.95rem">Te lleva a la pestaña correcta</div></div>
+            <div class="ai-feature">
+              <div class="ai-feature-icon">🧠</div>
+              <div class="ai-feature-title">Detección Automática</div>
+              <div class="ai-feature-description">Identifica subcategorías reales</div>
+            </div>
+            <div class="ai-feature">
+              <div class="ai-feature-icon">📂</div>
+              <div class="ai-feature-title">Organización Inteligente</div>
+              <div class="ai-feature-description">Guarda por categorías del backend</div>
+            </div>
+            <div class="ai-feature">
+              <div class="ai-feature-icon">⚡</div>
+              <div class="ai-feature-title">Navegación Automática</div>
+              <div class="ai-feature-description">Te lleva a la pestaña correcta</div>
+            </div>
           </div>
         </div>
 
-        <!-- Tabs -->
+        <!-- Tabs CON CONTADORES DINÁMICOS -->
         <div class="closet-tabs">
-          <button class="closet-tab active" data-tab="superiores"><i class="fas fa-tshirt"></i> Prendas Superiores</button>
-          <button class="closet-tab" data-tab="inferiores"><i class="fas fa-user-tie"></i> Prendas Inferiores</button>
-          <button class="closet-tab" data-tab="calzado"><i class="fas fa-shoe-prints"></i> Calzado</button>
-          <button class="closet-tab" data-tab="recomendaciones"><i class="fas fa-star"></i> Mis Recomendaciones</button>
+          <button class="closet-tab active" data-tab="superiores">
+            <i class="fas fa-tshirt"></i> Prendas Superiores
+            <span class="tab-subcategory-count" style="display:none;">0</span>
+          </button>
+          <button class="closet-tab" data-tab="inferiores">
+            <i class="fas fa-user-tie"></i> Prendas Inferiores  
+            <span class="tab-subcategory-count" style="display:none;">0</span>
+          </button>
+          <button class="closet-tab" data-tab="calzado">
+            <i class="fas fa-shoe-prints"></i> Calzado
+            <span class="tab-subcategory-count" style="display:none;">0</span>
+          </button>
+          <button class="closet-tab" data-tab="recomendaciones">
+            <i class="fas fa-star"></i> Mis Recomendaciones
+          </button>
         </div>
 
         <div class="closet-content">
@@ -480,7 +537,7 @@
             <div style="text-align:center; padding:3rem; color:#666;">
               <i class="fas fa-tshirt" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
               <p>No hay prendas superiores aún</p>
-              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en "Sube cualquier prenda" y la IA las detectará</p>
             </div>
           </div>
 
@@ -488,7 +545,7 @@
             <div style="text-align:center; padding:3rem; color:#666;">
               <i class="fas fa-user-tie" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
               <p>No hay prendas inferiores aún</p>
-              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en "Sube cualquier prenda" y la IA las detectará</p>
             </div>
           </div>
 
@@ -496,7 +553,7 @@
             <div style="text-align:center; padding:3rem; color:#666;">
               <i class="fas fa-shoe-prints" style="font-size:3rem; margin-bottom:1rem; opacity:.5;"></i>
               <p>No hay calzado aún</p>
-              <p style="font-size:.95rem; opacity:.7;">Sube fotos en “Sube cualquier prenda” y la IA las detectará</p>
+              <p style="font-size:.95rem; opacity:.7;">Sube fotos en "Sube cualquier prenda" y la IA las detectará</p>
             </div>
           </div>
 
@@ -507,7 +564,7 @@
         </div>
       </div>
 
-      <!-- Direct mode -->
+      <!-- SELECTOR DE OCASIÓN INTEGRADO EN AMBOS MODOS -->
       <div id="occasionSelector" class="occasion-section">
         <h3>¿Qué planes tienes para esta ocasión?</h3>
         <div class="occasion-grid">
@@ -519,6 +576,15 @@
         </div>
       </div>
 
+      <!-- BOTÓN GENERAR PARA CLOSET INTELIGENTE -->
+      <div id="closetGenerateSection" class="generate-section" style="display:none;">
+        <h3 style="color:#000; margin-bottom:.6rem;">🚀 Generar desde Mi Closet Inteligente</h3>
+        <p style="opacity:.8; margin-bottom:1rem;">Usa las prendas que has subido para generar recomendaciones</p>
+        <div class="processing-timer" id="processingTimer">⏱️ Procesando... <span id="timerDisplay">0.0s</span></div>
+        <button class="generate-btn" id="generateClosetBtn" disabled><i class="fas fa-brain"></i> Completa ocasión y prendas</button>
+      </div>
+
+      <!-- Direct mode -->
       <div id="uploadArea" class="upload-area">
         <div class="upload-grid">
           <div class="upload-item">
@@ -550,7 +616,6 @@
         <div class="generate-section">
           <h3 style="color:#000; margin-bottom:.6rem;">🚀 ¡Genera tus Recomendaciones!</h3>
           <p style="opacity:.8; margin-bottom:1rem;">Nuestra IA analizará todas las combinaciones</p>
-          <div class="processing-timer" id="processingTimer">⏱️ Procesando... <span id="timerDisplay">0.0s</span></div>
           <button class="generate-btn" id="generateBtn" disabled><i class="fas fa-upload"></i> Completa todos los campos</button>
         </div>
 
@@ -615,10 +680,12 @@
     </div>
   </footer>
   
-  <!-- Navegación y UX genérica (no interfiere con app.js) -->
+  <!-- JavaScript para UX básica e integración con app.js -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Anchor scroll suave y pill activo
+      console.log('🔧 Inicializando UI interactions...');
+
+      // Navegación suave con pills activos
       document.querySelectorAll('[data-section]').forEach(link=>{
         link.addEventListener('click', e=>{
           e.preventDefault();
@@ -627,20 +694,19 @@
           if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
           document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
           if(link.classList.contains('nav-pill')) link.classList.add('active');
-          // cerrar móvil
           const mobileNav = document.getElementById('mobileNav');
           if(mobileNav) mobileNav.classList.remove('active');
         });
       });
 
-      // Menú hamburguesa
+      // Menú móvil
       const mobileMenuToggle = document.getElementById('mobileMenuToggle');
       const mobileNav = document.getElementById('mobileNav');
       if(mobileMenuToggle && mobileNav){
         mobileMenuToggle.addEventListener('click', ()=> mobileNav.classList.toggle('active'));
       }
 
-      // Barras impacto animación
+      // Animación barras impacto
       const observer = new IntersectionObserver(entries=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
@@ -651,71 +717,175 @@
       });
       document.querySelectorAll('.impact-fill').forEach(el=>observer.observe(el));
 
-      // Closet Inteligente: click/drag&drop → handleIntelligentUpload(files)
+      // ZONA INTELIGENTE: Click/Drag&Drop
       const zone = document.getElementById('automaticUploadZone');
       const input = document.getElementById('automaticUploadInput');
-      const triggerInput = ()=> input && input.click();
-
+      
       if(zone && input){
-        zone.addEventListener('click', triggerInput);
+        // Click para abrir selector
+        zone.addEventListener('click', ()=> input.click());
+        
+        // Cambio de archivos → handleIntelligentUpload
         input.addEventListener('change', (e)=>{
           const files = Array.from(e.target.files||[]);
-          if(files.length && window.handleIntelligentUpload){ window.handleIntelligentUpload(files); }
-          // Navega a pestaña correcta automáticamente desde app.js (updateClosetUI + showClosetTab)
+          if(files.length && window.handleIntelligentUpload){ 
+            window.handleIntelligentUpload(files); 
+          }
         });
 
         // Drag & Drop
-        ;['dragenter','dragover'].forEach(evt=> zone.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); zone.style.borderColor='var(--success)'; }));
-        ;['dragleave','drop'].forEach(evt=> zone.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); zone.style.borderColor='var(--primary)'; }));
+        ;['dragenter','dragover'].forEach(evt=> {
+          zone.addEventListener(evt, e=>{
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            zone.style.borderColor='var(--success)'; 
+            zone.style.transform='scale(1.02)';
+          });
+        });
+        
+        ;['dragleave','drop'].forEach(evt=> {
+          zone.addEventListener(evt, e=>{
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            zone.style.borderColor='var(--primary)'; 
+            zone.style.transform='scale(1)';
+          });
+        });
+        
         zone.addEventListener('drop', (e)=>{
           const files = Array.from(e.dataTransfer.files||[]);
-          if(files.length && window.handleIntelligentUpload){ window.handleIntelligentUpload(files); }
+          if(files.length && window.handleIntelligentUpload){ 
+            window.handleIntelligentUpload(files); 
+          }
         });
       }
 
-      // Botones de plan (delegado a app.js si existe)
-      const freeBtn = document.getElementById('startFreePlan');
-      if(freeBtn){ freeBtn.addEventListener('click', ()=> window.startFreePlan && window.startFreePlan()); }
-      const premiumBtn = document.getElementById('upgradeToPremium');
-      if(premiumBtn){ premiumBtn.addEventListener('click', ()=> window.upgradeToPremium && window.upgradeToPremium()); }
-
-      // Tabs Closet (UI básica; lógica completa en app.js showClosetTab)
+      // Tabs del closet
       document.querySelectorAll('.closet-tab').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const tabId = btn.dataset.tab;
-          if(window.showClosetTab) window.showClosetTab(tabId);
+          
+          // UI básica (app.js maneja lógica completa)
           document.querySelectorAll('.closet-tab').forEach(b=>b.classList.remove('active'));
           btn.classList.add('active');
           document.querySelectorAll('.closet-tab-content').forEach(c=>c.classList.remove('active'));
-          const cont = document.getElementById(tabId); if(cont) cont.classList.add('active');
+          const cont = document.getElementById(tabId); 
+          if(cont) cont.classList.add('active');
+          
+          // Llamar función app.js si existe
+          if(window.showClosetTab) window.showClosetTab(tabId);
         });
       });
 
-      // Modalidad botones
+      // Modalidad de closet
       const enableClosetBtn = document.getElementById('enableClosetBtn');
       const useDirectModeBtn = document.getElementById('useDirectModeBtn');
-      if(enableClosetBtn){ enableClosetBtn.addEventListener('click', ()=> window.enableCloset && window.enableCloset()); }
-      if(useDirectModeBtn){ useDirectModeBtn.addEventListener('click', ()=> window.useDirectMode && window.useDirectMode()); }
+      
+      if(enableClosetBtn){ 
+        enableClosetBtn.addEventListener('click', ()=> {
+          if(window.enableCloset) window.enableCloset();
+        }); 
+      }
+      
+      if(useDirectModeBtn){ 
+        useDirectModeBtn.addEventListener('click', ()=> {
+          if(window.useDirectMode) window.useDirectMode();
+        }); 
+      }
 
-      // Generate (Direct Mode) – app.js controla estado
-      const genBtn = document.getElementById('generateBtn');
-      if(genBtn){ genBtn.addEventListener('click', ()=> window.getRecommendation && window.getRecommendation()); }
-
-      // Ocasiones (Direct Mode) – app.js las engancha
+      // Ocasiones (ambos modos)
       document.querySelectorAll('.occasion-btn').forEach(b=>{
         b.addEventListener('click', ()=>{
+          const occasion = b.dataset.occasion;
+          
+          // UI básica
           document.querySelectorAll('.occasion-btn').forEach(o=>o.classList.remove('selected'));
           b.classList.add('selected');
+          
+          // Actualizar variable global si existe
+          if(window.selectedOccasion !== undefined) {
+            window.selectedOccasion = occasion;
+          }
+          
+          // Llamar función de app.js si existe
+          if(window.selectOccasion) window.selectOccasion(occasion);
+          
+          // Mostrar botón generar del closet si está en modo closet
+          updateClosetGenerateButton();
         });
       });
 
-      console.log('✅ Navegación + Zona Inteligente listos (HTML)');
+      // Botones de planes
+      const freeBtn = document.getElementById('startFreePlan');
+      const premiumBtn = document.getElementById('upgradeToPremium');
+      
+      if(freeBtn){ 
+        freeBtn.addEventListener('click', ()=> {
+          if(window.startFreePlan) window.startFreePlan();
+        }); 
+      }
+      
+      if(premiumBtn){ 
+        premiumBtn.addEventListener('click', ()=> {
+          if(window.upgradeToPremium) window.upgradeToPremium();
+        }); 
+      }
+
+      // Botón generar (modo directo)
+      const genBtn = document.getElementById('generateBtn');
+      if(genBtn){ 
+        genBtn.addEventListener('click', ()=> {
+          if(window.getRecommendation) window.getRecommendation();
+        }); 
+      }
+
+      // Formulario perfil básico (app.js maneja lógica)
+      document.querySelectorAll('.profile-option').forEach(option => {
+        option.addEventListener('click', function() {
+          const field = this.dataset.field;
+          const value = this.dataset.value;
+          
+          // UI básica
+          document.querySelectorAll(`[data-field="${field}"]`).forEach(opt => 
+            opt.classList.remove('selected')
+          );
+          this.classList.add('selected');
+          
+          // Llamar función app.js si existe
+          if(window.handleProfileSelection) {
+            window.handleProfileSelection(field, value);
+          }
+        });
+      });
+
+      // Función para actualizar botón generar del closet
+      function updateClosetGenerateButton() {
+        const generateSection = document.getElementById('closetGenerateSection');
+        const generateBtn = document.getElementById('generateClosetBtn');
+        
+        if(!generateSection || !generateBtn) return;
+        
+        const isClosetMode = document.getElementById('closetContainer')?.style.display !== 'none';
+        const hasOccasion = document.querySelector('.occasion-btn.selected');
+        
+        if(isClosetMode && hasOccasion) {
+          generateSection.style.display = 'block';
+          generateBtn.disabled = false;
+          generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generar desde Mi Closet';
+          generateBtn.onclick = () => {
+            if(window.generateFromCloset) window.generateFromCloset();
+          };
+        } else {
+          generateSection.style.display = 'none';
+        }
+      }
+
+      console.log('✅ UI interactions configuradas');
     });
   </script>
 
-  <!-- Orden de scripts: EXACTO como pediste -->
+  <!-- Scripts en orden correcto: CONFIG → APP (unificado) -->
   <script src="config.js"></script>
   <script src="app.js"></script>
-  <script src="auth.js"></script>
 </body>
 </html>
