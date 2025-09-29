@@ -800,7 +800,7 @@ function initializeGoogleLogin() {
 function initializeApp() {
   console.log('🔧 INICIALIZANDO NoShopiA v2.4');
   
-  setTimeout(initializeGoogleLogin, 500);
+  setTimeout(initializeGoogleLogin, 2000);
   
   console.log('✅ NoShopiA v2.4 inicializada');
 }
