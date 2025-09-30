@@ -76,7 +76,7 @@
     .mobile-nav-item:hover{background:rgba(59,130,246,.1)}
 
     /* Sections */
-    section{padding:6rem 5%; position:relative; z-index:1; background:var(--background)}
+    section{padding:6rem 5%; position:relative; z-index:2; background:var(--background)}
     .section-container{max-width:1200px; margin:0 auto; text-align:center}
     .section-title h2{font-size:2.5rem; font-weight:800; margin-bottom:1rem; color:#000}
     .section-subtitle{font-size:1.2rem; margin:0 auto 4rem; max-width:600px; color:#000; opacity:.8}
@@ -235,6 +235,12 @@
     .notification.error{background:linear-gradient(135deg,#ef4444,#dc2626)}
     .notification.info{background:linear-gradient(135deg,var(--primary),#1d4ed8)}
     @keyframes slideInRight{from{transform:translateX(100%); opacity:0}to{transform:translateX(0); opacity:1}}
+
+    .loading{
+      display:inline-block; width:20px; height:20px; border:2px solid rgba(255,255,255,.3);
+      border-radius:50%; border-top-color:#fff; animation:spin 1s ease-in-out infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
 
     /* Responsive */
     @media (max-width: 768px){
@@ -680,7 +686,7 @@
     </div>
   </footer>
   
-  <!-- JavaScript para UX básica e integración con app.js -->
+  <!-- ⚠️ CORRECCIÓN CRÍTICA 3: JavaScript con Event Listeners CORREGIDOS -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🔧 Inicializando UI interactions...');
@@ -725,11 +731,11 @@
         // Click para abrir selector
         zone.addEventListener('click', ()=> input.click());
         
-        // Cambio de archivos → handleIntelligentUpload
+        // ✅ CORRECCIÓN: Pasar FileList nativo
         input.addEventListener('change', (e)=>{
-          const files = Array.from(e.target.files||[]);
-          if(files.length && window.handleIntelligentUpload){ 
-            window.handleIntelligentUpload(files); 
+          const fileList = e.target.files;  // FileList nativo
+          if(fileList && fileList.length > 0 && window.handleIntelligentUpload){ 
+            window.handleIntelligentUpload(Array.from(fileList)); 
           }
         });
 
@@ -793,7 +799,7 @@
         }); 
       }
 
-      // Ocasiones (ambos modos) - CORREGIDO
+      // Ocasiones (ambos modos)
       document.querySelectorAll('.occasion-btn').forEach(b=>{
         b.addEventListener('click', ()=>{
           const occasion = b.dataset.occasion;
@@ -836,7 +842,7 @@
         }); 
       }
 
-      // Botón generar (modo directo) - CORREGIDO
+      // Botón generar (modo directo)
       const genBtn = document.getElementById('generateBtn');
       if(genBtn){ 
         genBtn.addEventListener('click', ()=> {
@@ -844,7 +850,7 @@
         }); 
       }
 
-      // Botón generar closet - AGREGADO
+      // Botón generar closet
       const genClosetBtn = document.getElementById('generateClosetBtn');
       if(genClosetBtn){ 
         genClosetBtn.addEventListener('click', ()=> {
@@ -852,14 +858,14 @@
         }); 
       }
 
-      // Upload directo - AGREGADO
+      // ✅ CORRECCIÓN: Upload directo - Pasar FileList nativo
       ['tops', 'bottoms', 'shoes'].forEach(type => {
         const input = document.getElementById(`${type}-upload`);
         if (input) {
           input.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length > 0 && window.handleFileUpload) {
-              window.handleFileUpload(type, files);
+            const fileList = e.target.files;  // ✅ FileList nativo
+            if (fileList && fileList.length > 0 && window.handleFileUpload) {
+              window.handleFileUpload(type, fileList);  // ✅ Pasar FileList
             }
           });
         }
@@ -911,28 +917,6 @@
               console.log('Perfil listo para enviar');
             }
           };
-        }
-      }
-
-      // Función para actualizar botón generar del closet
-      function updateClosetGenerateButton() {
-        const generateSection = document.getElementById('closetGenerateSection');
-        const generateBtn = document.getElementById('generateClosetBtn');
-        
-        if(!generateSection || !generateBtn) return;
-        
-        const isClosetMode = document.getElementById('closetContainer')?.style.display !== 'none';
-        const hasOccasion = document.querySelector('.occasion-btn.selected');
-        
-        if(isClosetMode && hasOccasion) {
-          generateSection.style.display = 'block';
-          generateBtn.disabled = false;
-          generateBtn.innerHTML = '<i class="fas fa-brain"></i> Generar desde Mi Closet';
-          generateBtn.onclick = () => {
-            if(window.generateFromCloset) window.generateFromCloset();
-          };
-        } else {
-          generateSection.style.display = 'none';
         }
       }
 
