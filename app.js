@@ -58,7 +58,7 @@ async function detectGarmentType(file) {
     
     return {
       success: result.success,
-      detected_item: result.detected_item,
+      item_detected: result.item_detected,
       category: result.category
     };
     
@@ -68,7 +68,7 @@ async function detectGarmentType(file) {
     return {
       success: false,
       error: error.message,
-      detected_item: 'unknown',
+      item_detected: 'unknown',
       category: 'unknown'
     };
   }
@@ -197,11 +197,11 @@ async function handleIntelligentUpload(files) {
 }
 
 function categorizeIntelligentItem(detection, imageUrl, file) {
-  const { category, detected_item } = detection;
+  const { category, item_detected } = detection;
   
   const itemObject = {
     imageUrl: imageUrl,
-    detected_item: detected_item, // CRÍTICO: Guardar detected_item
+    item_detected: item_detected, // CRÍTICO: Guardar item_detected
     category: category,
     timestamp: Date.now(),
     file: file
@@ -496,7 +496,7 @@ function showClosetTab(tabId) {
   }
 }
 
-// CORRECCIÓN 3 y 4: Usar detected_item del backend
+// CORRECCIÓN 3 y 4: Usar item_detected del backend
 function renderClosetTab(tabId, type) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -534,8 +534,8 @@ function renderClosetTab(tabId, type) {
   
   items.forEach((itemObj, index) => {
     const imageUrl = itemObj.imageUrl || itemObj;
-    // CORRECCIÓN 4: Usar detected_item del backend en vez de genéricos
-    const detectedItem = itemObj.detected_item || `${typeNames[type]} ${index + 1}`;
+    // CORRECCIÓN 4: Usar item_detected del backend en vez de genéricos
+    const detectedItem = itemObj.item_detected || `${typeNames[type]} ${index + 1}`;
     
     html += `
       <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
@@ -560,7 +560,7 @@ function getSubcategoriesList(items) {
   // Obtener subcategorías únicas detectadas por el backend
   const subcategories = [...new Set(
     items
-      .map(item => item.detected_item)
+      .map(item => item.item_detected)
       .filter(item => item && item !== 'unknown' && item !== 'Unknown')
   )];
   return subcategories.slice(0, 3);
@@ -679,7 +679,7 @@ function handleFileUpload(type, files) {
       uploadedImages[type].push(imageUrl);
       closetItems[type].push({
         imageUrl: imageUrl,
-        detected_item: `${type} item`,
+        item_detected: `${type} item`,
         category: type,
         timestamp: Date.now()
       });
