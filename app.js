@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.4 - VERSION LIMPIA SIN ERRORES
-console.log('🚀 NoShopiA v2.4 - VERSION LIMPIA');
+// app.js - NoShopiA v2.4 - VERSION CORREGIDA
+console.log('🚀 NoShopiA v2.4 - VERSION CORREGIDA');
 
 // VARIABLES GLOBALES
 let isLoggedIn = false;
@@ -112,7 +112,6 @@ async function syncWithBackend(email) {
 
 async function createUserProfile(userData, profileData) {
   try {
-    // Crear datos en formato URL-encoded
     const formData = new URLSearchParams({
       email: userData.email,
       skin_color: profileData.skin_color,
@@ -151,6 +150,7 @@ async function handleIntelligentUpload(files) {
   showNotification('🤖 IA analizando imágenes...', 'info');
   
   let successCount = 0;
+  let lastCategory = null;
   
   for (const file of files) {
     try {
@@ -163,6 +163,7 @@ async function handleIntelligentUpload(files) {
       
       const imageUrl = await fileToDataUrl(file);
       categorizeIntelligentItem(detection, imageUrl, file);
+      lastCategory = detection.category;
       successCount++;
       
     } catch (error) {
@@ -173,6 +174,24 @@ async function handleIntelligentUpload(files) {
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
+    updateTabCounters(); // NUEVO: Actualizar contadores
+    
+    // Navegar a la pestaña correcta
+    if (lastCategory) {
+      const tabMap = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
+      const tabId = tabMap[lastCategory];
+      if (tabId) {
+        showClosetTab(tabId);
+        
+        setTimeout(() => {
+          const tabContent = document.getElementById(tabId);
+          if (tabContent) {
+            tabContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 300);
+      }
+    }
+    
     showNotification(`✅ ${successCount} prenda(s) categorizadas`, 'success');
   }
 }
@@ -182,7 +201,7 @@ function categorizeIntelligentItem(detection, imageUrl, file) {
   
   const itemObject = {
     imageUrl: imageUrl,
-    detected_item: detected_item,
+    detected_item: detected_item, // CRÍTICO: Guardar detected_item
     category: category,
     timestamp: Date.now(),
     file: file
@@ -421,11 +440,16 @@ function enableCloset() {
     }
     showClosetTab('superiores');
     updateClosetUI();
+    updateTabCounters(); // NUEVO: Actualizar contadores al activar
   }, 500);
   
+  // CORRECCIÓN 1: Texto más grande y alineado a la izquierda
   const userEmail = document.getElementById('userEmail');
   if (userEmail && currentUser) {
     userEmail.textContent = `Bienvenido ${currentUser.name}`;
+    userEmail.style.fontSize = '1.9rem'; // EL DOBLE DE 0.95rem
+    userEmail.style.textAlign = 'left';
+    userEmail.style.fontWeight = '600';
   }
   
   showNotification('Closet Inteligente activado', 'success');
@@ -472,6 +496,7 @@ function showClosetTab(tabId) {
   }
 }
 
+// CORRECCIÓN 3 y 4: Usar detected_item del backend
 function renderClosetTab(tabId, type) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -486,18 +511,21 @@ function renderClosetTab(tabId, type) {
       <div style="text-align: center; padding: 3rem; color: #666;">
         <i class="fas fa-${icons[type]}" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
         <p>No hay ${typeNames[type]} aún</p>
-        <p style="font-size: 0.9rem; opacity: 0.7;">Sube fotos en "Sube cualquier prenda"</p>
+        <p style="font-size: 0.9rem; opacity: 0.7;">Sube fotos en "Sube cualquier prenda" y la IA las detectará</p>
       </div>
     `;
     return;
   }
   
+  // CORRECCIÓN 3: Obtener subcategorías REALES detectadas por el backend
   const subcategories = getSubcategoriesList(items);
   const subcategoriesText = subcategories.length > 0 ? ` (${subcategories.join(', ')})` : '';
   
+  const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
+  
   let html = `
     <div style="margin-bottom: 2rem;">
-      <h3 style="margin: 0; color: #000000;">${items.length} ${type === 'tops' ? 'Superiores' : type === 'bottoms' ? 'Inferiores' : 'Calzado'}${subcategoriesText}</h3>
+      <h3 style="margin: 0; color: #000000;">${items.length} ${typeNames[type]}${subcategoriesText}</h3>
       <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">Gestiona tus prendas subidas</p>
     </div>
     
@@ -506,7 +534,8 @@ function renderClosetTab(tabId, type) {
   
   items.forEach((itemObj, index) => {
     const imageUrl = itemObj.imageUrl || itemObj;
-    const detectedItem = itemObj.detected_item || `${type === 'tops' ? 'Superior' : type === 'bottoms' ? 'Inferior' : 'Calzado'} ${index + 1}`;
+    // CORRECCIÓN 4: Usar detected_item del backend en vez de genéricos
+    const detectedItem = itemObj.detected_item || `${typeNames[type]} ${index + 1}`;
     
     html += `
       <div style="position: relative; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
@@ -528,7 +557,12 @@ function renderClosetTab(tabId, type) {
 }
 
 function getSubcategoriesList(items) {
-  const subcategories = [...new Set(items.map(item => item.detected_item || 'Unknown').filter(Boolean))];
+  // Obtener subcategorías únicas detectadas por el backend
+  const subcategories = [...new Set(
+    items
+      .map(item => item.detected_item)
+      .filter(item => item && item !== 'unknown' && item !== 'Unknown')
+  )];
   return subcategories.slice(0, 3);
 }
 
@@ -541,6 +575,7 @@ function removeClosetItem(type, index) {
   
   saveUserData();
   updateClosetUI();
+  updateTabCounters(); // NUEVO: Actualizar contadores al eliminar
   
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
@@ -568,6 +603,32 @@ function updateClosetUI() {
   stats.forEach((id, index) => {
     const el = document.getElementById(id);
     if (el) el.textContent = values[index];
+  });
+}
+
+// CORRECCIÓN 2: Actualizar contadores en las pestañas
+function updateTabCounters() {
+  const tabMap = {
+    'superiores': 'tops',
+    'inferiores': 'bottoms',
+    'calzado': 'shoes'
+  };
+  
+  Object.entries(tabMap).forEach(([tabId, type]) => {
+    const tab = document.querySelector(`[data-tab="${tabId}"]`);
+    if (!tab) return;
+    
+    const count = closetItems[type]?.length || 0;
+    const badge = tab.querySelector('.tab-subcategory-count');
+    
+    if (badge) {
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
   });
 }
 
@@ -774,6 +835,9 @@ function loadUserData() {
       closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
+      
+      // Actualizar contadores después de cargar datos
+      updateTabCounters();
     }
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -806,11 +870,11 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('🔧 INICIALIZANDO NoShopiA v2.4');
+  console.log('🔧 INICIALIZANDO NoShopiA v2.4 CORREGIDA');
   
   setTimeout(initializeGoogleLogin, 2000);
   
-  console.log('✅ NoShopiA v2.4 inicializada');
+  console.log('✅ NoShopiA v2.4 CORREGIDA inicializada');
 }
 
 // EXPOSICIÓN GLOBAL
@@ -832,6 +896,7 @@ window.handleFileUpload = handleFileUpload;
 window.updateUploadUI = updateUploadUI;
 window.removeImage = removeImage;
 window.generateFromCloset = generateFromCloset;
+window.updateTabCounters = updateTabCounters; // NUEVO: Exponer función
 
 // VARIABLES GLOBALES EXPUESTAS
 window.selectedOccasion = selectedOccasion;
@@ -846,4 +911,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('✅ app.js v2.4 - VERSION LIMPIA COMPLETA');
+console.log('✅ app.js v2.4 - VERSION CORREGIDA COMPLETA');
