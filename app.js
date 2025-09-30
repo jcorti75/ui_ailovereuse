@@ -112,22 +112,30 @@ async function syncWithBackend(email) {
 
 async function createUserProfile(userData, profileData) {
   try {
-    const response = await fetch(`${CONFIG.API_BASE}/api/user/profile`, {
+    // Crear datos en formato URL-encoded
+    const formData = new URLSearchParams({
+      email: userData.email,
+      skin_color: profileData.skin_color,
+      age_range: profileData.age_range,
+      gender: profileData.gender
+    });
+    
+    const response = await fetch(`${CONFIG.API_BASE}/api/profile/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        email: userData.email,
-        name: userData.name,
-        skin_color: profileData.skin_color,
-        age_range: profileData.age_range,
-        gender: profileData.gender
-      })
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
     });
     
     if (response.ok) {
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Perfil creado en servidor:', result);
+      return result;
     }
+    
     throw new Error(`Error ${response.status}: ${await response.text()}`);
+    
   } catch (error) {
     console.error('Error creando perfil:', error);
     throw error;
