@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.4 - VERSION CORREGIDA
-console.log('🚀 NoShopiA v2.4 - VERSION CORREGIDA');
+// app.js - NoShopiA v2.4 - VERSION CORREGIDA CON LÍMITES
+console.log('🚀 NoShopiA v2.4 - VERSION CORREGIDA CON LÍMITES');
 
 // VARIABLES GLOBALES
 let isLoggedIn = false;
@@ -141,11 +141,20 @@ async function createUserProfile(userData, profileData) {
   }
 }
 
-// CLOSET INTELIGENTE
+// CLOSET INTELIGENTE - CORREGIDO: Valida contra límite total de 15
 async function handleIntelligentUpload(files) {
   console.log('🚀 CLOSET INTELIGENTE: Upload automático');
   
   if (!files || files.length === 0) return;
+  
+  // MODO CLOSET: Verificar límite TOTAL de 15 prendas
+  const currentTotal = getTotalClosetItems();
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
+  
+  if (files.length > remaining) {
+    showNotification(`⚠️ Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    return;
+  }
   
   showNotification('🤖 IA analizando imágenes...', 'info');
   
@@ -174,7 +183,7 @@ async function handleIntelligentUpload(files) {
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
-    updateTabCounters(); // NUEVO: Actualizar contadores
+    updateTabCounters();
     
     // Navegar a la pestaña correcta
     if (lastCategory) {
@@ -192,7 +201,10 @@ async function handleIntelligentUpload(files) {
       }
     }
     
-    showNotification(`✅ ${successCount} prenda(s) categorizadas`, 'success');
+    const newTotal = getTotalClosetItems();
+    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - newTotal;
+    
+    showNotification(`✅ ${successCount} prenda(s) categorizadas. Closet: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 'success');
   }
 }
 
@@ -201,7 +213,7 @@ function categorizeIntelligentItem(detection, imageUrl, file) {
   
   const itemObject = {
     imageUrl: imageUrl,
-    item_detected: item_detected, // CRÍTICO: Guardar item_detected
+    item_detected: item_detected,
     category: category,
     timestamp: Date.now(),
     file: file
@@ -440,14 +452,13 @@ function enableCloset() {
     }
     showClosetTab('superiores');
     updateClosetUI();
-    updateTabCounters(); // NUEVO: Actualizar contadores al activar
+    updateTabCounters();
   }, 500);
   
-  // CORRECCIÓN 1: Texto más grande y alineado a la izquierda
   const userEmail = document.getElementById('userEmail');
   if (userEmail && currentUser) {
     userEmail.textContent = `Bienvenido ${currentUser.name}`;
-    userEmail.style.fontSize = '1.9rem'; // EL DOBLE DE 0.95rem
+    userEmail.style.fontSize = '1.9rem';
     userEmail.style.textAlign = 'left';
     userEmail.style.fontWeight = '600';
   }
@@ -496,7 +507,6 @@ function showClosetTab(tabId) {
   }
 }
 
-// CORRECCIÓN 3 y 4: Usar item_detected del backend
 function renderClosetTab(tabId, type) {
   const tabContent = document.getElementById(tabId);
   if (!tabContent) return;
@@ -517,7 +527,6 @@ function renderClosetTab(tabId, type) {
     return;
   }
   
-  // CORRECCIÓN 3: Obtener subcategorías REALES detectadas por el backend
   const subcategories = getSubcategoriesList(items);
   const subcategoriesText = subcategories.length > 0 ? ` (${subcategories.join(', ')})` : '';
   
@@ -534,7 +543,6 @@ function renderClosetTab(tabId, type) {
   
   items.forEach((itemObj, index) => {
     const imageUrl = itemObj.imageUrl || itemObj;
-    // CORRECCIÓN 4: Usar item_detected del backend en vez de genéricos
     const detectedItem = itemObj.item_detected || `${typeNames[type]} ${index + 1}`;
     
     html += `
@@ -557,7 +565,6 @@ function renderClosetTab(tabId, type) {
 }
 
 function getSubcategoriesList(items) {
-  // Obtener subcategorías únicas detectadas por el backend
   const subcategories = [...new Set(
     items
       .map(item => item.item_detected)
@@ -575,7 +582,7 @@ function removeClosetItem(type, index) {
   
   saveUserData();
   updateClosetUI();
-  updateTabCounters(); // NUEVO: Actualizar contadores al eliminar
+  updateTabCounters();
   
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
@@ -590,11 +597,14 @@ function removeClosetItem(type, index) {
   showNotification('Prenda eliminada', 'success');
 }
 
+// CORREGIDO: Muestra contador total y remaining
 function updateClosetUI() {
   const total = getTotalClosetItems();
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - total;
+  
   const closetHeader = document.querySelector('.closet-header h2');
   if (closetHeader) {
-    closetHeader.innerHTML = `Mi Closet Inteligente <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/15 prendas)</span>`;
+    closetHeader.innerHTML = `Mi Closet Inteligente <span style="font-size: 0.8rem; opacity: 0.8;">(${total}/${CONFIG.TOTAL_CLOSET_LIMIT} prendas, ${remaining} restantes)</span>`;
   }
   
   const stats = ['closetVisits', 'closetRecommendations', 'closetOutfits'];
@@ -606,7 +616,6 @@ function updateClosetUI() {
   });
 }
 
-// CORRECCIÓN 2: Actualizar contadores en las pestañas
 function updateTabCounters() {
   const tabMap = {
     'superiores': 'tops',
@@ -649,11 +658,12 @@ function selectOccasion(occasion) {
   showNotification(`Ocasión: ${occasionNames[occasion] || occasion}`, 'success');
 }
 
-// UPLOAD DIRECTO
+// UPLOAD DIRECTO - CORREGIDO: Usa CONFIG.DIRECT_UPLOAD_LIMITS
 function handleFileUpload(type, files) {
   console.log(`📤 Upload directo: ${files.length} → ${type}`);
   
-  const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
+  // MODO DIRECTO: Usar límites FIJOS 3-3-5
+  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
   const currentFiles = uploadedFiles[type].length;
   
   if (currentFiles + files.length > maxFiles) {
@@ -696,13 +706,15 @@ function handleFileUpload(type, files) {
   showNotification(`${files.length} imagen(es) procesadas`, 'success');
 }
 
+// CORREGIDO: Usa CONFIG.DIRECT_UPLOAD_LIMITS
 function updateUploadUI(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
   const preview = document.getElementById(`${type}-preview`);
   
   if (label) {
     const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-    const maxFiles = { tops: 3, bottoms: 3, shoes: 5 }[type] || 3;
+    // MODO DIRECTO: Usar límites FIJOS 3-3-5
+    const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
     const files = uploadedFiles[type];
     
     if (files.length === 0) {
@@ -762,6 +774,7 @@ async function getRecommendation() {
   console.log('🎯 Generando recomendaciones');
 }
 
+// CORREGIDO: Valida mínimo de cada tipo usando CONFIG
 function generateFromCloset() {
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
@@ -773,11 +786,13 @@ function generateFromCloset() {
     return;
   }
   
-  const hasItems = closetItems.tops.length > 0 && 
-                   closetItems.bottoms.length > 0 && 
-                   closetItems.shoes.length > 0;
+  // MODO CLOSET: Verificar MÍNIMO de cada tipo (1 de cada uno)
+  const hasMinimum = 
+    closetItems.tops.length >= CONFIG.MINIMUM_IN_CLOSET.tops && 
+    closetItems.bottoms.length >= CONFIG.MINIMUM_IN_CLOSET.bottoms && 
+    closetItems.shoes.length >= CONFIG.MINIMUM_IN_CLOSET.shoes;
                    
-  if (!hasItems) {
+  if (!hasMinimum) {
     showNotification('Sube al menos 1 prenda de cada categoría al closet', 'error');
     return;
   }
@@ -836,7 +851,6 @@ function loadUserData() {
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
-      // Actualizar contadores después de cargar datos
       updateTabCounters();
     }
   } catch (error) {
@@ -896,7 +910,7 @@ window.handleFileUpload = handleFileUpload;
 window.updateUploadUI = updateUploadUI;
 window.removeImage = removeImage;
 window.generateFromCloset = generateFromCloset;
-window.updateTabCounters = updateTabCounters; // NUEVO: Exponer función
+window.updateTabCounters = updateTabCounters;
 
 // VARIABLES GLOBALES EXPUESTAS
 window.selectedOccasion = selectedOccasion;
@@ -911,4 +925,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('✅ app.js v2.4 - VERSION CORREGIDA COMPLETA');
+console.log('✅ app.js v2.4 - VERSION CORREGIDA CON LÍMITES COMPLETA');
