@@ -1,5 +1,5 @@
-// app.js - NoShopiA v2.4 - VERSION CORREGIDA CON LÍMITES
-console.log('🚀 NoShopiA v2.4 - VERSION CORREGIDA CON LÍMITES');
+// app.js - NoShopiA v2.5 - Botón generar funcionando
+console.log('🚀 NoShopiA v2.5 - Botón generar corregido');
 
 // VARIABLES GLOBALES
 let isLoggedIn = false;
@@ -438,6 +438,10 @@ function enableCloset() {
   const closetContainer = document.getElementById('closetContainer');
   const occasionSelector = document.getElementById('occasionSelector');
   
+  // CORRECCIÓN 1: Ocultar sección de generar del modo directo
+  const uploadArea = document.getElementById('uploadArea');
+  if (uploadArea) uploadArea.style.display = 'none';
+  
   if (closetContainer) {
     closetContainer.style.display = 'block';
   }
@@ -473,6 +477,10 @@ function useDirectMode() {
   
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) closetQuestion.style.display = 'none';
+  
+  // Ocultar closet container
+  const closetContainer = document.getElementById('closetContainer');
+  if (closetContainer) closetContainer.style.display = 'none';
   
   const occasionSelector = document.getElementById('occasionSelector');
   const uploadArea = document.getElementById('uploadArea');
@@ -597,7 +605,6 @@ function removeClosetItem(type, index) {
   showNotification('Prenda eliminada', 'success');
 }
 
-// CORREGIDO: Muestra contador total y remaining
 function updateClosetUI() {
   const total = getTotalClosetItems();
   const remaining = CONFIG.TOTAL_CLOSET_LIMIT - total;
@@ -645,7 +652,7 @@ function getTotalClosetItems() {
   return Object.values(closetItems).reduce((sum, items) => sum + items.length, 0);
 }
 
-// OCASIONES
+// OCASIONES - CORREGIDO: llama a updateGenerateButton
 function selectOccasion(occasion) {
   console.log('📅 Ocasión seleccionada:', occasion);
   selectedOccasion = occasion;
@@ -656,13 +663,15 @@ function selectOccasion(occasion) {
   };
   
   showNotification(`Ocasión: ${occasionNames[occasion] || occasion}`, 'success');
+  
+  // CORRECCIÓN 3: Actualizar botón después de seleccionar ocasión
+  updateGenerateButton();
 }
 
-// UPLOAD DIRECTO - CORREGIDO: Usa CONFIG.DIRECT_UPLOAD_LIMITS
+// UPLOAD DIRECTO - CORREGIDO: llama a updateGenerateButton
 function handleFileUpload(type, files) {
   console.log(`📤 Upload directo: ${files.length} → ${type}`);
   
-  // MODO DIRECTO: Usar límites FIJOS 3-3-5
   const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
   const currentFiles = uploadedFiles[type].length;
   
@@ -704,16 +713,17 @@ function handleFileUpload(type, files) {
   saveUserData();
   
   showNotification(`${files.length} imagen(es) procesadas`, 'success');
+  
+  // CORRECCIÓN 3: Actualizar botón después de subir archivos
+  updateGenerateButton();
 }
 
-// CORREGIDO: Usa CONFIG.DIRECT_UPLOAD_LIMITS
 function updateUploadUI(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
   const preview = document.getElementById(`${type}-preview`);
   
   if (label) {
     const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-    // MODO DIRECTO: Usar límites FIJOS 3-3-5
     const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
     const files = uploadedFiles[type];
     
@@ -729,12 +739,41 @@ function updateUploadUI(type) {
     uploadedImages[type].forEach((imageUrl, index) => {
       const div = document.createElement('div');
       div.style.position = 'relative';
+      div.style.display = 'inline-block';
       div.innerHTML = `
         <img src="${imageUrl}" class="preview-image">
-        <button onclick="removeImage('${type}', ${index})" class="remove-image">×</button>
+        <button onclick="removeImage('${type}', ${index})" class="remove-image" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">×</button>
       `;
       preview.appendChild(div);
     });
+  }
+}
+
+// CORRECCIÓN 3: Nueva función para actualizar botón generar
+function updateGenerateButton() {
+  const generateBtn = document.getElementById('generateBtn');
+  if (!generateBtn) return;
+  
+  const hasOccasion = selectedOccasion !== null;
+  const hasFiles = uploadedFiles.tops.length > 0 && 
+                   uploadedFiles.bottoms.length > 0 && 
+                   uploadedFiles.shoes.length > 0;
+  
+  if (hasOccasion && hasFiles) {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Recomendaciones';
+    generateBtn.style.opacity = '1';
+    generateBtn.style.cursor = 'pointer';
+  } else if (!hasOccasion) {
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona ocasión primero';
+    generateBtn.style.opacity = '0.6';
+    generateBtn.style.cursor = 'not-allowed';
+  } else {
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-upload"></i> Completa todos los campos';
+    generateBtn.style.opacity = '0.6';
+    generateBtn.style.cursor = 'not-allowed';
   }
 }
 
@@ -747,6 +786,9 @@ function removeImage(type, index) {
   saveUserData();
   
   showNotification('Imagen eliminada', 'success');
+  
+  // CORRECCIÓN 3: Actualizar botón después de eliminar
+  updateGenerateButton();
 }
 
 // RECOMENDACIONES
@@ -771,10 +813,11 @@ async function getRecommendation() {
   }
   
   showNotification('Generando recomendaciones...', 'info');
-  console.log('🎯 Generando recomendaciones');
+  console.log('🎯 Generando recomendaciones directas');
+  
+  // TODO: Llamar al API aquí
 }
 
-// CORREGIDO: Valida mínimo de cada tipo usando CONFIG
 function generateFromCloset() {
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
@@ -786,7 +829,6 @@ function generateFromCloset() {
     return;
   }
   
-  // MODO CLOSET: Verificar MÍNIMO de cada tipo (1 de cada uno)
   const hasMinimum = 
     closetItems.tops.length >= CONFIG.MINIMUM_IN_CLOSET.tops && 
     closetItems.bottoms.length >= CONFIG.MINIMUM_IN_CLOSET.bottoms && 
@@ -799,6 +841,8 @@ function generateFromCloset() {
   
   showNotification('Generando desde closet...', 'info');
   console.log('🧠 Generando recomendaciones desde closet inteligente');
+  
+  // TODO: Llamar al API aquí
 }
 
 // PLANES
@@ -884,11 +928,11 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('🔧 INICIALIZANDO NoShopiA v2.4 CORREGIDA');
+  console.log('🔧 INICIALIZANDO NoShopiA v2.5');
   
   setTimeout(initializeGoogleLogin, 2000);
   
-  console.log('✅ NoShopiA v2.4 CORREGIDA inicializada');
+  console.log('✅ NoShopiA v2.5 inicializada');
 }
 
 // EXPOSICIÓN GLOBAL
@@ -911,6 +955,7 @@ window.updateUploadUI = updateUploadUI;
 window.removeImage = removeImage;
 window.generateFromCloset = generateFromCloset;
 window.updateTabCounters = updateTabCounters;
+window.updateGenerateButton = updateGenerateButton;
 
 // VARIABLES GLOBALES EXPUESTAS
 window.selectedOccasion = selectedOccasion;
@@ -925,4 +970,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('✅ app.js v2.4 - VERSION CORREGIDA CON LÍMITES COMPLETA');
+console.log('✅ app.js v2.5 - COMPLETO con botón generar funcionando');
