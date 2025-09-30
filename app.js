@@ -597,7 +597,7 @@ function selectOccasion(occasion) {
 // ========================================
 // UPLOAD DIRECTO
 // ========================================
-function handleFileUpload(type, files) {
+async function handleFileUpload(type, files) {
   console.log(`Upload directo: ${files.length} → ${type}`);
   
   const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
@@ -618,27 +618,39 @@ function handleFileUpload(type, files) {
   
   showNotification(`Procesando ${files.length} imagen(es)...`, 'info');
   
-  files.forEach(async (file) => {
+  // CORRECCIÓN: Usar for...of en vez de forEach para esperar async
+  for (const file of files) {
     try {
       const imageUrl = await fileToDataUrl(file);
-      uploadedFiles[type].push(file);
-      uploadedImages[type].push(imageUrl);
+      
+      uploadedFiles[type].push(file);  // Guardar File original
+      uploadedImages[type].push(imageUrl);  // Guardar base64
       closetItems[type].push({
         imageUrl: imageUrl,
         item_detected: `${type} item`,
         category: type,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        file: file  // Guardar referencia al file
       });
+      
+      console.log(`✅ Procesado: ${file.name} (${file.size} bytes)`);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Error:', error);
       showNotification(`Error procesando ${file.name}`, 'error');
     }
-  });
+  }
   
+  // Actualizar UI DESPUÉS de procesar todos los archivos
   updateUploadUI(type);
   saveUserData();
-  showNotification(`${files.length} imagen(es) procesadas`, 'success');
+  
+  showNotification(`✅ ${files.length} imagen(es) procesadas`, 'success');
   updateGenerateButton();
+  
+  console.log(`📊 Estado ${type}:`, {
+    files: uploadedFiles[type].length,
+    images: uploadedImages[type].length
+  });
 }
 
 function updateUploadUI(type) {
