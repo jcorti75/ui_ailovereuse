@@ -129,38 +129,26 @@ async function handleIntelligentUpload(files) {
     showNotification(`${successCount} prenda(s) categorizadas automáticamente`, 'success');
   }
 }
-// ========================================
-// CLOSET INTELIGENTE - FUNCIÓN QUE FALTABA
-// ========================================
+
 // ========================================
 // UPLOAD DIRECTO (MODO RÁPIDO) - VERSIÓN CORREGIDA
 // ========================================
-async function handleFileUpload(type, input) {
-  console.log('=== DEBUG ===');
-  console.log('Type:', type);
-  console.log('Input recibido:', input);
-  console.log('Input.files existe?:', input?.files);
-  console.log('Input.files.length:', input?.files?.length);
+async function handleFileUpload(type, inputOrFileList) {
+  // Detectar si es FileList o Input Element
+  let files = [];
   
-  // Si input es null o undefined
-  if (!input) {
-    console.error('Input es null/undefined');
-    showNotification('Error: no se pudo acceder al selector de archivos', 'error');
+  if (inputOrFileList instanceof FileList) {
+    // Es FileList directo
+    files = Array.from(inputOrFileList);
+  } else if (inputOrFileList?.files) {
+    // Es Input Element
+    files = Array.from(inputOrFileList.files);
+  } else {
+    showNotification('Error: parámetro inválido', 'error');
     return;
   }
-  
-  // Si no tiene .files, es un problema del HTML
-  if (!input.files) {
-    console.error('Input no tiene propiedad .files');
-    showNotification('Error: elemento inválido', 'error');
-    return;
-  }
-  
-  const files = Array.from(input.files);
-  console.log('Archivos array:', files);
   
   if (files.length === 0) {
-    console.error('No hay archivos en el array');
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
