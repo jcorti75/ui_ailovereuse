@@ -683,7 +683,6 @@ function handleFileUpload(type, fileList) {
     filesCount: uploadedFiles[type].length,
     allAreFiles: uploadedFiles[type].every(f => f instanceof File)
   });
-}
 
 function updateUploadUI(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
