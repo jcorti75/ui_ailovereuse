@@ -79,33 +79,33 @@ async function detectGarmentType(file) {
 // ========================================
 // UPLOAD DIRECTO (MODO RÁPIDO) - VERSIÓN CORREGIDA
 // ========================================
-async function handleFileUpload(type, inputOrEvent) {
-  console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
+async function handleFileUpload(type, input) {
+  console.log('=== DEBUG ===');
+  console.log('Type:', type);
+  console.log('Input recibido:', input);
+  console.log('Input.files existe?:', input?.files);
+  console.log('Input.files.length:', input?.files?.length);
   
-  // Manejar tanto input element como event
-  let files = [];
-  if (inputOrEvent.target) {
-    // Es un event
-    files = Array.from(inputOrEvent.target.files || []);
-  } else if (inputOrEvent.files) {
-    // Es un input element
-    files = Array.from(inputOrEvent.files || []);
-  } else {
-    console.error('Parámetro inválido:', inputOrEvent);
-    showNotification('Error: Parámetro inválido', 'error');
+  // Si input es null o undefined
+  if (!input) {
+    console.error('Input es null/undefined');
+    showNotification('Error: no se pudo acceder al selector de archivos', 'error');
     return;
   }
   
-  console.log(`📂 Archivos detectados: ${files.length}`);
+  // Si no tiene .files, es un problema del HTML
+  if (!input.files) {
+    console.error('Input no tiene propiedad .files');
+    showNotification('Error: elemento inválido', 'error');
+    return;
+  }
+  
+  const files = Array.from(input.files);
+  console.log('Archivos array:', files);
   
   if (files.length === 0) {
+    console.error('No hay archivos en el array');
     showNotification('No se seleccionaron archivos', 'error');
-    return;
-  }
-  
-  const invalidFiles = files.filter(f => !(f instanceof File));
-  if (invalidFiles.length > 0) {
-    showNotification('Error: archivos no válidos', 'error');
     return;
   }
   
@@ -113,36 +113,24 @@ async function handleFileUpload(type, inputOrEvent) {
   const currentCount = uploadedFiles[type].length;
   
   if (currentCount + files.length > maxFiles) {
-    showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
+    showNotification(`Máximo ${maxFiles} prendas permitidas`, 'error');
     return;
   }
   
-  const categoryNames = {
-    tops: 'Parte Superior',
-    bottoms: 'Parte Inferior',
-    shoes: 'Calzado'
-  };
-  
-  let successCount = 0;
-  let firstError = null;
-  
-  // Validar TODAS primero
   for (const file of files) {
     try {
-      console.log(`🔍 Validando: ${file.name}`);
       const detection = await detectGarmentType(file);
       
       if (!detection.success || detection.category === 'unknown') {
-        firstError = `"${file.name}" no es una prenda reconocida`;
-        break;
+        showNotification('Esta imagen no es una prenda válida', 'error');
+        return;
       }
       
       if (detection.category !== type) {
-        firstError = `"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`;
-        break;
+        showNotification('Prenda incorrecta. Súbela en la sección correcta', 'error');
+        return;
       }
       
-      // Solo si pasa TODO
       uploadedFiles[type].push(file);
       const imageUrl = await fileToDataUrl(file);
       uploadedImages[type].push(imageUrl);
@@ -154,30 +142,19 @@ async function handleFileUpload(type, inputOrEvent) {
         file: file
       });
       
-      console.log(`✅ ${file.name} agregado como ${detection.item_detected}`);
-      successCount++;
-      
     } catch (error) {
-      console.error('Error validando:', error);
-      firstError = `Error procesando "${file.name}"`;
-      break;
+      showNotification('Error al procesar la imagen', 'error');
+      return;
     }
   }
   
-  if (successCount > 0) {
-    updateUploadUI(type);
-    saveUserData();
-    updateGenerateButton();
-  }
+  updateUploadUI(type);
+  saveUserData();
+  updateGenerateButton();
   
-  // UN SOLO mensaje
-  if (firstError) {
-    showNotification(`❌ ${firstError}. Súbelo en la sección correcta.`, 'error');
-  } else if (successCount > 0) {
-    showNotification(`✅ ${successCount} imagen(es) agregadas`, 'success');
-  }
+  const count = files.length;
+  showNotification(`${count} prenda${count > 1 ? 's' : ''} subida${count > 1 ? 's' : ''} satisfactoriamente`, 'success');
 }
-
 // ========================================
 // BACKEND SYNC
 // ========================================
