@@ -1,4 +1,4 @@
-// app.js - NoShopiA UNIFICADO v3.1 CORREGIDO
+// app.js - NoShopiA UNIFICADO v3.1 CORREGIDO FINAL
 console.log('NoShopiA v3.1 - CORREGIDO iniciando...');
 
 // ========================================
@@ -51,7 +51,6 @@ function fileToDataUrl(file) {
 // ========================================
 async function detectGarmentType(file) {
   try {
-    showNotification('Detectando tipo de prenda con IA...', 'info');
     const formData = new FormData();
     formData.append('image', file);
     
@@ -70,8 +69,96 @@ async function detectGarmentType(file) {
     };
   } catch (error) {
     console.error('Error detectando prenda:', error);
-    showNotification(`Error detectando prenda: ${error.message}`, 'error');
     return { success: false, error: error.message, item_detected: 'unknown', category: 'unknown' };
+  }
+}
+
+// ========================================
+// CLOSET INTELIGENTE - FUNCIÓN QUE FALTABA
+// ========================================
+async function handleIntelligentUpload(files) {
+  console.log('🧠 CLOSET INTELIGENTE: Upload automático');
+  
+  if (!files || files.length === 0) {
+    showNotification('No se seleccionaron archivos', 'error');
+    return;
+  }
+  
+  const fileArray = Array.from(files);
+  const currentTotal = getTotalClosetItems();
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
+  
+  if (fileArray.length > remaining) {
+    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    return;
+  }
+  
+  showNotification('IA analizando imágenes...', 'info');
+  
+  let successCount = 0;
+  let lastCategory = null;
+  
+  for (const file of fileArray) {
+    try {
+      const detection = await detectGarmentType(file);
+      
+      if (!detection.success || detection.category === 'unknown') {
+        console.log(`❌ No categorizado: ${file.name}`);
+        continue;
+      }
+      
+      const imageUrl = await fileToDataUrl(file);
+      const { category, item_detected } = detection;
+      
+      // Guardar en la categoría correcta
+      uploadedFiles[category].push(file);
+      uploadedImages[category].push(imageUrl);
+      closetItems[category].push({
+        imageUrl: imageUrl,
+        item_detected: item_detected,
+        category: category,
+        timestamp: Date.now(),
+        file: file
+      });
+      
+      lastCategory = category;
+      successCount++;
+      
+      console.log(`✅ ${file.name} → ${category}: ${item_detected}`);
+      
+    } catch (error) {
+      console.error('Error procesando:', error);
+    }
+  }
+  
+  if (successCount > 0) {
+    saveUserData();
+    updateClosetUI();
+    updateTabCounters();
+    
+    // Ir a la última categoría agregada
+    if (lastCategory) {
+      const tabMap = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
+      const tabId = tabMap[lastCategory];
+      if (tabId) {
+        showClosetTab(tabId);
+        setTimeout(() => {
+          document.getElementById(tabId)?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest' 
+          });
+        }, 300);
+      }
+    }
+    
+    const newTotal = getTotalClosetItems();
+    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - newTotal;
+    showNotification(
+      `✅ ${successCount} prenda(s) categorizadas. Closet: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 
+      'success'
+    );
+  } else {
+    showNotification('No se pudo categorizar ninguna imagen', 'error');
   }
 }
 
@@ -135,17 +222,18 @@ async function createUserProfile(userData, profileData) {
 }
 
 // ========================================
-// CLOSET INTELIGENTE
+// UPLOAD DIRECTO (MODO RÁPIDO)
 // ========================================
-async function handleFileUpload(type, fileList) {
+async function handleFileUpload(type, input) {
   console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
   
-  if (!fileList || fileList.length === 0) {
+  const files = input.files ? Array.from(input.files) : [];
+  
+  if (files.length === 0) {
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
   
-  const files = Array.from(fileList);
   const invalidFiles = files.filter(f => !(f instanceof File));
   if (invalidFiles.length > 0) {
     showNotification('Error: archivos no válidos', 'error');
@@ -154,12 +242,11 @@ async function handleFileUpload(type, fileList) {
   
   const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
   const currentCount = uploadedFiles[type].length;
+  
   if (currentCount + files.length > maxFiles) {
     showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
     return;
   }
-  
-  // NO mostrar "Validando..." - evita superposición
   
   const categoryNames = {
     tops: 'Parte Superior',
@@ -170,24 +257,22 @@ async function handleFileUpload(type, fileList) {
   let successCount = 0;
   let firstError = null;
   
-  // Validar TODAS primero, NO guardar nada hasta confirmar
+  // Validar TODAS primero
   for (const file of files) {
     try {
       const detection = await detectGarmentType(file);
       
-      // Validación 1: No es prenda
       if (!detection.success || detection.category === 'unknown') {
         firstError = `"${file.name}" no es una prenda reconocida`;
-        break; // Detener al primer error
+        break;
       }
       
-      // Validación 2: Categoría incorrecta
       if (detection.category !== type) {
         firstError = `"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`;
-        break; // Detener al primer error
+        break;
       }
       
-      // Solo si pasa TODO, entonces guardar
+      // Solo si pasa TODO
       uploadedFiles[type].push(file);
       const imageUrl = await fileToDataUrl(file);
       uploadedImages[type].push(imageUrl);
@@ -208,7 +293,6 @@ async function handleFileUpload(type, fileList) {
     }
   }
   
-  // Actualizar UI solo si hubo éxitos
   if (successCount > 0) {
     updateUploadUI(type);
     saveUserData();
@@ -222,6 +306,49 @@ async function handleFileUpload(type, fileList) {
     showNotification(`✅ ${successCount} imagen(es) agregadas`, 'success');
   }
 }
+
+function updateUploadUI(type) {
+  const label = document.querySelector(`label[for="${type}-upload"]`);
+  const preview = document.getElementById(`${type}-preview`);
+  
+  if (label) {
+    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
+    const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
+    const files = uploadedFiles[type];
+    
+    if (files.length === 0) {
+      label.textContent = `📤 Subir ${typeNames[type]} (máx ${maxFiles})`;
+    } else {
+      label.textContent = `${typeNames[type]}: ${files.length}/${maxFiles} subidos`;
+    }
+  }
+  
+  if (preview) {
+    preview.innerHTML = '';
+    uploadedImages[type].forEach((imageUrl, index) => {
+      const div = document.createElement('div');
+      div.style.position = 'relative';
+      div.style.display = 'inline-block';
+      div.innerHTML = `
+        <img src="${imageUrl}" class="preview-image">
+        <button onclick="removeImage('${type}',${index})" style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px">×</button>
+      `;
+      preview.appendChild(div);
+    });
+  }
+}
+
+function removeImage(type, index) {
+  uploadedFiles[type].splice(index, 1);
+  uploadedImages[type].splice(index, 1);
+  closetItems[type].splice(index, 1);
+  
+  updateUploadUI(type);
+  saveUserData();
+  showNotification('Imagen eliminada', 'success');
+  updateGenerateButton();
+}
+
 // ========================================
 // AUTENTICACIÓN
 // ========================================
@@ -403,10 +530,10 @@ function showClosetQuestion() {
 
 function enableCloset() {
   console.log('CLOSET INTELIGENTE ACTIVADO');
-  //LIMPIAR ESTADO PREVIO
   uploadedFiles = { tops: [], bottoms: [], shoes: [] };
   uploadedImages = { tops: [], bottoms: [], shoes: [] };
   selectedOccasion = null;
+  
   if (!isLoggedIn) {
     showNotification('Debes iniciar sesión', 'error');
     return;
@@ -445,7 +572,6 @@ function enableCloset() {
 
 function useDirectMode() {
   console.log('RECOMENDACIONES RÁPIDAS ACTIVADAS');
-    //LIMPIAR ESTADO PREVIO
   uploadedFiles = { tops: [], bottoms: [], shoes: [] };
   uploadedImages = { tops: [], bottoms: [], shoes: [] };
   selectedOccasion = null;
@@ -499,7 +625,7 @@ function renderClosetTab(tabId, type) {
       <div style="text-align:center;padding:3rem;color:#666">
         <i class="fas fa-${icons[type]}" style="font-size:3rem;margin-bottom:1rem;opacity:.5"></i>
         <p>No hay ${typeNames[type]} aún</p>
-        <p style="font-size:.9rem;opacity:.7">Sube fotos en "Sube cualquier prenda" y la IA las detectará</p>
+        <p style="font-size:.9rem;opacity:.7">Sube fotos y la IA las detectará automáticamente</p>
       </div>
     `;
     return;
@@ -616,140 +742,6 @@ function selectOccasion(occasion) {
   updateGenerateButton();
 }
 
-// ========================================
-// ⚠️ CORRECCIÓN CRÍTICA 1: UPLOAD DIRECTO
-// ========================================
-async function handleFileUpload(type, fileList) {
-  console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
-  
-  if (!fileList || fileList.length === 0) {
-    showNotification('No se seleccionaron archivos', 'error');
-    return;
-  }
-  
-  const files = Array.from(fileList);
-  const invalidFiles = files.filter(f => !(f instanceof File));
-  if (invalidFiles.length > 0) {
-    showNotification('Error: archivos no válidos', 'error');
-    return;
-  }
-  
-  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
-  const currentCount = uploadedFiles[type].length;
-  if (currentCount + files.length > maxFiles) {
-    showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
-    return;
-  }
-  
-  showNotification('Validando con IA...', 'info');
-  
-  // Validar cada archivo
-  for (const file of files) {
-    try {
-      const detection = await detectGarmentType(file);
-      
-      // Verificar si es una prenda válida
-      if (!detection.success || detection.category === 'unknown') {
-        showNotification(`❌ "${file.name}" no es una prenda reconocida. Sube solo ropa o calzado.`, 'error');
-        continue;
-      }
-      
-      // Verificar que coincida con la categoría
-      if (detection.category !== type) {
-        const categoryNames = {
-          tops: 'Parte Superior',
-          bottoms: 'Parte Inferior',
-          shoes: 'Calzado'
-        };
-        
-        showNotification(
-          `❌ "${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}. Súbelo en la sección correcta.`,
-          'error'
-        );
-        continue;
-      }
-      
-      // Si pasa validación, guardar
-      uploadedFiles[type].push(file);
-      console.log(`✅ ${file.name} validado como ${type}`);
-      
-      const imageUrl = await fileToDataUrl(file);
-      uploadedImages[type].push(imageUrl);
-      closetItems[type].push({
-        imageUrl: imageUrl,
-        item_detected: detection.item_detected,
-        category: type,
-        timestamp: Date.now(),
-        file: file
-      });
-      
-    } catch (error) {
-      console.error('Error validando:', error);
-      showNotification(`Error procesando "${file.name}"`, 'error');
-    }
-  }
-  
-  // Actualizar UI
-  updateUploadUI(type);
-  saveUserData();
-  updateGenerateButton();
-  
-  const validCount = uploadedFiles[type].length - currentCount;
-  if (validCount > 0) {
-    showNotification(`✅ ${validCount} imagen(es) agregadas`, 'success');
-  }  
-  files.forEach(file => {
-    uploadedFiles[type].push(file);
-    console.log(`✅ ${file.name} guardado como File object`);
-    
-    fileToDataUrl(file).then(imageUrl => {
-      uploadedImages[type].push(imageUrl);
-      closetItems[type].push({
-        imageUrl: imageUrl,
-        item_detected: `${type} item`,
-        category: type,
-        timestamp: Date.now(),
-        file: file
-      });
-      updateUploadUI(type);
-    });
-  });
-  
-  saveUserData();
-  updateGenerateButton();
-  showNotification(`✅ ${files.length} cargadas`, 'success');
-}
-function updateUploadUI(type) {
-  const label = document.querySelector(`label[for="${type}-upload"]`);
-  const preview = document.getElementById(`${type}-preview`);
-  
-  if (label) {
-    const typeNames = { tops: 'Superiores', bottoms: 'Inferiores', shoes: 'Calzado' };
-    const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
-    const files = uploadedFiles[type];
-    
-    if (files.length === 0) {
-      label.textContent = `Subir ${typeNames[type]} (máx ${maxFiles})`;
-    } else {
-      label.textContent = `${typeNames[type]}: ${files.length}/${maxFiles} subidos`;
-    }
-  }
-  
-  if (preview) {
-    preview.innerHTML = '';
-    uploadedImages[type].forEach((imageUrl, index) => {
-      const div = document.createElement('div');
-      div.style.position = 'relative';
-      div.style.display = 'inline-block';
-      div.innerHTML = `
-        <img src="${imageUrl}" class="preview-image">
-        <button onclick="removeImage('${type}',${index})" style="position:absolute;top:-8px;right:-8px;background:#ef4444;color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px">×</button>
-      `;
-      preview.appendChild(div);
-    });
-  }
-}
-
 function updateGenerateButton() {
   const generateBtn = document.getElementById('generateBtn');
   if (!generateBtn) return;
@@ -775,70 +767,43 @@ function updateGenerateButton() {
   }
 }
 
-function removeImage(type, index) {
-  uploadedFiles[type].splice(index, 1);
-  uploadedImages[type].splice(index, 1);
-  closetItems[type].splice(index, 1);
-  
-  updateUploadUI(type);
-  saveUserData();
-  showNotification('Imagen eliminada', 'success');
-  updateGenerateButton();
-}
-
 // ========================================
-// ⚠️ CORRECCIÓN CRÍTICA 2: RECOMENDACIONES
+// RECOMENDACIONES
 // ========================================
 async function getRecommendation() {
-  // Validación de ocasión
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
     return;
   }
   
-  // Validación de login
   if (!isLoggedIn) {
     showNotification('Debes estar logueado', 'error');
     return;
   }
   
-  console.log('=== VALIDANDO ARCHIVOS ANTES DE ENVIAR ===');
+  console.log('=== VALIDANDO ARCHIVOS ===');
   console.log('uploadedFiles:', {
     tops: uploadedFiles.tops.length,
     bottoms: uploadedFiles.bottoms.length,
     shoes: uploadedFiles.shoes.length
   });
   
-  // Verificar cantidad mínima
   if (uploadedFiles.tops.length === 0 || uploadedFiles.bottoms.length === 0 || uploadedFiles.shoes.length === 0) {
     showNotification('Sube al menos 1 imagen de cada categoría', 'error');
     return;
   }
   
-  // VALIDACIÓN CRÍTICA: Verificar que son File objects
+  // Validar File objects
   const invalidTops = uploadedFiles.tops.filter(f => !(f instanceof File));
   const invalidBottoms = uploadedFiles.bottoms.filter(f => !(f instanceof File));
   const invalidShoes = uploadedFiles.shoes.filter(f => !(f instanceof File));
   
   if (invalidTops.length > 0 || invalidBottoms.length > 0 || invalidShoes.length > 0) {
-    console.error('❌ ERROR: Archivos NO son File objects:', {
-      invalidTops: invalidTops.length,
-      invalidBottoms: invalidBottoms.length,
-      invalidShoes: invalidShoes.length
-    });
-    
-    // Mostrar qué tipo de datos están mal
-    if (invalidTops.length > 0) console.error('Tops inválidos:', invalidTops[0]);
-    if (invalidBottoms.length > 0) console.error('Bottoms inválidos:', invalidBottoms[0]);
-    if (invalidShoes.length > 0) console.error('Shoes inválidos:', invalidShoes[0]);
-    
-    showNotification('Error: Archivos inválidos. Recarga la página e intenta de nuevo.', 'error');
+    console.error('❌ Archivos inválidos');
+    showNotification('Error: Archivos inválidos. Recarga la página.', 'error');
     return;
   }
   
-  console.log('✅ VALIDACIÓN EXITOSA: Todos son File objects');
-  
-  // UI: Deshabilitar botón y mostrar timer
   const btn = document.getElementById('generateBtn');
   const timer = document.getElementById('processingTimer');
   const timerDisplay = document.getElementById('timerDisplay');
@@ -852,68 +817,23 @@ async function getRecommendation() {
   }, 100);
   
   if (btn) {
-    btn.innerHTML = '<span class="loading"></span> Generando recomendaciones...';
+    btn.innerHTML = '<span class="loading"></span> Generando...';
     btn.disabled = true;
   }
   
   try {
-    console.log('=== CREANDO FORMDATA ===');
     const formData = new FormData();
     formData.append('user_email', currentUser.email);
     formData.append('occasion', selectedOccasion);
     
-    console.log('Usuario:', currentUser.email);
-    console.log('Ocasión:', selectedOccasion);
+    uploadedFiles.tops.forEach((file, i) => formData.append('tops', file, file.name || `top_${i}.jpg`));
+    uploadedFiles.bottoms.forEach((file, i) => formData.append('bottoms', file, file.name || `bottom_${i}.jpg`));
+    uploadedFiles.shoes.forEach((file, i) => formData.append('shoes', file, file.name || `shoe_${i}.jpg`));
     
-    // Agregar archivos con validación estricta
-    let topsCount = 0;
-    uploadedFiles.tops.forEach((file, index) => {
-      if (file instanceof File && file.size > 0) {
-        formData.append('tops', file, file.name || `top_${index}.jpg`);
-        topsCount++;
-        console.log(`✅ Top ${index}: ${file.name} (${file.size} bytes)`);
-      } else {
-        console.error(`❌ Top ${index} inválido:`, file);
-      }
-    });
-    
-    let bottomsCount = 0;
-    uploadedFiles.bottoms.forEach((file, index) => {
-      if (file instanceof File && file.size > 0) {
-        formData.append('bottoms', file, file.name || `bottom_${index}.jpg`);
-        bottomsCount++;
-        console.log(`✅ Bottom ${index}: ${file.name} (${file.size} bytes)`);
-      } else {
-        console.error(`❌ Bottom ${index} inválido:`, file);
-      }
-    });
-    
-    let shoesCount = 0;
-    uploadedFiles.shoes.forEach((file, index) => {
-      if (file instanceof File && file.size > 0) {
-        formData.append('shoes', file, file.name || `shoe_${index}.jpg`);
-        shoesCount++;
-        console.log(`✅ Shoe ${index}: ${file.name} (${file.size} bytes)`);
-      } else {
-        console.error(`❌ Shoe ${index} inválido:`, file);
-      }
-    });
-    
-    console.log(`📊 Total agregados al FormData: ${topsCount} tops, ${bottomsCount} bottoms, ${shoesCount} shoes`);
-    
-    // Validar que se agregaron archivos
-    if (topsCount === 0 || bottomsCount === 0 || shoesCount === 0) {
-      throw new Error('No se pudieron agregar archivos válidos al FormData');
-    }
-    
-    console.log('=== ENVIANDO REQUEST AL BACKEND ===');
     const response = await fetch(`${CONFIG.API_BASE}/api/recommend`, {
       method: 'POST',
       body: formData
     });
-    
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     clearInterval(timerInterval);
     const finalTime = (Date.now() - processingStartTime) / 1000;
@@ -921,23 +841,11 @@ async function getRecommendation() {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Error response body:', errorText);
-      
-      // Intentar parsear JSON
-      let errorDetails = errorText;
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorDetails = JSON.stringify(errorJson, null, 2);
-        console.error('❌ Error JSON parsed:', errorJson);
-      } catch (e) {
-        console.error('❌ Error no es JSON válido');
-      }
-      
-      throw new Error(`Error ${response.status}: ${errorDetails}`);
+      console.error('Error:', errorText);
+      throw new Error(`Error ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('✅ Response data:', data);
     
     if (data.success) {
       userStats.recommendations++;
@@ -950,35 +858,15 @@ async function getRecommendation() {
     
   } catch (error) {
     clearInterval(timerInterval);
-    console.error('❌ Error completo:', error);
-    console.error('❌ Stack trace:', error.stack);
-    
-    // Mensajes de error más descriptivos
-    let errorMessage = 'Error desconocido';
-    if (error.message) {
-      if (error.message.includes('422')) {
-        errorMessage = 'Error de validación en archivos. Verifica que las imágenes sean válidas.';
-      } else if (error.message.includes('413')) {
-        errorMessage = 'Archivos muy grandes. Reduce el tamaño de las imágenes.';
-      } else if (error.message.includes('500')) {
-        errorMessage = 'Error interno del servidor. Intenta de nuevo.';
-      } else if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Error de conexión. Verifica tu internet.';
-      } else {
-        errorMessage = error.message;
-      }
-    }
-    
-    showNotification(`Error: ${errorMessage}`, 'error');
-    
+    console.error('Error:', error);
+    showNotification(`Error: ${error.message}`, 'error');
   } finally {
-    // Cleanup: Ocultar timer y rehabilitar botón
     setTimeout(() => {
       if (timer) timer.style.display = 'none';
     }, 2000);
     
     if (btn) {
-      btn.innerHTML = '<i class="fas fa-magic"></i> Generar Nuevas Recomendaciones';
+      btn.innerHTML = '<i class="fas fa-magic"></i> Generar Nuevas';
       btn.disabled = false;
     }
   }
@@ -1000,9 +888,6 @@ function updateStatsDisplay() {
   });
 }
 
-// ========================================
-// RENDERIZADO DE RECOMENDACIONES
-// ========================================
 function getImage(type, item) {
   const images = uploadedImages[type];
   if (!images?.length) return null;
@@ -1018,24 +903,21 @@ function renderRecommendations(data) {
   const results = data.results || [];
   
   if (!results.length) {
-    result.innerHTML = '<div style="text-align:center;padding:3rem;color:#666"><i class="fas fa-search" style="font-size:3rem;opacity:.5"></i><h3>No hay recomendaciones</h3></div>';
+    result.innerHTML = '<div style="text-align:center;padding:3rem">No hay recomendaciones</div>';
     result.style.display = 'block';
     return;
   }
   
-  // Encontrar el mejor item
   const bestIdx = results.reduce((best, item, idx) => (item.final_score || 0) > (results[best].final_score || 0) ? idx : best, 0);
-  const bestItem = results[bestIdx];  // ← NUEVO: extraer solo el mejor
+  const bestItem = results[bestIdx];
   const occasion = OCCASION_NAMES[selectedOccasion] || selectedOccasion;
   
   result.innerHTML = `
     <div style="text-align:center;margin-bottom:2rem">
       <h2 style="color:#000">Mejor Recomendación para ${occasion}</h2>
       <div style="background:linear-gradient(135deg,var(--gold),#f59e0b);color:#000;border-radius:15px;padding:1rem;margin:1rem 0;display:inline-block;font-weight:800">
-        <strong>⭐ MEJOR OPCIÓN PARA ${occasion.toUpperCase()}</strong>
+        MEJOR OPCIÓN PARA ${occasion.toUpperCase()}
       </div>
-      <p style="color:#000;opacity:.8">Seleccionada entre ${results.length} combinaciones posibles</p>
-      ${data.processing_stats?.total_time ? `<div style="background:rgba(59,130,246,.1);border-radius:10px;padding:1rem;margin:1rem 0"><strong>Procesamiento:</strong> ${data.processing_stats.total_time}</div>` : ''}
     </div>
     <div style="display:grid;gap:2rem">
       ${renderCard(bestItem, 0, true, occasion)}
@@ -1043,90 +925,58 @@ function renderRecommendations(data) {
   `;
   
   result.style.display = 'block';
-  setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  console.log(`Mejor recomendación mostrada (score: ${Math.round((bestItem.final_score || 0) * 100)}%) de ${results.length} opciones`);
+  setTimeout(() => result.scrollIntoView({ behavior: 'smooth' }), 100);
 }
 
 function renderCard(item, idx, isBest, occasion) {
   const score = Math.round((item.final_score || 0) * 100);
-  const border = isBest ? 'var(--gold)' : 'var(--border)';
-  const shadow = isBest ? 'box-shadow:0 0 30px rgba(251,191,36,.3)' : '';
   
   return `
-    <div style="background:var(--background);border:2px solid ${border};border-radius:20px;padding:2rem;position:relative;${shadow}">
-      ${isBest ? `<div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:.5rem 1.5rem;border-radius:20px;font-weight:800;font-size:.9rem">MEJOR PARA ${occasion.toUpperCase()}</div>` : ''}
-      
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;${isBest ? 'margin-top:1rem' : ''}">
-        <h3 style="color:#000;margin:0">Combinación ${idx + 1}</h3>
-        <div style="display:flex;gap:.5rem">
-          <span style="background:rgba(59,130,246,.1);color:var(--primary);padding:.3rem .8rem;border-radius:10px;font-size:.8rem;font-weight:600">${occasion}</span>
-          <span style="background:${isBest ? 'var(--gold)' : 'var(--primary)'};color:${isBest ? '#000' : 'white'};padding:.5rem 1rem;border-radius:15px;font-weight:700">${score}%</span>
-        </div>
+    <div style="background:white;border:2px solid var(--gold);border-radius:20px;padding:2rem;box-shadow:0 0 30px rgba(251,191,36,.3)">
+      <div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:.5rem 1.5rem;border-radius:20px;font-weight:800">
+        MEJOR PARA ${occasion.toUpperCase()}
       </div>
       
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem">
-        ${renderItem('SUPERIOR', getImage('tops', item), item.top?.detected_item || 'Superior')}
-        ${renderItem('INFERIOR', getImage('bottoms', item), item.bottom?.detected_item || 'Inferior')}
-        ${renderItem('CALZADO', getImage('shoes', item), item.shoe?.detected_item || 'Calzado')}
+      <div style="display:flex;justify-content:space-between;margin:1rem 0">
+        <h3 style="color:#000">Combinación Perfecta</h3>
+        <span style="background:var(--gold);color:#000;padding:.5rem 1rem;border-radius:15px;font-weight:700">${score}%</span>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1rem 0">
+        ${renderItem('SUPERIOR', getImage('tops', item), item.top?.detected_item)}
+        ${renderItem('INFERIOR', getImage('bottoms', item), item.bottom?.detected_item)}
+        ${renderItem('CALZADO', getImage('shoes', item), item.shoe?.detected_item)}
       </div>
       
       <div style="background:rgba(59,130,246,.1);border-radius:10px;padding:1rem;text-align:center">
-        <div style="color:#000;font-weight:600;margin-bottom:.5rem">${item.harmony_type || 'Equilibrada'}</div>
-        <div style="color:#000;opacity:.8;font-size:.9rem">${item.harmony_description || 'Combinación balanceada'}</div>
+        <div style="font-weight:600;margin-bottom:.5rem">${item.harmony_type || 'Equilibrada'}</div>
+        <div style="font-size:.9rem;opacity:.8">${item.harmony_description || 'Combinación balanceada'}</div>
       </div>
     </div>
   `;
 }
 
 function renderItem(title, img, name) {
-  const content = img ? 
-    `<img src="${img}" style="max-width:200px;max-height:200px;object-fit:contain;border-radius:15px;box-shadow:0 4px 12px rgba(0,0,0,.15)" alt="${title}">` :
-    `<div style="color:#666;font-size:2rem">${title[0]}</div>`;
-  
   return `
     <div style="text-align:center">
-      <div style="font-size:.8rem;color:#000;font-weight:600;margin-bottom:.5rem">${title}</div>
-      <div style="background:transparent;border-radius:20px;padding:1.5rem;min-height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:.5rem;border:1px dashed rgba(59,130,246,.3)">${content}</div>
-      <div style="font-size:.9rem;color:#000;opacity:.8">${name}</div>
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">${title}</div>
+      <div style="border:1px dashed rgba(59,130,246,.3);border-radius:20px;padding:1.5rem;min-height:240px;display:flex;align-items:center;justify-content:center">
+        ${img ? `<img src="${img}" style="max-width:200px;max-height:200px;object-fit:contain;border-radius:15px;box-shadow:0 4px 12px rgba(0,0,0,.15)">` : `<div style="color:#666;font-size:2rem">${title[0]}</div>`}
+      </div>
+      <div style="font-size:.9rem;margin-top:.5rem;opacity:.8">${name || title}</div>
     </div>
   `;
-}
-
-function generateFromCloset() {
-  if (!selectedOccasion) {
-    showNotification('Selecciona una ocasión primero', 'error');
-    return;
-  }
-  
-  if (!isLoggedIn) {
-    showNotification('Debes estar logueado', 'error');
-    return;
-  }
-  
-  const hasMinimum = closetItems.tops.length >= CONFIG.MINIMUM_IN_CLOSET.tops && 
-                     closetItems.bottoms.length >= CONFIG.MINIMUM_IN_CLOSET.bottoms && 
-                     closetItems.shoes.length >= CONFIG.MINIMUM_IN_CLOSET.shoes;
-  
-  if (!hasMinimum) {
-    showNotification('Sube al menos 1 prenda de cada categoría al closet', 'error');
-    return;
-  }
-  
-  showNotification('Generando desde closet...', 'info');
-  console.log('Generando recomendaciones desde closet inteligente');
 }
 
 // ========================================
 // PLANES
 // ========================================
 function startFreePlan() {
-  console.log('Plan gratuito activado');
   showNotification('Plan gratuito activado', 'success');
   setTimeout(() => scrollToSection('upload'), 1000);
 }
 
 function upgradeToPremium() {
-  console.log('Upgrade premium');
   showNotification('Funcionalidad premium próximamente', 'info');
 }
 
@@ -1146,7 +996,6 @@ function saveUserData() {
   
   const userData = {
     email: currentUser.email,
-    name: currentUser.name,
     uploadedFiles,
     uploadedImages,
     closetItems,
@@ -1189,8 +1038,7 @@ function initializeGoogleLogin() {
   google.accounts.id.initialize({
     client_id: CONFIG.GOOGLE_CLIENT_ID,
     callback: handleGoogleCredentialResponse,
-    auto_select: false,
-    cancel_on_tap_outside: true
+    auto_select: false
   });
   
   const mainBtn = document.getElementById('headerLoginBtn');
@@ -1203,15 +1051,15 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('INICIALIZANDO NoShopiA v3.1 CORREGIDO');
+  console.log('INICIALIZANDO NoShopiA v3.1');
   setTimeout(initializeGoogleLogin, 2000);
-  console.log('NoShopiA v3.1 inicializada');
 }
 
 // ========================================
 // EXPOSICIÓN GLOBAL
 // ========================================
 window.handleIntelligentUpload = handleIntelligentUpload;
+window.handleFileUpload = handleFileUpload;
 window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
 window.logout = logout;
 window.enableCloset = enableCloset;
@@ -1225,13 +1073,10 @@ window.selectOccasion = selectOccasion;
 window.getRecommendation = getRecommendation;
 window.startFreePlan = startFreePlan;
 window.upgradeToPremium = upgradeToPremium;
-window.handleFileUpload = handleFileUpload;
 window.updateUploadUI = updateUploadUI;
 window.removeImage = removeImage;
-window.generateFromCloset = generateFromCloset;
 window.updateTabCounters = updateTabCounters;
 window.updateGenerateButton = updateGenerateButton;
-window.renderRecommendations = renderRecommendations;
 
 // Auto-inicialización
 if (document.readyState === 'loading') {
@@ -1240,4 +1085,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('app.js v3.1 CORREGIDO cargado');
+console.log('✅ app.js v3.1 CORREGIDO cargado');
