@@ -608,13 +608,11 @@ function selectOccasion(occasion) {
 function handleFileUpload(type, fileList) {
   console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
   
-  // ✅ VALIDACIÓN 1: FileList válido
   if (!fileList || fileList.length === 0) {
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
   
-  // ✅ VALIDACIÓN 2: Convertir y verificar File objects
   const files = Array.from(fileList);
   const invalidFiles = files.filter(f => !(f instanceof File));
   if (invalidFiles.length > 0) {
@@ -622,7 +620,6 @@ function handleFileUpload(type, fileList) {
     return;
   }
   
-  // ✅ VALIDACIÓN 3: Límites
   const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
   const currentCount = uploadedFiles[type].length;
   if (currentCount + files.length > maxFiles) {
@@ -630,12 +627,10 @@ function handleFileUpload(type, fileList) {
     return;
   }
   
-  // ✅ CORRECCIÓN CRÍTICA: Guardar File objects INMEDIATAMENTE (sincrónico)
   files.forEach(file => {
-    uploadedFiles[type].push(file);  // ✅ Guardar AHORA
+    uploadedFiles[type].push(file);
     console.log(`✅ ${file.name} guardado como File object`);
     
-    // Preview asíncrono (no bloquea)
     fileToDataUrl(file).then(imageUrl => {
       uploadedImages[type].push(imageUrl);
       closetItems[type].push({
@@ -643,37 +638,18 @@ function handleFileUpload(type, fileList) {
         item_detected: `${type} item`,
         category: type,
         timestamp: Date.now(),
-        file: file  // Referencia
+        file: file
       });
       updateUploadUI(type);
     });
   });
   
-  // Actualizar inmediatamente
   saveUserData();
   updateGenerateButton();
   showNotification(`✅ ${files.length} cargadas`, 'success');
 }
-  
-  // VALIDACIÓN 3: Verificar límites
-  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
-  const currentCount = uploadedFiles[type].length;
-  
-  if (currentCount + files.length > maxFiles) {
-    showNotification(`Máximo ${maxFiles} archivos para ${type}. Ya tienes ${currentCount}.`, 'error');
-    return;
-  }
-  
-  // VALIDACIÓN 4: Tipos de archivo permitidos
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  const invalidTypes = files.filter(file => !validTypes.includes(file.type));
-  
-  if (invalidTypes.length > 0) {
-    showNotification('Solo se permiten archivos JPG, PNG o WebP', 'error');
-    return;
-  }
-  
-  showNotification(`Procesando ${files.length} imagen(es)...`, 'info');
+
+
   
   // ✅ PROCESAR ARCHIVOS: Guardar File objects INMEDIATAMENTE (sincrónico)
   files.forEach(file => {
