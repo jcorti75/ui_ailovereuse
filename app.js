@@ -952,26 +952,28 @@ function renderRecommendations(data) {
     return;
   }
   
+  // Encontrar el mejor item
   const bestIdx = results.reduce((best, item, idx) => (item.final_score || 0) > (results[best].final_score || 0) ? idx : best, 0);
+  const bestItem = results[bestIdx];  // ← NUEVO: extraer solo el mejor
   const occasion = OCCASION_NAMES[selectedOccasion] || selectedOccasion;
   
   result.innerHTML = `
     <div style="text-align:center;margin-bottom:2rem">
-      <h2 style="color:#000">Recomendaciones para ${occasion}</h2>
-      <div style="background:linear-gradient(135deg,var(--primary),#1d4ed8);color:white;border-radius:15px;padding:1rem;margin:1rem 0;display:inline-block">
-        <strong>${occasion}</strong>
+      <h2 style="color:#000">Mejor Recomendación para ${occasion}</h2>
+      <div style="background:linear-gradient(135deg,var(--gold),#f59e0b);color:#000;border-radius:15px;padding:1rem;margin:1rem 0;display:inline-block;font-weight:800">
+        <strong>⭐ MEJOR OPCIÓN PARA ${occasion.toUpperCase()}</strong>
       </div>
-      <p style="color:#000;opacity:.8">${data.message || results.length + ' combinaciones optimizadas'}</p>
+      <p style="color:#000;opacity:.8">Seleccionada entre ${results.length} combinaciones posibles</p>
       ${data.processing_stats?.total_time ? `<div style="background:rgba(59,130,246,.1);border-radius:10px;padding:1rem;margin:1rem 0"><strong>Procesamiento:</strong> ${data.processing_stats.total_time}</div>` : ''}
     </div>
     <div style="display:grid;gap:2rem">
-      ${results.map((item, idx) => renderCard(item, idx, idx === bestIdx, occasion)).join('')}
+      ${renderCard(bestItem, 0, true, occasion)}
     </div>
   `;
   
   result.style.display = 'block';
   setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  console.log(`${results.length} recomendaciones renderizadas`);
+  console.log(`Mejor recomendación mostrada (score: ${Math.round((bestItem.final_score || 0) * 100)}%) de ${results.length} opciones`);
 }
 
 function renderCard(item, idx, isBest, occasion) {
