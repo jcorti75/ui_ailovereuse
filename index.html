@@ -732,10 +732,10 @@
         zone.addEventListener('click', ()=> input.click());
         
         // ✅ CORRECCIÓN: Pasar FileList nativo
-        input.addEventListener('change', (e)=>{
-          const fileList = e.target.files;  // FileList nativo
-          if(fileList && fileList.length > 0 && window.handleIntelligentUpload){ 
-            window.handleIntelligentUpload(Array.from(fileList)); 
+        input.addEventListener('change', function(e) {
+          const fileList = e.target.files;  // ✅ FileList nativo
+          if (fileList && fileList.length > 0 && window.handleFileUpload) {
+            window.handleFileUpload(type, fileList);  // ✅ Pasar FileList
           }
         });
 
