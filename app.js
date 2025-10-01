@@ -137,75 +137,94 @@ async function createUserProfile(userData, profileData) {
 // ========================================
 // CLOSET INTELIGENTE
 // ========================================
-async function handleIntelligentUpload(files) {
-  console.log('🧠 CLOSET INTELIGENTE: Upload automático');
-  if (!files || files.length === 0) return;
+async function handleFileUpload(type, fileList) {
+  console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
   
-  const currentTotal = getTotalClosetItems();
-  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
-  
-  if (files.length > remaining) {
-    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+  if (!fileList || fileList.length === 0) {
+    showNotification('No se seleccionaron archivos', 'error');
     return;
   }
   
-  showNotification('IA analizando imágenes...', 'info');
+  const files = Array.from(fileList);
+  const invalidFiles = files.filter(f => !(f instanceof File));
+  if (invalidFiles.length > 0) {
+    showNotification('Error: archivos no válidos', 'error');
+    return;
+  }
+  
+  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
+  const currentCount = uploadedFiles[type].length;
+  if (currentCount + files.length > maxFiles) {
+    showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
+    return;
+  }
+  
+  showNotification('Validando con IA...', 'info');
+  
+  const categoryNames = {
+    tops: 'Parte Superior',
+    bottoms: 'Parte Inferior',
+    shoes: 'Calzado'
+  };
   
   let successCount = 0;
-  let lastCategory = null;
+  let errors = [];
   
+  // Validar TODAS las imágenes primero
   for (const file of files) {
     try {
       const detection = await detectGarmentType(file);
+      
+      // Caso 1: No es una prenda reconocida
       if (!detection.success || detection.category === 'unknown') {
-        console.log(`No categorizado: ${file.name}`);
+        errors.push(`"${file.name}" no es una prenda reconocida`);
         continue;
       }
       
-      const imageUrl = await fileToDataUrl(file);
-      categorizeIntelligentItem(detection, imageUrl, file);
-      lastCategory = detection.category;
-      successCount++;
-    } catch (error) {
-      console.error('Error IA:', error);
-    }
-  }
-  
-  if (successCount > 0) {
-    saveUserData();
-    updateClosetUI();
-    updateTabCounters();
-    
-    if (lastCategory) {
-      const tabMap = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
-      const tabId = tabMap[lastCategory];
-      if (tabId) {
-        showClosetTab(tabId);
-        setTimeout(() => {
-          document.getElementById(tabId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 300);
+      // Caso 2: Es prenda pero categoría incorrecta
+      if (detection.category !== type) {
+        errors.push(`"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`);
+        continue;
       }
+      
+      // Si pasa validación, guardar
+      uploadedFiles[type].push(file);
+      const imageUrl = await fileToDataUrl(file);
+      uploadedImages[type].push(imageUrl);
+      closetItems[type].push({
+        imageUrl: imageUrl,
+        item_detected: detection.item_detected,
+        category: type,
+        timestamp: Date.now(),
+        file: file
+      });
+      
+      successCount++;
+      
+    } catch (error) {
+      console.error('Error validando:', error);
+      errors.push(`Error procesando "${file.name}"`);
     }
-    
-    const newTotal = getTotalClosetItems();
-    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - newTotal;
-    showNotification(`${successCount} prenda(s) categorizadas. Closet: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 'success');
   }
-}
-
-function categorizeIntelligentItem(detection, imageUrl, file) {
-  const { category, item_detected } = detection;
-  const itemObject = {
-    imageUrl: imageUrl,
-    item_detected: item_detected,
-    category: category,
-    timestamp: Date.now(),
-    file: file
-  };
   
-  uploadedFiles[category].push(file);
-  uploadedImages[category].push(imageUrl);
-  closetItems[category].push(itemObject);
+  // Actualizar UI una sola vez
+  if (successCount > 0) {
+    updateUploadUI(type);
+    saveUserData();
+    updateGenerateButton();
+  }
+  
+  // Mostrar UN SOLO mensaje final
+  if (errors.length > 0 && successCount === 0) {
+    // Solo errores
+    showNotification(`❌ ${errors[0]}. Súbelo en la sección correcta.`, 'error');
+  } else if (errors.length > 0 && successCount > 0) {
+    // Algunos éxitos, algunos errores
+    showNotification(`⚠️ ${successCount} agregadas, ${errors.length} rechazadas por categoría incorrecta`, 'error');
+  } else if (successCount > 0) {
+    // Todo éxito
+    showNotification(`✅ ${successCount} imagen(es) agregadas`, 'success');
+  }
 }
 
 // ========================================
