@@ -683,9 +683,7 @@ async function handleFileUpload(type, fileList) {
   const validCount = uploadedFiles[type].length - currentCount;
   if (validCount > 0) {
     showNotification(`✅ ${validCount} imagen(es) agregadas`, 'success');
-  }
-}
-  
+  }  
   files.forEach(file => {
     uploadedFiles[type].push(file);
     console.log(`✅ ${file.name} guardado como File object`);
