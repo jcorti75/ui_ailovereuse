@@ -605,7 +605,7 @@ function selectOccasion(occasion) {
 // ========================================
 // ⚠️ CORRECCIÓN CRÍTICA 1: UPLOAD DIRECTO
 // ========================================
-function handleFileUpload(type, fileList) {
+async function handleFileUpload(type, fileList) {
   console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
   
   if (!fileList || fileList.length === 0) {
@@ -626,6 +626,65 @@ function handleFileUpload(type, fileList) {
     showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
     return;
   }
+  
+  showNotification('Validando con IA...', 'info');
+  
+  // Validar cada archivo
+  for (const file of files) {
+    try {
+      const detection = await detectGarmentType(file);
+      
+      // Verificar si es una prenda válida
+      if (!detection.success || detection.category === 'unknown') {
+        showNotification(`❌ "${file.name}" no es una prenda reconocida. Sube solo ropa o calzado.`, 'error');
+        continue;
+      }
+      
+      // Verificar que coincida con la categoría
+      if (detection.category !== type) {
+        const categoryNames = {
+          tops: 'Parte Superior',
+          bottoms: 'Parte Inferior',
+          shoes: 'Calzado'
+        };
+        
+        showNotification(
+          `❌ "${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}. Súbelo en la sección correcta.`,
+          'error'
+        );
+        continue;
+      }
+      
+      // Si pasa validación, guardar
+      uploadedFiles[type].push(file);
+      console.log(`✅ ${file.name} validado como ${type}`);
+      
+      const imageUrl = await fileToDataUrl(file);
+      uploadedImages[type].push(imageUrl);
+      closetItems[type].push({
+        imageUrl: imageUrl,
+        item_detected: detection.item_detected,
+        category: type,
+        timestamp: Date.now(),
+        file: file
+      });
+      
+    } catch (error) {
+      console.error('Error validando:', error);
+      showNotification(`Error procesando "${file.name}"`, 'error');
+    }
+  }
+  
+  // Actualizar UI
+  updateUploadUI(type);
+  saveUserData();
+  updateGenerateButton();
+  
+  const validCount = uploadedFiles[type].length - currentCount;
+  if (validCount > 0) {
+    showNotification(`✅ ${validCount} imagen(es) agregadas`, 'success');
+  }
+}
   
   files.forEach(file => {
     uploadedFiles[type].push(file);
