@@ -72,7 +72,63 @@ async function detectGarmentType(file) {
     return { success: false, error: error.message, item_detected: 'unknown', category: 'unknown' };
   }
 }
-
+// ========================================
+// CLOSET INTELIGENTE
+// ========================================
+async function handleIntelligentUpload(files) {
+  console.log('🧠 CLOSET INTELIGENTE: Upload automático');
+  
+  if (!files || files.length === 0) {
+    showNotification('No se seleccionaron archivos', 'error');
+    return;
+  }
+  
+  const fileArray = Array.from(files);
+  const currentTotal = getTotalClosetItems();
+  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
+  
+  if (fileArray.length > remaining) {
+    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    return;
+  }
+  
+  let successCount = 0;
+  
+  for (const file of fileArray) {
+    try {
+      const detection = await detectGarmentType(file);
+      
+      if (!detection.success || detection.category === 'unknown') {
+        continue;
+      }
+      
+      const imageUrl = await fileToDataUrl(file);
+      const { category, item_detected } = detection;
+      
+      uploadedFiles[category].push(file);
+      uploadedImages[category].push(imageUrl);
+      closetItems[category].push({
+        imageUrl: imageUrl,
+        item_detected: item_detected,
+        category: category,
+        timestamp: Date.now(),
+        file: file
+      });
+      
+      successCount++;
+      
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  
+  if (successCount > 0) {
+    saveUserData();
+    updateClosetUI();
+    updateTabCounters();
+    showNotification(`${successCount} prenda(s) categorizadas automáticamente`, 'success');
+  }
+}
 // ========================================
 // CLOSET INTELIGENTE - FUNCIÓN QUE FALTABA
 // ========================================
