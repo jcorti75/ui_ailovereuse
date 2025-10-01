@@ -648,42 +648,6 @@ function handleFileUpload(type, fileList) {
   updateGenerateButton();
   showNotification(`✅ ${files.length} cargadas`, 'success');
 }
-
-
-  
-  // ✅ PROCESAR ARCHIVOS: Guardar File objects INMEDIATAMENTE (sincrónico)
-  files.forEach(file => {
-    // Guardar File object INMEDIATAMENTE en uploadedFiles
-    uploadedFiles[type].push(file);
-    console.log(`✅ ${file.name} (${file.size} bytes) guardado como File object`);
-    
-    // Generar preview de forma asíncrona (NO bloquea)
-    fileToDataUrl(file).then(imageUrl => {
-      uploadedImages[type].push(imageUrl);
-      closetItems[type].push({
-        imageUrl: imageUrl,
-        item_detected: `${type} item`,
-        category: type,
-        timestamp: Date.now(),
-        file: file  // Referencia al File object
-      });
-      updateUploadUI(type);
-    }).catch(error => {
-      console.error('Error generando preview:', error);
-    });
-  });
-  
-  // Actualizar UI y estado
-  saveUserData();
-  updateGenerateButton();
-  
-  showNotification(`✅ ${files.length} imagen(es) cargadas`, 'success');
-  
-  console.log(`📊 Estado ${type}:`, {
-    filesCount: uploadedFiles[type].length,
-    allAreFiles: uploadedFiles[type].every(f => f instanceof File)
-  });
-
 function updateUploadUI(type) {
   const label = document.querySelector(`label[for="${type}-upload"]`);
   const preview = document.getElementById(`${type}-preview`);
