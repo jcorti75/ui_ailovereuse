@@ -76,89 +76,105 @@ async function detectGarmentType(file) {
 // ========================================
 // CLOSET INTELIGENTE - FUNCIÓN QUE FALTABA
 // ========================================
-async function handleIntelligentUpload(files) {
-  console.log('🧠 CLOSET INTELIGENTE: Upload automático');
+// ========================================
+// UPLOAD DIRECTO (MODO RÁPIDO) - VERSIÓN CORREGIDA
+// ========================================
+async function handleFileUpload(type, inputOrEvent) {
+  console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
   
-  if (!files || files.length === 0) {
+  // Manejar tanto input element como event
+  let files = [];
+  if (inputOrEvent.target) {
+    // Es un event
+    files = Array.from(inputOrEvent.target.files || []);
+  } else if (inputOrEvent.files) {
+    // Es un input element
+    files = Array.from(inputOrEvent.files || []);
+  } else {
+    console.error('Parámetro inválido:', inputOrEvent);
+    showNotification('Error: Parámetro inválido', 'error');
+    return;
+  }
+  
+  console.log(`📂 Archivos detectados: ${files.length}`);
+  
+  if (files.length === 0) {
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
   
-  const fileArray = Array.from(files);
-  const currentTotal = getTotalClosetItems();
-  const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
-  
-  if (fileArray.length > remaining) {
-    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+  const invalidFiles = files.filter(f => !(f instanceof File));
+  if (invalidFiles.length > 0) {
+    showNotification('Error: archivos no válidos', 'error');
     return;
   }
   
-  showNotification('IA analizando imágenes...', 'info');
+  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
+  const currentCount = uploadedFiles[type].length;
+  
+  if (currentCount + files.length > maxFiles) {
+    showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
+    return;
+  }
+  
+  const categoryNames = {
+    tops: 'Parte Superior',
+    bottoms: 'Parte Inferior',
+    shoes: 'Calzado'
+  };
   
   let successCount = 0;
-  let lastCategory = null;
+  let firstError = null;
   
-  for (const file of fileArray) {
+  // Validar TODAS primero
+  for (const file of files) {
     try {
+      console.log(`🔍 Validando: ${file.name}`);
       const detection = await detectGarmentType(file);
       
       if (!detection.success || detection.category === 'unknown') {
-        console.log(`❌ No categorizado: ${file.name}`);
-        continue;
+        firstError = `"${file.name}" no es una prenda reconocida`;
+        break;
       }
       
-      const imageUrl = await fileToDataUrl(file);
-      const { category, item_detected } = detection;
+      if (detection.category !== type) {
+        firstError = `"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`;
+        break;
+      }
       
-      // Guardar en la categoría correcta
-      uploadedFiles[category].push(file);
-      uploadedImages[category].push(imageUrl);
-      closetItems[category].push({
+      // Solo si pasa TODO
+      uploadedFiles[type].push(file);
+      const imageUrl = await fileToDataUrl(file);
+      uploadedImages[type].push(imageUrl);
+      closetItems[type].push({
         imageUrl: imageUrl,
-        item_detected: item_detected,
-        category: category,
+        item_detected: detection.item_detected,
+        category: type,
         timestamp: Date.now(),
         file: file
       });
       
-      lastCategory = category;
+      console.log(`✅ ${file.name} agregado como ${detection.item_detected}`);
       successCount++;
       
-      console.log(`✅ ${file.name} → ${category}: ${item_detected}`);
-      
     } catch (error) {
-      console.error('Error procesando:', error);
+      console.error('Error validando:', error);
+      firstError = `Error procesando "${file.name}"`;
+      break;
     }
   }
   
   if (successCount > 0) {
+    updateUploadUI(type);
     saveUserData();
-    updateClosetUI();
-    updateTabCounters();
-    
-    // Ir a la última categoría agregada
-    if (lastCategory) {
-      const tabMap = { tops: 'superiores', bottoms: 'inferiores', shoes: 'calzado' };
-      const tabId = tabMap[lastCategory];
-      if (tabId) {
-        showClosetTab(tabId);
-        setTimeout(() => {
-          document.getElementById(tabId)?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'nearest' 
-          });
-        }, 300);
-      }
-    }
-    
-    const newTotal = getTotalClosetItems();
-    const newRemaining = CONFIG.TOTAL_CLOSET_LIMIT - newTotal;
-    showNotification(
-      `✅ ${successCount} prenda(s) categorizadas. Closet: ${newTotal}/${CONFIG.TOTAL_CLOSET_LIMIT} (${newRemaining} restantes)`, 
-      'success'
-    );
-  } else {
-    showNotification('No se pudo categorizar ninguna imagen', 'error');
+    updateGenerateButton();
+  }
+  
+  // UN SOLO mensaje
+  if (firstError) {
+    showNotification(`❌ ${firstError}. Súbelo en la sección correcta.`, 'error');
+  } else if (successCount > 0) {
+    showNotification(`✅ ${successCount} imagen(es) agregadas`, 'success');
   }
 }
 
