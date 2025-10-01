@@ -159,7 +159,7 @@ async function handleFileUpload(type, fileList) {
     return;
   }
   
-  showNotification('Validando con IA...', 'info');
+  // NO mostrar "Validando..." - evita superposición
   
   const categoryNames = {
     tops: 'Parte Superior',
@@ -168,26 +168,26 @@ async function handleFileUpload(type, fileList) {
   };
   
   let successCount = 0;
-  let errors = [];
+  let firstError = null;
   
-  // Validar TODAS las imágenes primero
+  // Validar TODAS primero, NO guardar nada hasta confirmar
   for (const file of files) {
     try {
       const detection = await detectGarmentType(file);
       
-      // Caso 1: No es una prenda reconocida
+      // Validación 1: No es prenda
       if (!detection.success || detection.category === 'unknown') {
-        errors.push(`"${file.name}" no es una prenda reconocida`);
-        continue;
+        firstError = `"${file.name}" no es una prenda reconocida`;
+        break; // Detener al primer error
       }
       
-      // Caso 2: Es prenda pero categoría incorrecta
+      // Validación 2: Categoría incorrecta
       if (detection.category !== type) {
-        errors.push(`"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`);
-        continue;
+        firstError = `"${file.name}" es ${categoryNames[detection.category]}, no ${categoryNames[type]}`;
+        break; // Detener al primer error
       }
       
-      // Si pasa validación, guardar
+      // Solo si pasa TODO, entonces guardar
       uploadedFiles[type].push(file);
       const imageUrl = await fileToDataUrl(file);
       uploadedImages[type].push(imageUrl);
@@ -203,30 +203,25 @@ async function handleFileUpload(type, fileList) {
       
     } catch (error) {
       console.error('Error validando:', error);
-      errors.push(`Error procesando "${file.name}"`);
+      firstError = `Error procesando "${file.name}"`;
+      break;
     }
   }
   
-  // Actualizar UI una sola vez
+  // Actualizar UI solo si hubo éxitos
   if (successCount > 0) {
     updateUploadUI(type);
     saveUserData();
     updateGenerateButton();
   }
   
-  // Mostrar UN SOLO mensaje final
-  if (errors.length > 0 && successCount === 0) {
-    // Solo errores
-    showNotification(`❌ ${errors[0]}. Súbelo en la sección correcta.`, 'error');
-  } else if (errors.length > 0 && successCount > 0) {
-    // Algunos éxitos, algunos errores
-    showNotification(`⚠️ ${successCount} agregadas, ${errors.length} rechazadas por categoría incorrecta`, 'error');
+  // UN SOLO mensaje
+  if (firstError) {
+    showNotification(`❌ ${firstError}. Súbelo en la sección correcta.`, 'error');
   } else if (successCount > 0) {
-    // Todo éxito
     showNotification(`✅ ${successCount} imagen(es) agregadas`, 'success');
   }
 }
-
 // ========================================
 // AUTENTICACIÓN
 // ========================================
