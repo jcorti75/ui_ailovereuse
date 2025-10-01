@@ -389,6 +389,10 @@ function showClosetQuestion() {
 
 function enableCloset() {
   console.log('CLOSET INTELIGENTE ACTIVADO');
+  //LIMPIAR ESTADO PREVIO
+  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+  uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  selectedOccasion = null;
   if (!isLoggedIn) {
     showNotification('Debes iniciar sesión', 'error');
     return;
@@ -427,6 +431,10 @@ function enableCloset() {
 
 function useDirectMode() {
   console.log('RECOMENDACIONES RÁPIDAS ACTIVADAS');
+    //LIMPIAR ESTADO PREVIO
+  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+  uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  selectedOccasion = null;
   closetMode = false;
   
   const closetQuestion = document.getElementById('closetQuestion');
@@ -599,25 +607,53 @@ function selectOccasion(occasion) {
 // ========================================
 function handleFileUpload(type, fileList) {
   console.log(`=== UPLOAD DIRECTO ${type.toUpperCase()} ===`);
-  console.log('FileList recibido:', fileList);
   
-  // VALIDACIÓN 1: Verificar que fileList es válido
+  // ✅ VALIDACIÓN 1: FileList válido
   if (!fileList || fileList.length === 0) {
-    console.error('❌ FileList vacío o inválido');
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
   
-  // VALIDACIÓN 2: Convertir FileList a Array y verificar File objects
+  // ✅ VALIDACIÓN 2: Convertir y verificar File objects
   const files = Array.from(fileList);
-  console.log(`📁 ${files.length} archivo(s) convertidos a array`);
-  
   const invalidFiles = files.filter(f => !(f instanceof File));
   if (invalidFiles.length > 0) {
-    console.error('❌ Archivos inválidos:', invalidFiles);
-    showNotification('Error: algunos archivos no son válidos', 'error');
+    showNotification('Error: archivos no válidos', 'error');
     return;
   }
+  
+  // ✅ VALIDACIÓN 3: Límites
+  const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
+  const currentCount = uploadedFiles[type].length;
+  if (currentCount + files.length > maxFiles) {
+    showNotification(`Máximo ${maxFiles} para ${type}`, 'error');
+    return;
+  }
+  
+  // ✅ CORRECCIÓN CRÍTICA: Guardar File objects INMEDIATAMENTE (sincrónico)
+  files.forEach(file => {
+    uploadedFiles[type].push(file);  // ✅ Guardar AHORA
+    console.log(`✅ ${file.name} guardado como File object`);
+    
+    // Preview asíncrono (no bloquea)
+    fileToDataUrl(file).then(imageUrl => {
+      uploadedImages[type].push(imageUrl);
+      closetItems[type].push({
+        imageUrl: imageUrl,
+        item_detected: `${type} item`,
+        category: type,
+        timestamp: Date.now(),
+        file: file  // Referencia
+      });
+      updateUploadUI(type);
+    });
+  });
+  
+  // Actualizar inmediatamente
+  saveUserData();
+  updateGenerateButton();
+  showNotification(`✅ ${files.length} cargadas`, 'success');
+}
   
   // VALIDACIÓN 3: Verificar límites
   const maxFiles = CONFIG.DIRECT_UPLOAD_LIMITS[type] || 3;
@@ -744,17 +780,18 @@ function removeImage(type, index) {
 // ⚠️ CORRECCIÓN CRÍTICA 2: RECOMENDACIONES
 // ========================================
 async function getRecommendation() {
+  // Validación de ocasión
   if (!selectedOccasion) {
     showNotification('Selecciona una ocasión primero', 'error');
     return;
   }
   
+  // Validación de login
   if (!isLoggedIn) {
     showNotification('Debes estar logueado', 'error');
     return;
   }
   
-  // ✅ VALIDACIÓN ESTRICTA DE ARCHIVOS
   console.log('=== VALIDANDO ARCHIVOS ANTES DE ENVIAR ===');
   console.log('uploadedFiles:', {
     tops: uploadedFiles.tops.length,
@@ -768,7 +805,7 @@ async function getRecommendation() {
     return;
   }
   
-  // ✅ VERIFICAR QUE SON FILE OBJECTS VÁLIDOS
+  // VALIDACIÓN CRÍTICA: Verificar que son File objects
   const invalidTops = uploadedFiles.tops.filter(f => !(f instanceof File));
   const invalidBottoms = uploadedFiles.bottoms.filter(f => !(f instanceof File));
   const invalidShoes = uploadedFiles.shoes.filter(f => !(f instanceof File));
@@ -779,12 +816,19 @@ async function getRecommendation() {
       invalidBottoms: invalidBottoms.length,
       invalidShoes: invalidShoes.length
     });
+    
+    // Mostrar qué tipo de datos están mal
+    if (invalidTops.length > 0) console.error('Tops inválidos:', invalidTops[0]);
+    if (invalidBottoms.length > 0) console.error('Bottoms inválidos:', invalidBottoms[0]);
+    if (invalidShoes.length > 0) console.error('Shoes inválidos:', invalidShoes[0]);
+    
     showNotification('Error: Archivos inválidos. Recarga la página e intenta de nuevo.', 'error');
     return;
   }
   
   console.log('✅ VALIDACIÓN EXITOSA: Todos son File objects');
   
+  // UI: Deshabilitar botón y mostrar timer
   const btn = document.getElementById('generateBtn');
   const timer = document.getElementById('processingTimer');
   const timerDisplay = document.getElementById('timerDisplay');
@@ -811,7 +855,7 @@ async function getRecommendation() {
     console.log('Usuario:', currentUser.email);
     console.log('Ocasión:', selectedOccasion);
     
-    // ✅ AGREGAR ARCHIVOS CON VALIDACIÓN ESTRICTA
+    // Agregar archivos con validación estricta
     let topsCount = 0;
     uploadedFiles.tops.forEach((file, index) => {
       if (file instanceof File && file.size > 0) {
@@ -859,6 +903,7 @@ async function getRecommendation() {
     });
     
     console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     clearInterval(timerInterval);
     const finalTime = (Date.now() - processingStartTime) / 1000;
@@ -866,8 +911,19 @@ async function getRecommendation() {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Error response:', errorText);
-      throw new Error(`Error ${response.status}: ${errorText}`);
+      console.error('❌ Error response body:', errorText);
+      
+      // Intentar parsear JSON
+      let errorDetails = errorText;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorDetails = JSON.stringify(errorJson, null, 2);
+        console.error('❌ Error JSON parsed:', errorJson);
+      } catch (e) {
+        console.error('❌ Error no es JSON válido');
+      }
+      
+      throw new Error(`Error ${response.status}: ${errorDetails}`);
     }
     
     const data = await response.json();
@@ -887,14 +943,17 @@ async function getRecommendation() {
     console.error('❌ Error completo:', error);
     console.error('❌ Stack trace:', error.stack);
     
+    // Mensajes de error más descriptivos
     let errorMessage = 'Error desconocido';
     if (error.message) {
       if (error.message.includes('422')) {
-        errorMessage = 'Error de validación. Recarga la página e intenta de nuevo.';
+        errorMessage = 'Error de validación en archivos. Verifica que las imágenes sean válidas.';
       } else if (error.message.includes('413')) {
         errorMessage = 'Archivos muy grandes. Reduce el tamaño de las imágenes.';
       } else if (error.message.includes('500')) {
         errorMessage = 'Error interno del servidor. Intenta de nuevo.';
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
       } else {
         errorMessage = error.message;
       }
@@ -903,6 +962,7 @@ async function getRecommendation() {
     showNotification(`Error: ${errorMessage}`, 'error');
     
   } finally {
+    // Cleanup: Ocultar timer y rehabilitar botón
     setTimeout(() => {
       if (timer) timer.style.display = 'none';
     }, 2000);
