@@ -547,11 +547,10 @@ function showClosetQuestion() {
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) closetQuestion.style.display = 'block';
 }
-
 function enableCloset() {
   console.log('CLOSET INTELIGENTE ACTIVADO');
-  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  
+  // ✅ NO borrar arrays
   selectedOccasion = null;
   
   if (!isLoggedIn) {
@@ -577,6 +576,7 @@ function enableCloset() {
     showClosetTab('superiores');
     updateClosetUI();
     updateTabCounters();
+    updateClosetGenerateButton();
   }, 500);
   
   const userEmail = document.getElementById('userEmail');
@@ -589,11 +589,10 @@ function enableCloset() {
   
   showNotification('Closet Inteligente activado', 'success');
 }
-
 function useDirectMode() {
   console.log('RECOMENDACIONES RÁPIDAS ACTIVADAS');
-  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
-  uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  
+  // ✅ NO borrar los arrays, mantener datos cargados
   selectedOccasion = null;
   closetMode = false;
   
@@ -608,6 +607,16 @@ function useDirectMode() {
   
   if (occasionSelector) occasionSelector.style.display = 'block';
   if (uploadArea) uploadArea.style.display = 'block';
+  
+  // ✅ CRÍTICO: Actualizar UI con datos existentes
+  setTimeout(() => {
+    ['tops', 'bottoms', 'shoes'].forEach(type => {
+      if (uploadedImages[type].length > 0) {
+        updateUploadUI(type);
+      }
+    });
+    updateGenerateButton();
+  }, 300);
   
   showNotification('Recomendaciones Rápidas activadas', 'success');
 }
