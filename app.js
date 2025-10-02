@@ -677,6 +677,23 @@ async function submitUserProfile() {
 }
 
 // ========================================
+// NAVEGACIÓN
+// ========================================
+function scrollToSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function toggleMobileMenu() {
+  const mobileNav = document.getElementById('mobileNav');
+  if (mobileNav) {
+    mobileNav.classList.toggle('active');
+  }
+}
+
+// ========================================
 // MODOS
 // ========================================
 function showClosetQuestion() {
@@ -1017,6 +1034,7 @@ window.showClosetTab = showClosetTab;
 window.removeClosetItem = removeClosetItem;
 window.removeImage = removeImage;
 window.scrollToSection = scrollToSection;
+window.toggleMobileMenu = toggleMobileMenu;
 window.handleProfileSelection = handleProfileSelection;
 window.submitUserProfile = submitUserProfile;
 window.selectOccasion = selectOccasion;
