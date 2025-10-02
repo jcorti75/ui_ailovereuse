@@ -1,5 +1,5 @@
-// app.js - NoShopiA UNIFICADO v3.1 CORREGIDO FINAL
-console.log('NoShopiA v3.1 - CORREGIDO iniciando...');
+// app.js - NoShopiA UNIFICADO v3.2 CORREGIDO FINAL
+console.log('NoShopiA v3.2 - CORREGIDO iniciando...');
 
 // ========================================
 // VARIABLES GLOBALES
@@ -72,11 +72,12 @@ async function detectGarmentType(file) {
     return { success: false, error: error.message, item_detected: 'unknown', category: 'unknown' };
   }
 }
+
 // ========================================
-// CLOSET INTELIGENTE
+// CLOSET INTELIGENTE - VERSIÓN CORREGIDA
 // ========================================
 async function handleIntelligentUpload(files) {
-  console.log('🧠 CLOSET INTELIGENTE: Upload automático');
+  console.log('CLOSET INTELIGENTE: Upload automático');
   
   if (!files || files.length === 0) {
     showNotification('No se seleccionaron archivos', 'error');
@@ -93,6 +94,7 @@ async function handleIntelligentUpload(files) {
   }
   
   let successCount = 0;
+  let lastCategory = null;
   
   for (const file of fileArray) {
     try {
@@ -115,6 +117,7 @@ async function handleIntelligentUpload(files) {
         file: file
       });
       
+      lastCategory = category;
       successCount++;
       
     } catch (error) {
@@ -126,6 +129,24 @@ async function handleIntelligentUpload(files) {
     saveUserData();
     updateClosetUI();
     updateTabCounters();
+    updateClosetGenerateButton();
+    
+    if (lastCategory) {
+      const tabMap = { 'tops': 'superiores', 'bottoms': 'inferiores', 'shoes': 'calzado' };
+      const tabId = tabMap[lastCategory];
+      
+      if (tabId) {
+        showClosetTab(tabId);
+        
+        setTimeout(() => {
+          const closetTabs = document.querySelector('.closet-tabs');
+          if (closetTabs) {
+            closetTabs.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 300);
+      }
+    }
+    
     showNotification(`${successCount} prenda(s) categorizadas automáticamente`, 'success');
   }
 }
@@ -134,14 +155,11 @@ async function handleIntelligentUpload(files) {
 // UPLOAD DIRECTO (MODO RÁPIDO) - VERSIÓN CORREGIDA
 // ========================================
 async function handleFileUpload(type, inputOrFileList) {
-  // Detectar si es FileList o Input Element
   let files = [];
   
   if (inputOrFileList instanceof FileList) {
-    // Es FileList directo
     files = Array.from(inputOrFileList);
   } else if (inputOrFileList?.files) {
-    // Es Input Element
     files = Array.from(inputOrFileList.files);
   } else {
     showNotification('Error: parámetro inválido', 'error');
@@ -199,6 +217,7 @@ async function handleFileUpload(type, inputOrFileList) {
   const count = files.length;
   showNotification(`${count} prenda${count > 1 ? 's' : ''} subida${count > 1 ? 's' : ''} satisfactoriamente`, 'success');
 }
+
 // ========================================
 // BACKEND SYNC
 // ========================================
@@ -628,6 +647,7 @@ function removeClosetItem(type, index) {
   saveUserData();
   updateClosetUI();
   updateTabCounters();
+  updateClosetGenerateButton();
   
   const activeTab = document.querySelector('.closet-tab.active');
   if (activeTab) {
@@ -684,15 +704,32 @@ function getTotalClosetItems() {
 }
 
 // ========================================
-// OCASIONES
+// OCASIONES - MEJORADO
 // ========================================
 function selectOccasion(occasion) {
   console.log('Ocasión seleccionada:', occasion);
   selectedOccasion = occasion;
   showNotification(`Ocasión: ${OCCASION_NAMES[occasion] || occasion}`, 'success');
-  updateGenerateButton();
+  
+  if (closetMode) {
+    updateClosetGenerateButton();
+    
+    const generateSection = document.getElementById('closetGenerateSection');
+    if (generateSection) {
+      generateSection.style.display = 'block';
+      
+      setTimeout(() => {
+        generateSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    }
+  } else {
+    updateGenerateButton();
+  }
 }
 
+// ========================================
+// BOTONES DE GENERACIÓN
+// ========================================
 function updateGenerateButton() {
   const generateBtn = document.getElementById('generateBtn');
   if (!generateBtn) return;
@@ -713,6 +750,41 @@ function updateGenerateButton() {
   } else {
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="fas fa-upload"></i> Completa todos los campos';
+    generateBtn.style.opacity = '0.6';
+    generateBtn.style.cursor = 'not-allowed';
+  }
+}
+
+function updateClosetGenerateButton() {
+  const generateBtn = document.getElementById('generateClosetBtn');
+  if (!generateBtn) return;
+  
+  const hasOccasion = selectedOccasion !== null;
+  const hasTops = uploadedFiles.tops.length > 0;
+  const hasBottoms = uploadedFiles.bottoms.length > 0;
+  const hasShoes = uploadedFiles.shoes.length > 0;
+  
+  const hasAllFiles = hasTops && hasBottoms && hasShoes;
+  
+  if (hasOccasion && hasAllFiles) {
+    const total = uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length;
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = `<i class="fas fa-brain"></i> Generar ${total} Recomendaciones`;
+    generateBtn.style.opacity = '1';
+    generateBtn.style.cursor = 'pointer';
+  } else if (!hasOccasion) {
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-calendar"></i> Selecciona ocasión primero';
+    generateBtn.style.opacity = '0.6';
+    generateBtn.style.cursor = 'not-allowed';
+  } else {
+    const missing = [];
+    if (!hasTops) missing.push('superiores');
+    if (!hasBottoms) missing.push('inferiores');
+    if (!hasShoes) missing.push('calzado');
+    
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = `<i class="fas fa-upload"></i> Falta: ${missing.join(', ')}`;
     generateBtn.style.opacity = '0.6';
     generateBtn.style.cursor = 'not-allowed';
   }
@@ -744,18 +816,17 @@ async function getRecommendation() {
     return;
   }
   
-  // Validar File objects
   const invalidTops = uploadedFiles.tops.filter(f => !(f instanceof File));
   const invalidBottoms = uploadedFiles.bottoms.filter(f => !(f instanceof File));
   const invalidShoes = uploadedFiles.shoes.filter(f => !(f instanceof File));
   
   if (invalidTops.length > 0 || invalidBottoms.length > 0 || invalidShoes.length > 0) {
-    console.error('❌ Archivos inválidos');
+    console.error('Archivos inválidos');
     showNotification('Error: Archivos inválidos. Recarga la página.', 'error');
     return;
   }
   
-  const btn = document.getElementById('generateBtn');
+  const btn = closetMode ? document.getElementById('generateClosetBtn') : document.getElementById('generateBtn');
   const timer = document.getElementById('processingTimer');
   const timerDisplay = document.getElementById('timerDisplay');
   
@@ -802,7 +873,7 @@ async function getRecommendation() {
       userStats.recommendations++;
       updateStatsDisplay();
       renderRecommendations(data);
-      showNotification(`✅ Procesado en ${finalTime.toFixed(1)}s`, 'success');
+      showNotification(`Procesado en ${finalTime.toFixed(1)}s`, 'success');
     } else {
       throw new Error(data.message || 'Error generando recomendaciones');
     }
@@ -883,7 +954,7 @@ function renderCard(item, idx, isBest, occasion) {
   const score = Math.round((item.final_score || 0) * 100);
   
   return `
-    <div style="background:white;border:2px solid var(--gold);border-radius:20px;padding:2rem;box-shadow:0 0 30px rgba(251,191,36,.3)">
+    <div style="background:white;border:2px solid var(--gold);border-radius:20px;padding:2rem;box-shadow:0 0 30px rgba(251,191,36,.3);position:relative">
       <div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;padding:.5rem 1.5rem;border-radius:20px;font-weight:800">
         MEJOR PARA ${occasion.toUpperCase()}
       </div>
@@ -1002,7 +1073,7 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('INICIALIZANDO NoShopiA v3.1');
+  console.log('INICIALIZANDO NoShopiA v3.2');
   setTimeout(initializeGoogleLogin, 2000);
 }
 
@@ -1028,6 +1099,7 @@ window.updateUploadUI = updateUploadUI;
 window.removeImage = removeImage;
 window.updateTabCounters = updateTabCounters;
 window.updateGenerateButton = updateGenerateButton;
+window.updateClosetGenerateButton = updateClosetGenerateButton;
 
 // Auto-inicialización
 if (document.readyState === 'loading') {
@@ -1036,4 +1108,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('✅ app.js v3.1 CORREGIDO cargado');
+console.log('app.js v3.2 CORREGIDO cargado');
