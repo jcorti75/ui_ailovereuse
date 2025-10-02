@@ -682,11 +682,11 @@
       </div>
     </div>
     <div style="padding-top:2rem; border-top:1px solid var(--border); text-align:center; opacity:.75;">
-      © 2024 NoshopiA. Todos los derechos reservados.
+      © 2024 NoShopiA. Todos los derechos reservados.
     </div>
   </footer>
   
-  <!-- ⚠️ CORRECCIÓN CRÍTICA 3: JavaScript con Event Listeners CORREGIDOS -->
+  <!-- ✅ CORRECCIONES APLICADAS -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🔧 Inicializando UI interactions...');
@@ -731,11 +731,11 @@
         // Click para abrir selector
         zone.addEventListener('click', ()=> input.click());
         
-        // ✅ CORRECCIÓN: Pasar FileList nativo
+        // ✅ CORRECCIÓN 1: Usar handleIntelligentUpload en vez de handleFileUpload
         input.addEventListener('change', function(e) {
-          const fileList = e.target.files;  // ✅ FileList nativo
-          if (fileList && fileList.length > 0 && window.handleFileUpload) {
-            window.handleFileUpload(type, fileList);  // ✅ Pasar FileList
+          const fileList = Array.from(e.target.files || []);
+          if (fileList.length && window.handleIntelligentUpload) {
+            window.handleIntelligentUpload(fileList);
           }
         });
 
@@ -850,22 +850,22 @@
         }); 
       }
 
-      // Botón generar closet
+      // ✅ CORRECCIÓN 2: Botón generar closet llama a getRecommendation
       const genClosetBtn = document.getElementById('generateClosetBtn');
       if(genClosetBtn){ 
         genClosetBtn.addEventListener('click', ()=> {
-          if(window.generateFromCloset) window.generateFromCloset();
+          if(window.getRecommendation) window.getRecommendation();
         }); 
       }
 
-      // ✅ CORRECCIÓN: Upload directo - Pasar FileList nativo
+      // Upload directo - Pasar FileList nativo
       ['tops', 'bottoms', 'shoes'].forEach(type => {
         const input = document.getElementById(`${type}-upload`);
         if (input) {
           input.addEventListener('change', function(e) {
-            const fileList = e.target.files;  // ✅ FileList nativo
+            const fileList = e.target.files;
             if (fileList && fileList.length > 0 && window.handleFileUpload) {
-              window.handleFileUpload(type, fileList);  // ✅ Pasar FileList
+              window.handleFileUpload(type, fileList);
             }
           });
         }
