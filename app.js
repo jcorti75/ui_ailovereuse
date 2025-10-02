@@ -135,7 +135,6 @@ async function handleIntelligentUpload(files) {
 // ========================================
 async function handleFileUpload(type, inputOrFileList) {
   // Detectar si es FileList o Input Element
-  const type = categoryType;
   let files = [];
   
   if (inputOrFileList instanceof FileList) {
