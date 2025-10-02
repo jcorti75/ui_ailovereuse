@@ -1,5 +1,5 @@
-// app.js - NoShopiA UNIFICADO v3.2 CORREGIDO FINAL
-console.log('NoShopiA v3.2 - CORREGIDO iniciando...');
+// app.js - NoShopiA UNIFICADO v3.3 CORREGIDO FINAL
+console.log('NoShopiA v3.3 - CORREGIDO iniciando...');
 
 // ========================================
 // VARIABLES GLOBALES
@@ -47,6 +47,21 @@ function fileToDataUrl(file) {
 }
 
 // ========================================
+// VALIDACIÓN MEJORADA
+// ========================================
+function hasValidFiles() {
+  const hasTops = (uploadedFiles.tops.length > 0) || (closetItems.tops.length > 0);
+  const hasBottoms = (uploadedFiles.bottoms.length > 0) || (closetItems.bottoms.length > 0);
+  const hasShoes = (uploadedFiles.shoes.length > 0) || (closetItems.shoes.length > 0);
+  
+  return hasTops && hasBottoms && hasShoes;
+}
+
+function getValidFileCount(type) {
+  return Math.max(uploadedFiles[type].length, closetItems[type].length);
+}
+
+// ========================================
 // DETECCIÓN IA
 // ========================================
 async function detectGarmentType(file) {
@@ -74,7 +89,7 @@ async function detectGarmentType(file) {
 }
 
 // ========================================
-// CLOSET INTELIGENTE - VERSIÓN CORREGIDA
+// CLOSET INTELIGENTE
 // ========================================
 async function handleIntelligentUpload(files) {
   console.log('CLOSET INTELIGENTE: Upload automático');
@@ -152,7 +167,7 @@ async function handleIntelligentUpload(files) {
 }
 
 // ========================================
-// UPLOAD DIRECTO (MODO RÁPIDO) - VERSIÓN CORREGIDA
+// UPLOAD DIRECTO
 // ========================================
 async function handleFileUpload(type, inputOrFileList) {
   let files = [];
@@ -216,6 +231,41 @@ async function handleFileUpload(type, inputOrFileList) {
   
   const count = files.length;
   showNotification(`${count} prenda${count > 1 ? 's' : ''} subida${count > 1 ? 's' : ''} satisfactoriamente`, 'success');
+}
+
+// ========================================
+// RECONSTRUIR FILES
+// ========================================
+async function reconstructFilesFromCloset() {
+  console.log('Reconstruyendo archivos desde closet items...');
+  
+  for (const type of ['tops', 'bottoms', 'shoes']) {
+    if (uploadedFiles[type].length > 0) continue;
+    
+    if (closetItems[type].length > 0) {
+      for (const item of closetItems[type]) {
+        try {
+          const response = await fetch(item.imageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], `${type}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          
+          uploadedFiles[type].push(file);
+          
+          if (!uploadedImages[type].includes(item.imageUrl)) {
+            uploadedImages[type].push(item.imageUrl);
+          }
+        } catch (error) {
+          console.error(`Error reconstruyendo ${type}:`, error);
+        }
+      }
+    }
+  }
+  
+  console.log('Archivos reconstruidos:', {
+    tops: uploadedFiles.tops.length,
+    bottoms: uploadedFiles.bottoms.length,
+    shoes: uploadedFiles.shoes.length
+  });
 }
 
 // ========================================
@@ -704,7 +754,7 @@ function getTotalClosetItems() {
 }
 
 // ========================================
-// OCASIONES - MEJORADO
+// OCASIONES
 // ========================================
 function selectOccasion(occasion) {
   console.log('Ocasión seleccionada:', occasion);
@@ -735,7 +785,7 @@ function updateGenerateButton() {
   if (!generateBtn) return;
   
   const hasOccasion = selectedOccasion !== null;
-  const hasFiles = uploadedFiles.tops.length > 0 && uploadedFiles.bottoms.length > 0 && uploadedFiles.shoes.length > 0;
+  const hasFiles = hasValidFiles();
   
   if (hasOccasion && hasFiles) {
     generateBtn.disabled = false;
@@ -760,14 +810,14 @@ function updateClosetGenerateButton() {
   if (!generateBtn) return;
   
   const hasOccasion = selectedOccasion !== null;
-  const hasTops = uploadedFiles.tops.length > 0;
-  const hasBottoms = uploadedFiles.bottoms.length > 0;
-  const hasShoes = uploadedFiles.shoes.length > 0;
+  const hasFiles = hasValidFiles();
   
-  const hasAllFiles = hasTops && hasBottoms && hasShoes;
+  const topsCount = getValidFileCount('tops');
+  const bottomsCount = getValidFileCount('bottoms');
+  const shoesCount = getValidFileCount('shoes');
   
-  if (hasOccasion && hasAllFiles) {
-    const total = uploadedFiles.tops.length * uploadedFiles.bottoms.length * uploadedFiles.shoes.length;
+  if (hasOccasion && hasFiles) {
+    const total = topsCount * bottomsCount * shoesCount;
     generateBtn.disabled = false;
     generateBtn.innerHTML = `<i class="fas fa-brain"></i> Generar ${total} Recomendaciones`;
     generateBtn.style.opacity = '1';
@@ -779,9 +829,9 @@ function updateClosetGenerateButton() {
     generateBtn.style.cursor = 'not-allowed';
   } else {
     const missing = [];
-    if (!hasTops) missing.push('superiores');
-    if (!hasBottoms) missing.push('inferiores');
-    if (!hasShoes) missing.push('calzado');
+    if (topsCount === 0) missing.push('superiores');
+    if (bottomsCount === 0) missing.push('inferiores');
+    if (shoesCount === 0) missing.push('calzado');
     
     generateBtn.disabled = true;
     generateBtn.innerHTML = `<i class="fas fa-upload"></i> Falta: ${missing.join(', ')}`;
@@ -804,6 +854,11 @@ async function getRecommendation() {
     return;
   }
   
+  if (uploadedFiles.tops.length === 0 && closetItems.tops.length > 0) {
+    showNotification('Preparando archivos...', 'info');
+    await reconstructFilesFromCloset();
+  }
+  
   console.log('=== VALIDANDO ARCHIVOS ===');
   console.log('uploadedFiles:', {
     tops: uploadedFiles.tops.length,
@@ -812,7 +867,7 @@ async function getRecommendation() {
   });
   
   if (uploadedFiles.tops.length === 0 || uploadedFiles.bottoms.length === 0 || uploadedFiles.shoes.length === 0) {
-    showNotification('Sube al menos 1 imagen de cada categoría', 'error');
+    showNotification('Error reconstruyendo archivos. Recarga la página.', 'error');
     return;
   }
   
@@ -1018,7 +1073,6 @@ function saveUserData() {
   
   const userData = {
     email: currentUser.email,
-    uploadedFiles,
     uploadedImages,
     closetItems,
     userStats,
@@ -1036,12 +1090,23 @@ function loadUserData() {
     const userData = localStorage.getItem(`noshopia_user_data_${currentUser.email}`);
     if (userData) {
       const data = JSON.parse(userData);
-      uploadedFiles = data.uploadedFiles || { tops: [], bottoms: [], shoes: [] };
+      
       uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
       closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
+      
+      uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+      
       updateTabCounters();
+      
+      if (closetMode) {
+        updateClosetGenerateButton();
+      } else {
+        updateGenerateButton();
+      }
+      
+      console.log('Datos cargados desde localStorage');
     }
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -1052,28 +1117,54 @@ function loadUserData() {
 // INICIALIZACIÓN
 // ========================================
 function initializeGoogleLogin() {
-  if (typeof google === 'undefined') {
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.log('Google SDK no disponible, reintentando...');
     setTimeout(initializeGoogleLogin, 1000);
     return;
   }
   
-  google.accounts.id.initialize({
-    client_id: CONFIG.GOOGLE_CLIENT_ID,
-    callback: handleGoogleCredentialResponse,
-    auto_select: false
-  });
-  
-  const mainBtn = document.getElementById('headerLoginBtn');
-  if (mainBtn) {
-    mainBtn.disabled = false;
-    mainBtn.style.opacity = '1';
-    mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google';
-    mainBtn.onclick = () => google.accounts.id.prompt();
+  try {
+    google.accounts.id.initialize({
+      client_id: CONFIG.GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: false
+    });
+    
+    const mainBtn = document.getElementById('headerLoginBtn');
+    if (mainBtn) {
+      mainBtn.disabled = false;
+      mainBtn.style.opacity = '1';
+      mainBtn.innerHTML = '<i class="fab fa-google"></i> Conectar con Google';
+      mainBtn.onclick = () => {
+        try {
+          google.accounts.id.prompt((notification) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              console.log('Prompt no mostrado, usando renderButton');
+              google.accounts.id.renderButton(mainBtn, {
+                theme: 'filled_blue',
+                size: 'large',
+                text: 'continue_with',
+                width: mainBtn.offsetWidth
+              });
+            }
+          });
+        } catch (error) {
+          console.error('Error mostrando prompt:', error);
+          showNotification('Error al cargar Google Login. Intenta en Chrome.', 'error');
+        }
+      };
+    }
+    
+    console.log('Google Login inicializado correctamente');
+  } catch (error) {
+    console.error('Error inicializando Google:', error);
+    showNotification('Google Login no disponible. Usa Chrome o actualiza Edge.', 'error');
   }
 }
 
 function initializeApp() {
-  console.log('INICIALIZANDO NoShopiA v3.2');
+  console.log('INICIALIZANDO NoShopiA v3.3');
   setTimeout(initializeGoogleLogin, 2000);
 }
 
@@ -1100,12 +1191,14 @@ window.removeImage = removeImage;
 window.updateTabCounters = updateTabCounters;
 window.updateGenerateButton = updateGenerateButton;
 window.updateClosetGenerateButton = updateClosetGenerateButton;
+window.hasValidFiles = hasValidFiles;
+window.getValidFileCount = getValidFileCount;
+window.reconstructFilesFromCloset = reconstructFilesFromCloset;
 
-// Auto-inicialización
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
   setTimeout(initializeApp, 100);
 }
 
-console.log('app.js v3.2 CORREGIDO cargado');
+console.log('app.js v3.3 CORREGIDO cargado');
