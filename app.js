@@ -2,17 +2,6 @@
 console.log('🚀 NoShopiA v3.3 - Sistema Completo');
 
 // ========================================
-// CONFIGURACIÓN
-// ========================================
-const CONFIG = {
-  API_BASE: 'https://noshopia-backend-production.up.railway.app',
-  GOOGLE_CLIENT_ID: '668076124008-m2p53q1bib0nrvvud2kqvujf6ltu6aqf.apps.googleusercontent.com',
-  TOTAL_CLOSET_LIMIT: 15,
-  DIRECT_UPLOAD_LIMITS: { tops: 3, bottoms: 3, shoes: 5 },
-  FILE_LIMITS: { tops: 3, bottoms: 3, shoes: 5 }
-};
-
-// ========================================
 // VARIABLES GLOBALES
 // ========================================
 let isLoggedIn = false;
