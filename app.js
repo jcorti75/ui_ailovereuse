@@ -110,18 +110,35 @@ async function handleIntelligentUpload(files) {
   
   let successCount = 0;
   let lastCategory = null;
+  let duplicatesFound = 0;
+  let invalidItemsFound = 0;
   
   for (const file of fileArray) {
     try {
       const detection = await detectGarmentType(file);
       
+      // VALIDACIÓN 1: Verificar si la prenda NO es de una categoría válida (superior, inferior o calzado)
       if (!detection.success || detection.category === 'unknown') {
+        invalidItemsFound++;
+        showNotification(`❌ "${file.name}" no es una prenda válida (superior, inferior o calzado)`, 'error');
         continue;
       }
       
       const imageUrl = await fileToDataUrl(file);
       const { category, item_detected } = detection;
       
+      // VALIDACIÓN 2: Verificar si la prenda ya existe (duplicada)
+      const isDuplicate = closetItems[category].some(existingItem => {
+        return existingItem.imageUrl === imageUrl;
+      });
+      
+      if (isDuplicate) {
+        duplicatesFound++;
+        showNotification(`❌ Prenda duplicada: "${file.name}" ya existe en tu closet`, 'error');
+        continue;
+      }
+      
+      // Si pasó todas las validaciones, agregar la prenda
       uploadedFiles[category].push(file);
       uploadedImages[category].push(imageUrl);
       closetItems[category].push({
@@ -136,10 +153,12 @@ async function handleIntelligentUpload(files) {
       successCount++;
       
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error procesando archivo:', error);
+      showNotification(`❌ Error procesando "${file.name}"`, 'error');
     }
   }
   
+  // Actualizar UI solo si hubo éxitos
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
@@ -162,7 +181,16 @@ async function handleIntelligentUpload(files) {
       }
     }
     
-    showNotification(`${successCount}  prenda(s) categorizadas automáticamente`, 'success');
+    showNotification(`✅ ${successCount} prenda(s) categorizadas automáticamente`, 'success');
+  } else {
+    // Si no se agregó ninguna prenda exitosamente, mostrar resumen de errores
+    if (duplicatesFound > 0 && invalidItemsFound > 0) {
+      showNotification(`❌ No se agregaron prendas: ${duplicatesFound} duplicada(s) y ${invalidItemsFound} inválida(s)`, 'error');
+    } else if (duplicatesFound > 0) {
+      showNotification(`❌ No se agregaron prendas: ${duplicatesFound} duplicada(s) detectada(s)`, 'error');
+    } else if (invalidItemsFound > 0) {
+      showNotification(`❌ No se agregaron prendas: ${invalidItemsFound} no válida(s) (solo superiores, inferiores o calzado)`, 'error');
+    }
   }
 }
 
