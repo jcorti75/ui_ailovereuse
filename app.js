@@ -1,5 +1,5 @@
-// app.js - NoShopiA UNIFICADO v3.3 CORREGIDO FINAL
-console.log('NoShopiA v3.3 - CORREGIDO iniciando...');
+// app.js - NoShopiA UNIFICADO v3.4 VALIDACIONES CONSISTENTES
+console.log('NoShopiA v3.4 - VALIDACIONES CONSISTENTES iniciando...');
 
 // ========================================
 // VARIABLES GLOBALES
@@ -89,7 +89,7 @@ async function detectGarmentType(file) {
 }
 
 // ========================================
-// CLOSET INTELIGENTE
+// CLOSET INTELIGENTE - CORREGIDO CON VALIDACIONES
 // ========================================
 async function handleIntelligentUpload(files) {
   console.log('CLOSET INTELIGENTE: Upload automático');
@@ -102,24 +102,68 @@ async function handleIntelligentUpload(files) {
   const fileArray = Array.from(files);
   const currentTotal = getTotalClosetItems();
   const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
+  
   if (fileArray.length > remaining) {
-  showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
-  return;
+    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    return;
   }
+  
   let successCount = 0;
   let lastCategory = null;
 
   for (const file of fileArray) {
     try {
-      const detection = await detectGarmentType(file);
-
-      if (!detection.success || detection.category === 'unknown') {
+      console.log('📤 Procesando archivo:', file.name);
+      
+      // VALIDACIÓN 1: Detectar tipo de prenda
+      let detection;
+      try {
+        detection = await detectGarmentType(file);
+      } catch (detectionError) {
+        console.error('Error en detectGarmentType para:', file.name, detectionError);
+        showNotification(`No olvides, sube una prenda de vestir (superior, inferior o calzado)`, 'error');
+        continue;
+      }
+      
+      console.log('🔍 Detección resultado:', detection);
+      
+      // VALIDACIÓN 2: Solo acepta superior, inferior o calzado
+      if (!detection || !detection.success || detection.category === 'unknown') {
+        console.warn('NO ES PRENDA VÁLIDA:', file.name);
+        showNotification(`No olvides, sube una prenda de vestir (superior, inferior o calzado)`, 'error');
+        continue;
+      }
+      
+      const { category, item_detected } = detection;
+      
+      // VALIDACIÓN 3: Verificar duplicados por archivo
+      const isDuplicateByFile = uploadedFiles[category].some(existingFile => {
+        return existingFile.name === file.name && 
+               existingFile.size === file.size &&
+               existingFile.lastModified === file.lastModified;
+      });
+      
+      if (isDuplicateByFile) {
+        console.warn('DUPLICADO detectado:', file.name);
+        showNotification(`Ya subiste esta prenda (o la acabas de subir)`, 'error');
         continue;
       }
 
+      // Convertir a Data URL
       const imageUrl = await fileToDataUrl(file);
-      const { category, item_detected } = detection;
+      
+      // VALIDACIÓN 4: Verificar duplicados por contenido
+      const isDuplicateByContent = uploadedImages[category].some(existingUrl => {
+        return existingUrl === imageUrl;
+      });
+      
+      if (isDuplicateByContent) {
+        console.warn('DUPLICADO por contenido:', file.name);
+        showNotification(`Ya subiste esta prenda (o la acabas de subir)`, 'error');
+        continue;
+      }
 
+      // Si pasó todas las validaciones, agregar
       uploadedFiles[category].push(file);
       uploadedImages[category].push(imageUrl);
       closetItems[category].push({
@@ -132,9 +176,12 @@ async function handleIntelligentUpload(files) {
 
       lastCategory = category;
       successCount++;
+      console.log('Prenda agregada exitosamente:', file.name);
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('ERROR INESPERADO procesando archivo:', file.name, error);
+      showNotification(`Oops, algo salió mal con "${file.name}". Intenta de nuevo`, 'error');
+      continue;
     }
   }
 
@@ -160,11 +207,14 @@ async function handleIntelligentUpload(files) {
       }
     }
 
-    showNotification(`${successCount} prenda(s) categorizadas automáticamente`, 'success');
+    showNotification(`${successCount} prenda${successCount > 1 ? 's' : ''} categorizadas automáticamente`, 'success');
+  } else {
+    showNotification('No se pudo subir ninguna prenda. Revisa los errores', 'error');
   }
 }
+
 // ========================================
-// UPLOAD DIRECTO
+// UPLOAD DIRECTO - CORREGIDO CON VALIDACIONES
 // ========================================
 async function handleFileUpload(type, inputOrFileList) {
   let files = [];
@@ -197,7 +247,7 @@ async function handleFileUpload(type, inputOrFileList) {
     try {
       console.log('📤 Procesando archivo:', file.name, 'Tipo:', type);
       
-      // VALIDACIÓN DE DUPLICADOS MEJORADA - Comparar por nombre y tamaño PRIMERO
+      // VALIDACIÓN 1: Verificar duplicados por archivo PRIMERO
       const isDuplicateByFile = uploadedFiles[type].some(existingFile => {
         return existingFile.name === file.name && 
                existingFile.size === file.size &&
@@ -205,53 +255,53 @@ async function handleFileUpload(type, inputOrFileList) {
       });
       
       if (isDuplicateByFile) {
-        console.warn('❌ DUPLICADO detectado:', file.name);
-        showNotification('❌ Ya subiste esta prenda (o la acabas de subir)', 'error');
+        console.warn('DUPLICADO detectado:', file.name);
+        showNotification(`Ya subiste esta prenda (o la acabas de subir)`, 'error');
         continue;
       }
       
-      // Intentar detectar tipo de prenda
+      // VALIDACIÓN 2: Intentar detectar tipo de prenda
       let detection;
       try {
         detection = await detectGarmentType(file);
       } catch (detectionError) {
-        console.error('❌ Error en detectGarmentType para:', file.name, detectionError);
-        showNotification(`❌ "${file.name}" no es una prenda válida (solo superior, inferior o calzado)`, 'error');
+        console.error('Error en detectGarmentType para:', file.name, detectionError);
+        showNotification(`No olvides, sube una prenda de vestir (superior, inferior o calzado)`, 'error');
         continue;
       }
       
       console.log('🔍 Detección resultado:', detection);
       
-      // VALIDACIÓN 1: Solo acepta superior, inferior o calzado
+      // VALIDACIÓN 3: Solo acepta superior, inferior o calzado
       if (!detection || !detection.success || detection.category === 'unknown') {
-        console.warn('❌ NO ES PRENDA VÁLIDA:', file.name);
-        showNotification(`❌ "${file.name}" no es una prenda válida (solo superior, inferior o calzado)`, 'error');
+        console.warn('NO ES PRENDA VÁLIDA:', file.name);
+        showNotification(`No olvides, sube una prenda de vestir (superior, inferior o calzado)`, 'error');
         continue;
       }
       
-      // Validar que la categoría detectada coincida con la sección
+      // VALIDACIÓN 4: Validar que la categoría detectada coincida con la sección
       if (detection.category !== type) {
         const categoryNames = {
           'tops': 'Superiores',
           'bottoms': 'Inferiores', 
           'shoes': 'Calzado'
         };
-        console.warn('❌ CATEGORÍA INCORRECTA:', file.name, 'Detectada:', detection.category, 'Esperada:', type);
-        showNotification(`❌ Esa prenda es ${categoryNames[detection.category]}. Súbela en la sección correcta`, 'error');
+        console.warn('CATEGORÍA INCORRECTA:', file.name, 'Detectada:', detection.category, 'Esperada:', type);
+        showNotification(`Esa prenda es ${categoryNames[detection.category]}. Súbela en la sección correcta`, 'error');
         continue;
       }
       
       // Convertir a Data URL
       const imageUrl = await fileToDataUrl(file);
       
-      // SEGUNDA VALIDACIÓN DE DUPLICADOS - Por contenido de imagen
+      // VALIDACIÓN 5: Verificar duplicados por contenido de imagen
       const isDuplicateByContent = uploadedImages[type].some(existingUrl => {
         return existingUrl === imageUrl;
       });
       
       if (isDuplicateByContent) {
-        console.warn('❌ DUPLICADO por contenido:', file.name);
-        showNotification('❌ Ya subiste esta prenda (o la acabas de subir)', 'error');
+        console.warn('DUPLICADO por contenido:', file.name);
+        showNotification(`Ya subiste esta prenda (o la acabas de subir)`, 'error');
         continue;
       }
       
@@ -266,13 +316,12 @@ async function handleFileUpload(type, inputOrFileList) {
         file: file
       });
       
-      console.log('✅ Prenda agregada exitosamente:', file.name);
+      console.log('Prenda agregada exitosamente:', file.name);
       successCount++;
       
     } catch (error) {
-      // Este catch es para errores REALMENTE inesperados
-      console.error('❌ ERROR INESPERADO procesando archivo:', file.name, error);
-      showNotification(`❌ Oops, algo salió mal con "${file.name}". Intenta de nuevo`, 'error');
+      console.error('ERROR INESPERADO procesando archivo:', file.name, error);
+      showNotification(`Oops, algo salió mal con "${file.name}". Intenta de nuevo`, 'error');
       continue;
     }
   }
@@ -283,11 +332,12 @@ async function handleFileUpload(type, inputOrFileList) {
     saveUserData();
     updateGenerateButton();
     
-    showNotification(`✅ ${successCount} prenda${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''} exitosamente`, 'success');
+    showNotification(`${successCount} prenda${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''} exitosamente`, 'success');
   } else {
-    showNotification('❌ No se pudo subir ninguna prenda. Revisa los errores', 'error');
+    showNotification('No se pudo subir ninguna prenda. Revisa los errores', 'error');
   }
 }
+
 // ========================================
 // RECONSTRUIR FILES
 // ========================================
@@ -602,10 +652,10 @@ function showClosetQuestion() {
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) closetQuestion.style.display = 'block';
 }
+
 function enableCloset() {
   console.log('CLOSET INTELIGENTE ACTIVADO');
   
-  // ✅ NO borrar arrays
   selectedOccasion = null;
   
   if (!isLoggedIn) {
@@ -644,10 +694,10 @@ function enableCloset() {
   
   showNotification('Closet Inteligente activado', 'success');
 }
+
 function useDirectMode() {
   console.log('RECOMENDACIONES RÁPIDAS ACTIVADAS');
   
-  // ✅ NO borrar los arrays, mantener datos cargados
   selectedOccasion = null;
   closetMode = false;
   
@@ -663,7 +713,6 @@ function useDirectMode() {
   if (occasionSelector) occasionSelector.style.display = 'block';
   if (uploadArea) uploadArea.style.display = 'block';
   
-  // ✅ CRÍTICO: Actualizar UI con datos existentes
   setTimeout(() => {
     ['tops', 'bottoms', 'shoes'].forEach(type => {
       if (uploadedImages[type].length > 0) {
@@ -1228,7 +1277,7 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('INICIALIZANDO NoShopiA v3.3');
+  console.log('INICIALIZANDO NoShopiA v3.4');
   setTimeout(initializeGoogleLogin, 2000);
 }
 
@@ -1265,4 +1314,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('app.js v3.3 CORREGIDO cargado');
+console.log('app.js v3.4 VALIDACIONES CONSISTENTES cargado');
