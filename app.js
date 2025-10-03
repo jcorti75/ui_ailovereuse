@@ -102,12 +102,10 @@ async function handleIntelligentUpload(files) {
   const fileArray = Array.from(files);
   const currentTotal = getTotalClosetItems();
   const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
-
   if (fileArray.length > remaining) {
-    showNotification('Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}, 'error');
-    return;
+  showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+  return;
   }
-
   let successCount = 0;
   let lastCategory = null;
 
