@@ -93,52 +93,35 @@ async function detectGarmentType(file) {
 // ========================================
 async function handleIntelligentUpload(files) {
   console.log('CLOSET INTELIGENTE: Upload automático');
-  
+
   if (!files || files.length === 0) {
     showNotification('No se seleccionaron archivos', 'error');
     return;
   }
-  
+
   const fileArray = Array.from(files);
   const currentTotal = getTotalClosetItems();
   const remaining = CONFIG.TOTAL_CLOSET_LIMIT - currentTotal;
-  
+
   if (fileArray.length > remaining) {
-    showNotification(`Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}`, 'error');
+    showNotification(Solo puedes subir ${remaining} prendas más. Closet: ${currentTotal}/${CONFIG.TOTAL_CLOSET_LIMIT}, 'error');
     return;
   }
-  
+
   let successCount = 0;
   let lastCategory = null;
-  let duplicatesFound = 0;
-  let invalidItemsFound = 0;
-  
+
   for (const file of fileArray) {
     try {
       const detection = await detectGarmentType(file);
-      
-      // VALIDACIÓN 1: Verificar si la prenda NO es de una categoría válida (superior, inferior o calzado)
+
       if (!detection.success || detection.category === 'unknown') {
-        invalidItemsFound++;
-        showNotification(`❌ "${file.name}" no es una prenda válida (superior, inferior o calzado)`, 'error');
         continue;
       }
-      
+
       const imageUrl = await fileToDataUrl(file);
       const { category, item_detected } = detection;
-      
-      // VALIDACIÓN 2: Verificar si la prenda ya existe (duplicada)
-      const isDuplicate = closetItems[category].some(existingItem => {
-        return existingItem.imageUrl === imageUrl;
-      });
-      
-      if (isDuplicate) {
-        duplicatesFound++;
-        showNotification(`❌ Prenda duplicada: "${file.name}" ya existe en tu closet`, 'error');
-        continue;
-      }
-      
-      // Si pasó todas las validaciones, agregar la prenda
+
       uploadedFiles[category].push(file);
       uploadedImages[category].push(imageUrl);
       closetItems[category].push({
@@ -148,30 +131,28 @@ async function handleIntelligentUpload(files) {
         timestamp: Date.now(),
         file: file
       });
-      
+
       lastCategory = category;
       successCount++;
-      
+
     } catch (error) {
-      console.error('Error procesando archivo:', error);
-      showNotification(`❌ Error procesando "${file.name}"`, 'error');
+      console.error('Error:', error);
     }
   }
-  
-  // Actualizar UI solo si hubo éxitos
+
   if (successCount > 0) {
     saveUserData();
     updateClosetUI();
     updateTabCounters();
     updateClosetGenerateButton();
-    
+
     if (lastCategory) {
       const tabMap = { 'tops': 'superiores', 'bottoms': 'inferiores', 'shoes': 'calzado' };
       const tabId = tabMap[lastCategory];
-      
+
       if (tabId) {
         showClosetTab(tabId);
-        
+
         setTimeout(() => {
           const closetTabs = document.querySelector('.closet-tabs');
           if (closetTabs) {
@@ -180,20 +161,10 @@ async function handleIntelligentUpload(files) {
         }, 300);
       }
     }
-    
-    showNotification(`✅ ${successCount} prenda(s) categorizadas automáticamente`, 'success');
-  } else {
-    // Si no se agregó ninguna prenda exitosamente, mostrar resumen de errores
-    if (duplicatesFound > 0 && invalidItemsFound > 0) {
-      showNotification(`❌ No se agregaron prendas: ${duplicatesFound} duplicada(s) y ${invalidItemsFound} inválida(s)`, 'error');
-    } else if (duplicatesFound > 0) {
-      showNotification(`❌ No se agregaron prendas: ${duplicatesFound} duplicada(s) detectada(s)`, 'error');
-    } else if (invalidItemsFound > 0) {
-      showNotification(`❌ No se agregaron prendas: ${invalidItemsFound} no válida(s) (solo superiores, inferiores o calzado)`, 'error');
-    }
+
+    showNotification(${successCount}  prenda(s) categorizadas automáticamente, 'success');
   }
 }
-
 // ========================================
 // UPLOAD DIRECTO
 // ========================================
@@ -222,22 +193,32 @@ async function handleFileUpload(type, inputOrFileList) {
     return;
   }
   
+  let successCount = 0;
+  
   for (const file of files) {
     try {
       const detection = await detectGarmentType(file);
       
+      // VALIDACIÓN 1: Solo acepta superior, inferior o calzado
       if (!detection.success || detection.category === 'unknown') {
-        showNotification('Esta imagen no es una prenda válida', 'error');
-        return;
+        showNotification('❌ Ups, solo acepto prendas: superior, inferior o calzado', 'error');
+        continue;
       }
       
-      if (detection.category !== type) {
-        showNotification('Prenda incorrecta. Súbela en la sección correcta', 'error');
-        return;
-      }
-      
-      uploadedFiles[type].push(file);
       const imageUrl = await fileToDataUrl(file);
+      
+      // VALIDACIÓN 2: Verificar duplicados
+      const isDuplicate = closetItems[type].some(existingItem => {
+        return existingItem.imageUrl === imageUrl;
+      });
+      
+      if (isDuplicate) {
+        showNotification('❌ Ya subiste esta prenda (o la acabas de subir)', 'error');
+        continue;
+      }
+      
+      // Si pasó todas las validaciones, agregar la prenda
+      uploadedFiles[type].push(file);
       uploadedImages[type].push(imageUrl);
       closetItems[type].push({
         imageUrl: imageUrl,
@@ -247,20 +228,26 @@ async function handleFileUpload(type, inputOrFileList) {
         file: file
       });
       
+      successCount++;
+      
     } catch (error) {
-      showNotification('Error al procesar la imagen', 'error');
-      return;
+      console.error('Error procesando archivo:', error);
+      showNotification('❌ Error al procesar la imagen', 'error');
+      continue;
     }
   }
   
-  updateUploadUI(type);
-  saveUserData();
-  updateGenerateButton();
-  
-  const count = files.length;
-  showNotification(`${count} prenda${count > 1 ? 's' : ''} subida${count > 1 ? 's' : ''} satisfactoriamente`, 'success');
+  // Solo actualizar UI si hubo al menos una prenda exitosa
+  if (successCount > 0) {
+    updateUploadUI(type);
+    saveUserData();
+    updateGenerateButton();
+    
+    showNotification(`✅ ${successCount} prenda${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''} exitosamente`, 'success');
+  } else {
+    showNotification('❌ No se pudo subir ninguna prenda. Revisa los errores anteriores', 'error');
+  }
 }
-
 // ========================================
 // RECONSTRUIR FILES
 // ========================================
