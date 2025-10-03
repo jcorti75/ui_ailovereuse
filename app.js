@@ -162,7 +162,7 @@ async function handleIntelligentUpload(files) {
       }
     }
     
-    showNotification(`${successCount} prenda(s) categorizadas automáticamente`, 'success');
+    showNotification(`${successCount}  prenda(s) categorizadas automáticamente`, 'success');
   }
 }
 
