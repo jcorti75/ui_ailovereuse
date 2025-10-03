@@ -1,5 +1,5 @@
-// app.js - NoShopiA UNIFICADO v3.4 VALIDACIONES CONSISTENTES
-console.log('NoShopiA v3.4 - VALIDACIONES CONSISTENTES iniciando...');
+// app.js - NoShopiA UNIFICADO v3.4 VALIDACIONES CONSISTENTES + FIX PERSISTENCIA
+console.log('NoShopiA v3.4 - VALIDACIONES CONSISTENTES + FIX PERSISTENCIA iniciando...');
 
 // ========================================
 // VARIABLES GLOBALES
@@ -352,7 +352,10 @@ async function handleFileUpload(type, inputOrFileList) {
   // Mensajes finales según resultado
   if (successCount > 0) {
     updateUploadUI(type);
-    saveUserData();
+    // En modo directo NO persistir, solo en closet
+    if (closetMode) {
+      saveUserData();
+    }
     updateGenerateButton();
     
     showNotification(`✅ ${successCount} prenda${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''} exitosamente`, 'success');
@@ -500,7 +503,10 @@ function removeImage(type, index) {
   closetItems[type].splice(index, 1);
   
   updateUploadUI(type);
-  saveUserData();
+  // En modo directo NO persistir, solo en closet
+  if (closetMode) {
+    saveUserData();
+  }
   showNotification('Imagen eliminada', 'success');
   updateGenerateButton();
 }
@@ -1210,10 +1216,16 @@ function scrollToSection(sectionId) {
 }
 
 // ========================================
-// PERSISTENCIA
+// PERSISTENCIA - CORREGIDA
 // ========================================
 function saveUserData() {
   if (!currentUser?.email) return;
+  
+  // Solo persistir datos si estamos en modo Closet
+  if (!closetMode) {
+    console.log('Modo directo: no se persisten datos');
+    return;
+  }
   
   const userData = {
     email: currentUser.email,
@@ -1235,8 +1247,16 @@ function loadUserData() {
     if (userData) {
       const data = JSON.parse(userData);
       
-      uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
-      closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
+      // Solo cargar datos persistentes si estamos en modo Closet
+      if (closetMode) {
+        uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
+        closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
+      } else {
+        // En modo directo, NO cargar uploadedImages ni closetItems
+        uploadedImages = { tops: [], bottoms: [], shoes: [] };
+        closetItems = { tops: [], bottoms: [], shoes: [] };
+      }
+      
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
@@ -1308,7 +1328,7 @@ function initializeGoogleLogin() {
 }
 
 function initializeApp() {
-  console.log('INICIALIZANDO NoShopiA v3.4');
+  console.log('INICIALIZANDO NoShopiA v3.4 - FIX PERSISTENCIA');
   setTimeout(initializeGoogleLogin, 2000);
 }
 
@@ -1345,4 +1365,4 @@ if (document.readyState === 'loading') {
   setTimeout(initializeApp, 100);
 }
 
-console.log('app.js v3.4 VALIDACIONES CONSISTENTES cargado');
+console.log('app.js v3.4 - VALIDACIONES CONSISTENTES + FIX PERSISTENCIA cargado');
