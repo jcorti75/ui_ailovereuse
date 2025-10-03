@@ -7,6 +7,7 @@ console.log('NoShopiA v3.4 - VALIDACIONES CONSISTENTES + FIX PERSISTENCIA inicia
 let isLoggedIn = false;
 let currentUser = null;
 let selectedOccasion = null;
+let selectedSubContext = null; // Para sub-contextos de oficina
 let uploadedFiles = { tops: [], bottoms: [], shoes: [] };
 let uploadedImages = { tops: [], bottoms: [], shoes: [] };
 let closetItems = { tops: [], bottoms: [], shoes: [] };
@@ -912,21 +913,56 @@ function getTotalClosetItems() {
 function selectOccasion(occasion) {
   console.log('Ocasión seleccionada:', occasion);
   selectedOccasion = occasion;
-  showNotification(`Ocasión: ${OCCASION_NAMES[occasion] || occasion}`, 'success');
+  selectedSubContext = null; // Reset sub-contexto
   
-  if (closetMode) {
-    updateClosetGenerateButton();
+  // Sub-contextos SOLO para oficina Y SOLO en modo Closet
+  const subContexts = document.getElementById('officeSubContexts');
+  if (occasion === 'oficina' && closetMode) {
+    if (subContexts) subContexts.style.display = 'block';
+    showNotification('Selecciona el tipo de día en oficina', 'info');
     
-    const generateSection = document.getElementById('closetGenerateSection');
-    if (generateSection) {
-      generateSection.style.display = 'block';
-      
-      setTimeout(() => {
-        generateSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 300);
-    }
+    // NO actualizar botón aún, esperar sub-contexto
+    updateClosetGenerateButton();
   } else {
-    updateGenerateButton();
+    // Ocultar sub-contextos en cualquier otro caso
+    if (subContexts) subContexts.style.display = 'none';
+    showNotification(`Ocasión: ${OCCASION_NAMES[occasion] || occasion}`, 'success');
+    
+    if (closetMode) {
+      updateClosetGenerateButton();
+      const generateSection = document.getElementById('closetGenerateSection');
+      if (generateSection) {
+        generateSection.style.display = 'block';
+        setTimeout(() => {
+          generateSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+      }
+    } else {
+      updateGenerateButton();
+    }
+  }
+}
+
+// Sub-contextos de oficina (solo para modo Closet)
+function selectOfficeSubContext(subContext) {
+  selectedSubContext = subContext;
+  
+  const subContextNames = {
+    'oficina_normal': 'Día Normal de Trabajo',
+    'oficina_reunion': 'Reunión Importante',
+    'oficina_presentacion': 'Presentación/Evento',
+    'oficina_viernes': 'Viernes Casual'
+  };
+  
+  showNotification(`Oficina: ${subContextNames[subContext]}`, 'success');
+  
+  updateClosetGenerateButton();
+  const generateSection = document.getElementById('closetGenerateSection');
+  if (generateSection) {
+    generateSection.style.display = 'block';
+    setTimeout(() => {
+      generateSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
   }
 }
 
@@ -1055,6 +1091,11 @@ async function getRecommendation() {
     const formData = new FormData();
     formData.append('user_email', currentUser.email);
     formData.append('occasion', selectedOccasion);
+    
+    // Agregar sub-contexto si existe (solo para oficina en modo closet)
+    if (selectedSubContext) {
+      formData.append('sub_context', selectedSubContext);
+    }
     
     uploadedFiles.tops.forEach((file, i) => formData.append('tops', file, file.name || `top_${i}.jpg`));
     uploadedFiles.bottoms.forEach((file, i) => formData.append('bottoms', file, file.name || `bottom_${i}.jpg`));
@@ -1343,6 +1384,7 @@ window.scrollToSection = scrollToSection;
 window.handleProfileSelection = handleProfileSelection;
 window.submitUserProfile = submitUserProfile;
 window.selectOccasion = selectOccasion;
+window.selectOfficeSubContext = selectOfficeSubContext; // Nueva función
 window.getRecommendation = getRecommendation;
 window.startFreePlan = startFreePlan;
 window.upgradeToPremium = upgradeToPremium;
