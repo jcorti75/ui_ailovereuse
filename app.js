@@ -738,6 +738,11 @@ function useDirectMode() {
   selectedOccasion = null;
   closetMode = false;
   
+  // En modo directo, limpiar todas las fotos guardadas
+  uploadedFiles = { tops: [], bottoms: [], shoes: [] };
+  uploadedImages = { tops: [], bottoms: [], shoes: [] };
+  closetItems = { tops: [], bottoms: [], shoes: [] };
+  
   const closetQuestion = document.getElementById('closetQuestion');
   if (closetQuestion) closetQuestion.style.display = 'none';
   
@@ -752,9 +757,7 @@ function useDirectMode() {
   
   setTimeout(() => {
     ['tops', 'bottoms', 'shoes'].forEach(type => {
-      if (uploadedImages[type].length > 0) {
-        updateUploadUI(type);
-      }
+      updateUploadUI(type);
     });
     updateGenerateButton();
   }, 300);
@@ -1247,16 +1250,9 @@ function loadUserData() {
     if (userData) {
       const data = JSON.parse(userData);
       
-      // Solo cargar datos persistentes si estamos en modo Closet
-      if (closetMode) {
-        uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
-        closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
-      } else {
-        // En modo directo, NO cargar uploadedImages ni closetItems
-        uploadedImages = { tops: [], bottoms: [], shoes: [] };
-        closetItems = { tops: [], bottoms: [], shoes: [] };
-      }
-      
+      // SIEMPRE cargar los datos del Closet al hacer login
+      uploadedImages = data.uploadedImages || { tops: [], bottoms: [], shoes: [] };
+      closetItems = data.closetItems || { tops: [], bottoms: [], shoes: [] };
       userStats = data.userStats || { visits: 1, recommendations: 0, savedOutfits: 0 };
       savedRecommendations = data.savedRecommendations || [];
       
