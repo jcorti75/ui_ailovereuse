@@ -197,22 +197,62 @@ async function handleFileUpload(type, inputOrFileList) {
   
   for (const file of files) {
     try {
-      const detection = await detectGarmentType(file);
+      console.log('📤 Procesando archivo:', file.name, 'Tipo:', type);
       
-      // VALIDACIÓN 1: Solo acepta superior, inferior o calzado
-      if (!detection.success || detection.category === 'unknown') {
-        showNotification('❌ Ups, solo acepto prendas: superior, inferior o calzado', 'error');
+      // VALIDACIÓN DE DUPLICADOS MEJORADA - Comparar por nombre y tamaño PRIMERO
+      const isDuplicateByFile = uploadedFiles[type].some(existingFile => {
+        return existingFile.name === file.name && 
+               existingFile.size === file.size &&
+               existingFile.lastModified === file.lastModified;
+      });
+      
+      if (isDuplicateByFile) {
+        console.warn('❌ DUPLICADO detectado:', file.name);
+        showNotification('❌ Ya subiste esta prenda (o la acabas de subir)', 'error');
         continue;
       }
       
+      // Intentar detectar tipo de prenda
+      let detection;
+      try {
+        detection = await detectGarmentType(file);
+      } catch (detectionError) {
+        console.error('❌ Error en detectGarmentType para:', file.name, detectionError);
+        showNotification(`❌ "${file.name}" no es una prenda válida (solo superior, inferior o calzado)`, 'error');
+        continue;
+      }
+      
+      console.log('🔍 Detección resultado:', detection);
+      
+      // VALIDACIÓN 1: Solo acepta superior, inferior o calzado
+      if (!detection || !detection.success || detection.category === 'unknown') {
+        console.warn('❌ NO ES PRENDA VÁLIDA:', file.name);
+        showNotification(`❌ "${file.name}" no es una prenda válida (solo superior, inferior o calzado)`, 'error');
+        continue;
+      }
+      
+      // Validar que la categoría detectada coincida con la sección
+      if (detection.category !== type) {
+        const categoryNames = {
+          'tops': 'Superiores',
+          'bottoms': 'Inferiores', 
+          'shoes': 'Calzado'
+        };
+        console.warn('❌ CATEGORÍA INCORRECTA:', file.name, 'Detectada:', detection.category, 'Esperada:', type);
+        showNotification(`❌ Esa prenda es ${categoryNames[detection.category]}. Súbela en la sección correcta`, 'error');
+        continue;
+      }
+      
+      // Convertir a Data URL
       const imageUrl = await fileToDataUrl(file);
       
-      // VALIDACIÓN 2: Verificar duplicados
-      const isDuplicate = closetItems[type].some(existingItem => {
-        return existingItem.imageUrl === imageUrl;
+      // SEGUNDA VALIDACIÓN DE DUPLICADOS - Por contenido de imagen
+      const isDuplicateByContent = uploadedImages[type].some(existingUrl => {
+        return existingUrl === imageUrl;
       });
       
-      if (isDuplicate) {
+      if (isDuplicateByContent) {
+        console.warn('❌ DUPLICADO por contenido:', file.name);
         showNotification('❌ Ya subiste esta prenda (o la acabas de subir)', 'error');
         continue;
       }
@@ -228,11 +268,13 @@ async function handleFileUpload(type, inputOrFileList) {
         file: file
       });
       
+      console.log('✅ Prenda agregada exitosamente:', file.name);
       successCount++;
       
     } catch (error) {
-      console.error('Error procesando archivo:', error);
-      showNotification('❌ Error al procesar la imagen', 'error');
+      // Este catch es para errores REALMENTE inesperados
+      console.error('❌ ERROR INESPERADO procesando archivo:', file.name, error);
+      showNotification(`❌ Oops, algo salió mal con "${file.name}". Intenta de nuevo`, 'error');
       continue;
     }
   }
@@ -245,7 +287,7 @@ async function handleFileUpload(type, inputOrFileList) {
     
     showNotification(`✅ ${successCount} prenda${successCount > 1 ? 's' : ''} subida${successCount > 1 ? 's' : ''} exitosamente`, 'success');
   } else {
-    showNotification('❌ No se pudo subir ninguna prenda. Revisa los errores anteriores', 'error');
+    showNotification('❌ No se pudo subir ninguna prenda. Revisa los errores', 'error');
   }
 }
 // ========================================
